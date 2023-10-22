@@ -41,7 +41,7 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""89f93049-0ca2-48bc-b931-164d6d49eebc"",
-                    ""path"": ""<Touchscreen>/primaryTouch/position"",
+                    ""path"": ""<Touchscreen>/primaryTouch/startPosition"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
