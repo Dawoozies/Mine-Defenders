@@ -6,12 +6,10 @@ public static class Interpolation
 {
     public static Vector3 Interpolate(Vector3 start, Vector3 end, float x, InterpolationType interpolationType)
     {
-        Debug.Log("Running");
         return Vector3.Lerp(start, end, Interpolator(x, interpolationType));
     }
     public static Color Interpolate(Color start, Color end, float x, InterpolationType interpolationType)
     {
-        Debug.Log("Running");
         return Color.Lerp(start, end, Interpolator(x, interpolationType));
     }
     static float Interpolator(float x, InterpolationType interpolationType)
