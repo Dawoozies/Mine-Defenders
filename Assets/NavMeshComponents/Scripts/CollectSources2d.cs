@@ -55,7 +55,7 @@ namespace NavMeshPlus.Extensions
             return bounds;
         }
 
-        public override void CollectSources(NavMeshSurface surface, List<NavMeshBuildSource> sources, NavMeshBuilderState navNeshState)
+        public override void CollectSources(NavMeshSurface surface, List<NavMeshBuildSource> sources, NavMeshBuilderState navMeshState)
         {
             if (!surface.hideEditorLogs)
             {
@@ -71,7 +71,7 @@ namespace NavMeshPlus.Extensions
                     }
                 }
             }
-            var builder = navNeshState.GetExtraState<NavMeshBuilder2dState>();
+            var builder = navMeshState.GetExtraState<NavMeshBuilder2dState>();
             builder.defaultArea = surface.defaultArea;
             builder.layerMask = surface.layerMask;
             builder.agentID = surface.agentTypeID;
@@ -83,7 +83,7 @@ namespace NavMeshPlus.Extensions
             builder.CollectObjects = (CollectObjects)(int)surface.collectObjects;
             builder.parent = surface.gameObject;
             builder.hideEditorLogs = surface.hideEditorLogs;
-            builder.SetRoot(navNeshState.roots);
+            builder.SetRoot(navMeshState.roots);
             NavMeshBuilder2d.CollectSources(sources, builder);
         }
     }

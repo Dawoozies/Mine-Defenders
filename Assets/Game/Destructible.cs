@@ -7,7 +7,6 @@ using UnityEngine.Tilemaps;
 
 public class Destructible : MonoBehaviour
 {
-    NavMeshData navMeshData;
     NavMeshSurface Surface2D;
     PlayerControls input;
     Tilemap tilemap;
@@ -18,8 +17,7 @@ public class Destructible : MonoBehaviour
         tilemap = GetComponent<Tilemap>();
         //Should only be one of these, be careful with this
         Surface2D = FindAnyObjectByType<NavMeshSurface>();
-        navMeshData = Surface2D.navMeshData;
-        
+
         input = new PlayerControls();
         input.Player.Tap.performed += (input) => {
             var touchPos = input.ReadValue<Vector2>();
@@ -34,7 +32,7 @@ public class Destructible : MonoBehaviour
             tilemap.RefreshTile(cellPos);
 
             //Update the nav mesh now
-            Surface2D.UpdateNavMesh(navMeshData);
+            Surface2D.UpdateNavMesh(Surface2D.navMeshData);
         };
         input.Enable();
     }
