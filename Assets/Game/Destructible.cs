@@ -34,14 +34,10 @@ public class Destructible : MonoBehaviour
             //Update the nav mesh now
             Surface2D.UpdateNavMesh(Surface2D.navMeshData);
         };
-        input.Enable();
+        //input.Enable();
     }
     private void OnDisable()
     {
         input.Disable();
-    }
-    void Update()
-    {
-        
     }
 }

@@ -1,16 +1,17 @@
 fileFormatVersion: 2
-guid: 673e75df259cf254892a1ed705cd1423
+guid: 730e0c60f22cdb94cb6b68014f0c6143
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
   fontSize: 16
-  forceTextureCase: -2
+  forceTextureCase: 0
   characterSpacing: 0
   characterPadding: 1
   includeFontData: 1
   fontNames:
-  - Romulus
-  fallbackFontReferences: []
+  - Alagard
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: 1b973cd97f2b8e04bb6bd18b6d775e16, type: 3}
   customCharacters: 
   fontRenderingMode: 0
   ascentCalculationMode: 1

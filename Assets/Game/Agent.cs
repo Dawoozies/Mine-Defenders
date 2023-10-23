@@ -22,7 +22,13 @@ public class Agent : MonoBehaviour
     {
         if (agent == null)
             return;
-
-        
+    }
+    public Vector3[] GetPathCorners()
+    {
+        return agent.path.corners;
+    }
+    public float GetRemainingDistance()
+    {
+        return agent.remainingDistance;
     }
 }

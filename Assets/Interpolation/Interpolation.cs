@@ -12,6 +12,10 @@ public static class Interpolation
     {
         return Color.Lerp(start, end, Interpolator(x, interpolationType));
     }
+    public static Quaternion Interpolate(Quaternion start, Quaternion end, float x, InterpolationType interpolationType)
+    {
+        return Quaternion.Lerp(start, end, Interpolator(x, interpolationType));
+    }
     static float Interpolator(float x, InterpolationType interpolationType)
     {
         switch (interpolationType)

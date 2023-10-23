@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: a06370a8d7bb3ad449b4b649b0970edf
+guid: 4f1498e426090bb4cbf05109623e0445
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
@@ -9,7 +9,7 @@ TrueTypeFontImporter:
   characterPadding: 1
   includeFontData: 1
   fontNames:
-  - Alagard
+  - Romulus
   fallbackFontReferences: []
   customCharacters: 
   fontRenderingMode: 0
