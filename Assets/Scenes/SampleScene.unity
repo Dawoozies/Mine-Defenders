@@ -4894,6 +4894,7 @@ GameObject:
   - component: {fileID: 884446790}
   - component: {fileID: 884446791}
   - component: {fileID: 884446792}
+  - component: {fileID: 884446793}
   m_Layer: 0
   m_Name: Pickaxe
   m_TagString: Untagged
@@ -4958,7 +4959,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 3
   m_Sprite: {fileID: -2111322780, guid: 4bc0a06516221c846a84c7d1e5887f2f, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -4980,20 +4981,33 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4413932bacdb5144286c30105bc9971b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  positions:
-  - {x: 0, y: 0, z: 0}
-  - {x: 0.55, y: 0.5, z: 0}
-  - {x: -0.5, y: -0.15, z: 0}
-  rotations:
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: -30}
-  - {x: 0, y: 0, z: 105}
-  interpolationTypes: 040000000200000004000000
-  animate: 0
-  time: 0
-  currentIndex: 0
-  targetIndex: 0
-  timeMultiplier: 2
+--- !u!114 &884446793
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 884446789}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc25a3fd600d27e479de0e4e044997ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animationSpeed: 2
+  animations:
+  - animName: Mining
+    positions:
+    - {x: 0, y: 0, z: 0}
+    - {x: 0.55, y: 0.5, z: 0}
+    - {x: -0.5, y: -0.15, z: 0}
+    eulerAngles:
+    - {x: 0, y: 0, z: 0}
+    - {x: 0, y: 0, z: -30}
+    - {x: 0, y: 0, z: 105}
+    rotations: []
+    interpolationTypes: 040000000200000004000000
+    loop: 1
+    time: 0
 --- !u!1 &886927109
 GameObject:
   m_ObjectHideFlags: 0
@@ -47247,10 +47261,6 @@ MonoBehaviour:
   mainSprites:
   - {fileID: 344130270, guid: 101dd67895840b94a9a228a2b7e74bd2, type: 3}
   - {fileID: -747888040, guid: b8d6cec06b155e449865e165f84205b1, type: 3}
-  pickaxe: {fileID: 884446792}
-  miningTargetCell: {x: 0, y: 0, z: 0}
-  mining: 0
-  distanceToTarget: 0
 --- !u!1 &1635872317
 GameObject:
   m_ObjectHideFlags: 0

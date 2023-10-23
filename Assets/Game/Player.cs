@@ -18,6 +18,8 @@ public class Player : MonoBehaviour
     float time = 0;
     void OnEnable()
     {
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        pickaxe = GetComponentInChildren<Pickaxe>();
         agent = GetComponent<Agent>();
         mainCamera = Camera.main;
         input = new PlayerControls();
@@ -32,10 +34,6 @@ public class Player : MonoBehaviour
     private void OnDisable()
     {
         input.Disable();
-    }
-    private void Start()
-    {
-        spriteRenderer = GetComponent<SpriteRenderer>();
     }
     void Update()
     {
@@ -56,11 +54,12 @@ public class Player : MonoBehaviour
     {
         return agent.GetRemainingDistance() > 0.1f;
     }
-    public Pickaxe pickaxe;
-    public Vector3Int miningTargetCell;
+    //Mining
+    Pickaxe pickaxe;
+    Vector3Int miningTargetCell;
     Vector3 miningTargetWorldPos;
-    public bool mining;
-    public float distanceToTarget;
+    bool mining;
+    float distanceToTarget;
     public void StartMining(Tilemap targetTilemap, Vector3Int miningTargetCell, TileBase targetTile)
     {
         this.miningTargetCell = miningTargetCell;
@@ -70,7 +69,7 @@ public class Player : MonoBehaviour
         if(distanceToTarget < 0.95f)
         {
             //Then we are close enough to start mining
-            pickaxe.ToggleMiningEffect();
+            pickaxe.ToggleMiningEffect(true);
         }
         else
         {
@@ -92,14 +91,12 @@ public class Player : MonoBehaviour
             if(distanceToTarget < 0.95f)
             {
                 Debug.Log("We reached target");
-                if (!pickaxe.animate)
-                    pickaxe.ToggleMiningEffect();
+                pickaxe.ToggleMiningEffect(true);
             }
         }
     }
     public void ForceStopMining()
     {
-        if(pickaxe.animate)
-            pickaxe.ToggleMiningEffect();
+        pickaxe.ToggleMiningEffect(false);
     }
 }
