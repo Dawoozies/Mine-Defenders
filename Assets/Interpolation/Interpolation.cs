@@ -16,6 +16,10 @@ public static class Interpolation
     {
         return Quaternion.Lerp(start, end, Interpolator(x, interpolationType));
     }
+    public static Vector2 Interpolate(Vector2 start, Vector2 end, float x, InterpolationType interpolationType)
+    {
+        return Vector2.Lerp(start, end, Interpolator(x, interpolationType));
+    }
     static float Interpolator(float x, InterpolationType interpolationType)
     {
         switch (interpolationType)

@@ -16,24 +16,22 @@ public class Player : MonoBehaviour
     public List<Sprite> mainSprites;
     int mainSpriteIndex;
     float time = 0;
+
+    public class MiningTask
+    {
+
+    }
+    public class MovingTask
+    {
+        public Vector3 targetPosition;
+    }
+
     void OnEnable()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         pickaxe = GetComponentInChildren<Pickaxe>();
         agent = GetComponent<Agent>();
         mainCamera = Camera.main;
-        input = new PlayerControls();
-        input.Player.Tap.performed += (input) => {
-            //Grab touch input
-            touchInput = input.ReadValue<Vector2>();
-            worldTouchInput = mainCamera.ScreenToWorldPoint(touchInput);
-            agent.MoveToWorldPoint(worldTouchInput);
-        };
-        //input.Enable();
-    }
-    private void OnDisable()
-    {
-        input.Disable();
     }
     void Update()
     {

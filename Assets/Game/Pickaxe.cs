@@ -13,20 +13,18 @@ public class Pickaxe : MonoBehaviour
         pickaxeRenderer = GetComponent<SpriteRenderer>();
         objectAnimator = GetComponent<ObjectAnimator>();
     }
-    void Update()
-    {
-
-    }
     public void ToggleMiningEffect(bool isMining)
     {
         if(isMining)
         {
             if(objectAnimator.GetCurrentAnimationName() != "Mining")
                 objectAnimator.PlayAnimation("Mining");
+            pickaxeRenderer.color = Color.white;
         }
         else
         {
             objectAnimator.StopAnimation();
+            pickaxeRenderer.color = Color.clear;
         }
     }
 }
