@@ -39,7 +39,7 @@ public class ObjectAnimator : MonoBehaviour
     int currentIndex;
     int targetIndex;
 
-    public delegate void LoopCompleteHandler(string completedAnimationName);
+    public delegate void LoopCompleteHandler(ObjectAnimator animator, string completedAnimationName);
     public event LoopCompleteHandler LoopCompleteEvent;
     private void Start()
     {
@@ -83,9 +83,13 @@ public class ObjectAnimator : MonoBehaviour
             {
                 //This runs exactly after one loop
                 //Debug.LogError("Animation Finished One Loop");
-                LoopCompleteEvent?.Invoke(currentAnimation.animName);
+                LoopCompleteEvent?.Invoke(this, currentAnimation.animName);
             }
         }
+
+        if (currentAnimation == null)
+            return;
+
         if(currentAnimation.positions != null && currentAnimation.positions.Count > 0)
         {
             transform.localPosition = Interpolation.Interpolate

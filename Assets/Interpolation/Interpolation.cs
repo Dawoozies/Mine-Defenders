@@ -36,6 +36,8 @@ public static class Interpolation
                 return EaseOutExp(x);
             case InterpolationType.EaseInOutExp:
                 return EaseInOutExp(x);
+            case InterpolationType.EaseInOutSine:
+                return EaseInOutSine(x);
             default:
                 return x;
         }
@@ -87,6 +89,10 @@ public static class Interpolation
             ? Mathf.Pow(2, 20f * x - 10f) / 2
             : (2 - Mathf.Pow(2, -20f * x + 10f)) / 2;
     }
+    static float EaseInOutSine(float x)
+    {
+        return -(Mathf.Cos(Mathf.PI * x) - 1) / 2;
+    }
 }
 public enum InterpolationType
 {
@@ -96,4 +102,5 @@ public enum InterpolationType
     EaseInExp = 3,
     EaseOutExp = 4,
     EaseInOutExp = 5,
+    EaseInOutSine = 6,
 }
