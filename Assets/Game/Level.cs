@@ -1,26 +1,20 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.Tilemaps;
+//this needs to run first on this scene
 public class Level : MonoBehaviour
 {
-    public class EventArgs
+    public Tilemap tilemap;
+    GridInformation gridInformation;
+    public Tile tile;
+    private void Start()
     {
-        public EventArgs(string text, GameObject obj)
-        {
-            Text = text;
-            Obj = obj;
-        }
-        public string Text;
-        public GameObject Obj;
+        gridInformation = GetComponent<GridInformation>();
+        tilemap.SetTile(new Vector3Int(0, 0, 0), tile);
     }
-    public class Publisher
-    {
-        public delegate void EventHandler(object sender, EventArgs args);
-        public event EventHandler SampleEvent;
-        protected virtual void RaiseEvent(GameObject objectHandler)
-        {
-            SampleEvent?.Invoke(this, new EventArgs("Text argument", objectHandler));
-        }
-    }
+}
+public class TileInformation
+{
+    public int durability;
 }

@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 [CreateAssetMenu]
-public class GameTile : TileBase
+public class GameTile : AnimatedTile
 {
     //GameTile will define whole levels
     //Won't actively be used in game.
@@ -12,5 +12,4 @@ public class GameTile : TileBase
     //Non breakable tiles
     //Loot giving tiles
     //Player spawn tile
-    public Sprite[] sprites;
 }
