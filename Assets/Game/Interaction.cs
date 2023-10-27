@@ -10,12 +10,14 @@ public class Interaction : MonoBehaviour
 
     Camera mainCamera;
     Grid grid;
+    GridInformation gridInformation;
     PlayerControls input;
 
     private void OnEnable()
     {
         mainCamera = Camera.main;
         grid = FindObjectOfType<Grid>();
+        gridInformation = grid.GetComponent<GridInformation>();
         input = new PlayerControls();
         input.Player.Tap.performed += (input) =>
         {

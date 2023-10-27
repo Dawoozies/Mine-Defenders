@@ -11,10 +11,18 @@ public class Level : MonoBehaviour
     private void Start()
     {
         gridInformation = GetComponent<GridInformation>();
-        tilemap.SetTile(new Vector3Int(0, 0, 0), tile);
+        //tilemap.SetTile(new Vector3Int(0, 0, 0), tile);
+        //gridInformation.SetPositionProperty<TileInformation>(new Vector3Int(0,0,0), "TileInformation", new TileInformation(3));
     }
 }
-public class TileInformation
+public class GridData
 {
+    //define what is on the ground layer
+    //
+    //determine whether it is boundary wall or not
     public int durability;
+    public GridData(int durability)
+    {
+        this.durability = durability;
+    }
 }
