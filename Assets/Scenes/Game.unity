@@ -132,7 +132,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 95951028}
-  - component: {fileID: 95951027}
+  - component: {fileID: 95951031}
   - component: {fileID: 95951026}
   - component: {fileID: 95951029}
   - component: {fileID: 95951030}
@@ -155,32 +155,6 @@ Grid:
   m_CellGap: {x: 0, y: 0, z: 0}
   m_CellLayout: 0
   m_CellSwizzle: 0
---- !u!114 &95951027
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 95951025}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7d0c022db8b62764584850e916e2f10c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  OreTilemap: {fileID: 524365528}
-  StoneTilemap: {fileID: 1938534560}
-  SolidColorTilemap: {fileID: 340914953}
-  ore: {fileID: 11400000, guid: c1a2085f9f5430d4eb57b42affc2d1f8, type: 2}
-  stone: {fileID: 11400000, guid: 0565159ed081bb1428020bacd53249a1, type: 2}
-  wallSolidColor: {fileID: 11400000, guid: 1690d5d3943c884498500a4898876e74, type: 2}
-  bottomLeftCorner: {x: -8, y: -8}
-  topRightCorner: {x: 8, y: 8}
-  spawnAreaBottomLeftCorner: {x: -4, y: -4}
-  spawnAreaTopRightCorner: {x: 4, y: 4}
-  emptyOre: {fileID: 11400000, guid: 67e569e5dddf3bc488b533bd8186df7c, type: 2}
-  ores:
-  - {fileID: 11400000, guid: 789f192205eb10242828be9116e63686, type: 2}
-  - {fileID: 11400000, guid: 1e178397a77951a41b8ce36f00486fc0, type: 2}
 --- !u!4 &95951028
 Transform:
   m_ObjectHideFlags: 0
@@ -236,6 +210,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 78c261bf6aff5854c824ec0f54530502, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &95951031
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 95951025}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c7f10f79442342a4ab36cb5ab722d70a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  OreTilemap: {fileID: 524365528}
+  StoneTilemap: {fileID: 1938534560}
+  SolidColorTilemap: {fileID: 340914953}
+  bottomLeftCorner: {x: -16, y: -16}
+  topRightCorner: {x: 16, y: 16}
+  spawnAreaBottomLeftCorner: {x: -4, y: -4}
+  spawnAreaTopRightCorner: {x: 4, y: 4}
+  wallSolidColor: {fileID: 11400000, guid: 1690d5d3943c884498500a4898876e74, type: 2}
+  ore: {fileID: 11400000, guid: c1a2085f9f5430d4eb57b42affc2d1f8, type: 2}
+  stone: {fileID: 11400000, guid: 0565159ed081bb1428020bacd53249a1, type: 2}
+  emptyOre: {fileID: 11400000, guid: 67e569e5dddf3bc488b533bd8186df7c, type: 2}
+  ores:
+  - {fileID: 11400000, guid: 789f192205eb10242828be9116e63686, type: 2}
+  - {fileID: 11400000, guid: 1e178397a77951a41b8ce36f00486fc0, type: 2}
 --- !u!1 &340914950
 GameObject:
   m_ObjectHideFlags: 0
@@ -1009,7 +1009,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 10
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
