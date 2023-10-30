@@ -20,5 +20,4 @@ public class Ore : ScriptableObject
     {
         return baseRollChance > UnityEngine.Random.Range(0f, 1f);
     }
-
 }

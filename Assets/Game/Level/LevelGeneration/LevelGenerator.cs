@@ -7,7 +7,9 @@ public class LevelGenerator : MonoBehaviour
 {
     public Tilemap OreTilemap;
     public Tilemap StoneTilemap;
-    public Tilemap SolidColorTilemap;
+    public Tilemap StoneColorTilemap;
+    public Tilemap HiddenTilemap;
+    public Tilemap FloorTilemap;
     List<Vector3Int> ignoreCells;
 
     public Vector2Int bottomLeftCorner;
@@ -15,15 +17,21 @@ public class LevelGenerator : MonoBehaviour
     public Vector2Int spawnAreaBottomLeftCorner;
     public Vector2Int spawnAreaTopRightCorner;
 
-    public Tile wallSolidColor;
+    public RuleTile hiddenTile;
+    public RuleTile floorTile;
     public RuleTile ore;
     public RuleTile stone;
+    public RuleTile stoneColor;
+    public Color defaultStoneColor;
 
     public Ore emptyOre;
     public List<Ore> ores;
 
-    private void Start()
+    GridInformation GridInformation;
+    public void ManagedStart()
     {
+        GridInformation = GetComponent<GridInformation>();
+
         ignoreCells = new List<Vector3Int>();
         List<Vector3Int> levelBoundary = Boundaries(bottomLeftCorner - Vector2Int.one, topRightCorner + Vector2Int.one);
         List<Vector3Int> spawnBoundary = Boundaries(spawnAreaBottomLeftCorner + Vector2Int.one, spawnAreaTopRightCorner - Vector2Int.one);
@@ -67,6 +75,7 @@ public class LevelGenerator : MonoBehaviour
             for(int y = bottomLeftCorner.y; y <= topRightCorner.y; y++)
             {
                 Vector3Int currentCoordinate = new Vector3Int(x, y, 0);
+
                 //Ignore generation if in spawn area or current coordinates are on the ignore list
                 bool inSpawnArea =
                     (spawnAreaBottomLeftCorner.x < x && x < spawnAreaTopRightCorner.x &&
@@ -99,6 +108,9 @@ public class LevelGenerator : MonoBehaviour
                         {
                             OreTilemap.SetTile(walkedTile, ore);
                             OreTilemap.SetColor(walkedTile, highestRarityOreRolled.color);
+
+                            GridInformation.SetPositionProperty(walkedTile, "OreName", highestRarityOreRolled.name);
+                            GridInformation.SetPositionProperty(walkedTile, "Durability", highestRarityOreRolled.durability);
                         }
                     }
                     else
@@ -111,10 +123,25 @@ public class LevelGenerator : MonoBehaviour
                 if(!inSpawnArea)
                 {
                     StoneTilemap.SetTile(currentCoordinate, stone);
-                    SolidColorTilemap.SetTile(currentCoordinate, wallSolidColor);
+                    StoneColorTilemap.SetTile(currentCoordinate, stoneColor);
+                    StoneColorTilemap.SetColor(currentCoordinate, defaultStoneColor);
+                    HiddenTilemap.SetTile(currentCoordinate, hiddenTile);
+
+                    int existingDurability = GridInformation.GetPositionProperty(currentCoordinate, "Durability", 0);
+                    GridInformation.SetPositionProperty(currentCoordinate, "Durability", existingDurability + 2);
                 }
+                if(inSpawnArea)
+                {
+                    GenerateFloor(currentCoordinate);
+                }
+
+                
             }
         }
+    }
+    public void GenerateFloor(Vector3Int cellPos)
+    {
+        FloorTilemap.SetTile(cellPos, floorTile);
     }
 }
 public class CellWalker

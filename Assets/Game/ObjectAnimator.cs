@@ -31,7 +31,6 @@ public class ObjectAnimator : MonoBehaviour
             }
         }
     }
-    SpriteRenderer spriteRenderer;
     RectTransform rectTransform;
     public float animationSpeed;
     public List<ObjectAnimation> animations;
@@ -43,7 +42,6 @@ public class ObjectAnimator : MonoBehaviour
     public event LoopCompleteHandler LoopCompleteEvent;
     private void Start()
     {
-        spriteRenderer = GetComponent<SpriteRenderer>();
         rectTransform = GetComponent<RectTransform>();
         foreach (var animation in animations)
         {

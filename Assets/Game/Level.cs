@@ -75,14 +75,3 @@ public class Level : MonoBehaviour
         }
     }
 }
-public class GridData
-{
-    //define what is on the ground layer
-    //
-    //determine whether it is boundary wall or not
-    public int durability;
-    public GridData(int durability)
-    {
-        this.durability = durability;
-    }
-}
