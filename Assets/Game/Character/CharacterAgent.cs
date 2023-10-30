@@ -11,15 +11,27 @@ public class CharacterAgent : MonoBehaviour
     {
         public string orderName;
         public Vector3 destination;
+        public float distanceRequired;
         public MoveOrder(string orderName, Vector3 destination)
         {
             this.orderName = orderName;
             this.destination = destination;
         }
+        public MoveOrder(string orderName, Vector3 destination, float distanceRequired)
+        {
+            this.orderName = orderName;
+            this.destination = destination;
+            this.distanceRequired = distanceRequired;
+        }
         public float DistanceLeft(Vector3 currentPos)
         {
             currentPos.z = 0;
             return Vector3.Distance(currentPos, destination);
+        }
+        public bool WithinRequiredDistance(Vector3 currentPos)
+        {
+            currentPos.z = 0;
+            return Vector3.Distance(currentPos, destination) <= distanceRequired;
         }
     }
     NavMeshAgent agent;
@@ -49,6 +61,19 @@ public class CharacterAgent : MonoBehaviour
         agent.SetDestination(targetPosition);
         NewMovementOrderEvent?.Invoke(orderName);
     }
+    public void MoveWithinDistanceOrder(string orderName, Vector3 targetPosition, float distanceRequired)
+    {
+        targetPosition.z = 0;
+        if (currentMoveOrder != null)
+        {
+            //If current move order is not null then we are interrupting an ongoing move order
+            MovementInterruptedEvent?.Invoke(currentMoveOrder.orderName, orderName);
+        }
+
+        currentMoveOrder = new MoveOrder(orderName, targetPosition, distanceRequired);
+        agent.SetDestination(targetPosition);
+        NewMovementOrderEvent?.Invoke(orderName);
+    }
     public void StopMovement()
     {
         if (currentMoveOrder != null)
@@ -59,11 +84,27 @@ public class CharacterAgent : MonoBehaviour
         if (currentMoveOrder == null)
             return;
 
-        if (currentMoveOrder.DistanceLeft(transform.position) <= 0.01f)
+        if (currentMoveOrder.distanceRequired > 0)
         {
-            MovementCompleteEvent?.Invoke(currentMoveOrder.orderName);
-            //Then eject movement order
-            currentMoveOrder = null;
+            if (currentMoveOrder.WithinRequiredDistance(transform.position))
+            {
+                MovementCompleteEvent?.Invoke(currentMoveOrder.orderName);
+                Debug.Log("Movement completed within required distance");
+                //Then eject movement order
+                currentMoveOrder = null;
+                agent.ResetPath();
+            }
+        }
+        else
+        {
+            if(currentMoveOrder.DistanceLeft(transform.position) <= 0.01f)
+            {
+                MovementCompleteEvent?.Invoke(currentMoveOrder.orderName);
+                Debug.Log("Movement complete");
+                //Then eject movement order
+                currentMoveOrder = null;
+                agent.ResetPath();
+            }
         }
     }
 }

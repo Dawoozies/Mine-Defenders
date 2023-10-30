@@ -75,7 +75,7 @@ public class MainMenu : MonoBehaviour
     {
         if (completedAnimationName != "GrappleTitle")
             return;
-
+        Debug.Log("We get here?");
         animator.StopAnimation();
         animator.PlayAnimation("PullTitleUp");
         titleImage.color = Color.white;

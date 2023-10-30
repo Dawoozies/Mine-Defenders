@@ -7,6 +7,6 @@ public class CharacterGenerator : MonoBehaviour
     public GameObject playerPrefab;
     public void ManagedStart()
     {
-        Instantiate(playerPrefab);
+        Instantiate(playerPrefab, transform);
     }
 }

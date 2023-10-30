@@ -2,35 +2,35 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-
-public class ObjectAnimator : MonoBehaviour
+[System.Serializable]
+public class ObjectAnimation
 {
-    [System.Serializable]
-    public class ObjectAnimation
+    public string animName;
+    public int frames;
+    public List<Vector3> positions;
+    public List<Vector3> eulerAngles;
+    [HideInInspector]
+    public List<Quaternion> rotations;
+    public List<Vector2> sizeDeltas;
+    public List<Vector2> anchoredPositions;
+    public List<InterpolationType> interpolationTypes;
+    public bool loop;
+    [HideInInspector]
+    public float time;
+    public void SetUpRotations()
     {
-        public string animName;
-        public int frames;
-        public List<Vector3> positions;
-        public List<Vector3> eulerAngles;
-        [HideInInspector]
-        public List<Quaternion> rotations;
-        public List<Vector2> sizeDeltas;
-        public List<Vector2> anchoredPositions;
-        public List<InterpolationType> interpolationTypes;
-        public bool loop;
-        [HideInInspector]
-        public float time;
-        public void SetUpRotations()
+        if (eulerAngles == null || eulerAngles.Count == 0)
+            return;
+        rotations = new List<Quaternion>();
+        for (int i = 0; i < eulerAngles.Count; i++)
         {
-            if(eulerAngles == null || eulerAngles.Count == 0 ) 
-                return;
-            rotations = new List<Quaternion>();
-            for (int i = 0; i < eulerAngles.Count; i++)
-            {
-                rotations.Add(Quaternion.Euler(eulerAngles[i]));
-            }
+            rotations.Add(Quaternion.Euler(eulerAngles[i]));
         }
     }
+}
+public class ObjectAnimator : MonoBehaviour
+{
+
     RectTransform rectTransform;
     public float animationSpeed;
     public List<ObjectAnimation> animations;
@@ -47,6 +47,34 @@ public class ObjectAnimator : MonoBehaviour
         {
             animation.SetUpRotations();
         }
+    }
+    public void CreateAndPlayAnimation(ObjectAnimation animation)
+    {
+        if (animation.eulerAngles != null && animation.eulerAngles.Count > 0)
+            animation.SetUpRotations();
+
+        if(animations == null || animations.Count == 0)
+        {
+            animations = new List<ObjectAnimation> { animation };
+            PlayAnimation(animations[0].animName);
+            return;
+        }
+
+        for (int i = 0;  i < animations.Count; i++)
+        {
+            if (animations[i].animName == animation.animName)
+            {
+                //Then we should just change the args of the animation that already has the same name
+                //instead of adding a new one
+                animations[i] = animation;
+                PlayAnimation(animations[i].animName);
+                return;
+            }
+        }
+
+        //If we got here then the animation does not exist in the list
+        animations.Add(animation);
+        PlayAnimation(animation.animName);
     }
     public void PlayAnimation(string animName)
     {
@@ -82,6 +110,10 @@ public class ObjectAnimator : MonoBehaviour
                 //This runs exactly after one loop
                 //Debug.LogError("Animation Finished One Loop");
                 LoopCompleteEvent?.Invoke(this, currentAnimation.animName);
+                if(LoopCompleteEvent == null && !currentAnimation.loop)
+                {
+                    currentAnimation = null;
+                }
             }
         }
 
