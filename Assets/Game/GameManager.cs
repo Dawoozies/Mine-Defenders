@@ -1,6 +1,4 @@
 using NavMeshPlus.Components;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -20,7 +18,8 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         levelGenerator.ManagedStart();
-        navMeshSurface.BuildNavMeshAsync();
+        navMeshSurface.BuildNavMesh();
+        characterGenerator.ManagedStart();
     }
     void Update()
     {
