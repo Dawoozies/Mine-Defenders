@@ -98,7 +98,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   animationSpeed: 1
-  animations: []
+  animations:
+  - animName: NotMining
+    frames: 1
+    positions:
+    - {x: 0, y: 0, z: 0}
+    eulerAngles: []
+    rotations: []
+    sizeDeltas: []
+    anchoredPositions: []
+    interpolationTypes: 04000000
+    loop: 1
+    time: 0
 --- !u!1 &8754239654235546804
 GameObject:
   m_ObjectHideFlags: 0
@@ -257,3 +268,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pickaxeAnimator: {fileID: 4068008177886852873}
   miningTargetPos: {x: 0, y: 0, z: 0}
+  pickaxeDamage: 1

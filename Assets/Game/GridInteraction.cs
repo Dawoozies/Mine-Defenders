@@ -15,8 +15,11 @@ public class GridInteraction : MonoBehaviour
     public delegate void GridInteractDelegate(GridInteractArgs args);
     public static event GridInteractDelegate GridInteractEvent;
     //Stone destroyed event
-    public delegate void TileDestroyed(Vector3Int cellPos);
-    public static event TileDestroyed TileDestroyedEvent;
+    public delegate void StoneDestroyed(Vector3Int cellPos);
+    public static event StoneDestroyed StoneDestroyedEvent;
+
+    public delegate (Vector3Int, int) DamageDurability();
+    public static event DamageDurability OnDamageDurability;
     private void OnEnable()
     {
         mainCamera = Camera.main;
@@ -85,12 +88,26 @@ public class GridInteraction : MonoBehaviour
         if(durability <= 0)
         {
             //Then tile has been destroyed
-            TileDestroyedEvent?.Invoke(cellPos);
+            StoneDestroyedEvent?.Invoke(cellPos);
             gridInformation.SetPositionProperty(cellPos, "Durability", 0);
+            for (int i = 0; i < tilemaps.Length - 1; i++)
+            {
+                tilemaps[i].SetTile(cellPos, null);
+            }
             return 0;
         }
         gridInformation.SetPositionProperty(cellPos, "Durability", durability);
+        Debug.Log($"CellPos={cellPos} DealtDamage={damage} DurabilityLeft={durability}");
         return durability;
+    }
+    private void Update()
+    {
+        if(OnDamageDurability != null)
+        {
+            (Vector3Int, int) args = OnDamageDurability.Invoke();
+            DamageDurabilityAtCell(args.Item1, args.Item2);
+            OnDamageDurability = null;
+        }
     }
 }
 public class GridInteractArgs
@@ -101,4 +118,8 @@ public class GridInteractArgs
     public Vector3 CellWorldPosition;
     public string oreName;
     public int durability;
+}
+public class StoneDestroyedArgs
+{
+
 }

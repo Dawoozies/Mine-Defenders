@@ -89,7 +89,7 @@ public class CharacterAgent : MonoBehaviour
             if (currentMoveOrder.WithinRequiredDistance(transform.position))
             {
                 MovementCompleteEvent?.Invoke(currentMoveOrder.orderName);
-                Debug.Log("Movement completed within required distance");
+                //Debug.Log("Movement completed within required distance");
                 //Then eject movement order
                 currentMoveOrder = null;
                 agent.ResetPath();
@@ -100,7 +100,7 @@ public class CharacterAgent : MonoBehaviour
             if(currentMoveOrder.DistanceLeft(transform.position) <= 0.01f)
             {
                 MovementCompleteEvent?.Invoke(currentMoveOrder.orderName);
-                Debug.Log("Movement complete");
+                //Debug.Log("Movement complete");
                 //Then eject movement order
                 currentMoveOrder = null;
                 agent.ResetPath();

@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
+    public static GameManager ins;
+
     LevelGenerator levelGenerator;
     NavMeshSurface navMeshSurface;
     CharacterGenerator characterGenerator;
@@ -16,6 +18,7 @@ public class GameManager : MonoBehaviour
     //Enemy character
     void Awake()
     {
+        ins = this;
         levelGenerator = GetComponentInChildren<LevelGenerator>();
         navMeshSurface = GetComponentInChildren<NavMeshSurface>();
         characterGenerator = GetComponentInChildren<CharacterGenerator>();
@@ -53,5 +56,15 @@ public class GameManager : MonoBehaviour
         trackingAnimation.loop = false;
 
         cameraAnimator.CreateAndPlayAnimation(trackingAnimation);
+    }
+    public Vector3Int WorldToCell(Vector3 worldPosition)
+    {
+        worldPosition.z = 0;
+        return levelGenerator.StoneTilemap.WorldToCell(worldPosition);
+    }
+    public Vector3 WorldToCellCenter(Vector3 worldPosition)
+    {
+        worldPosition.z = 0;
+        return levelGenerator.StoneTilemap.GetCellCenterWorld(WorldToCell(worldPosition));
     }
 }
