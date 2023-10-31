@@ -6,6 +6,8 @@ public class CharacterPlayer : MonoBehaviour
 {
     CharacterAgent agent;
     Buffer<Vector3> positionBuffer;
+    SpriteRenderer spriteRenderer;
+    SpriteRenderer pickaxeSpriteRenderer;
     public ObjectAnimator pickaxeAnimator;
     public Vector3 miningTargetPos;
     public int pickaxeDamage;
@@ -13,15 +15,29 @@ public class CharacterPlayer : MonoBehaviour
     {
         GridInteraction.GridInteractEvent += PlayerTap;
         agent = GetComponent<CharacterAgent>();
-        positionBuffer = new Buffer<Vector3>(transform.position, 1f);
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        pickaxeSpriteRenderer = pickaxeAnimator.GetComponent<SpriteRenderer>();
+        pickaxeSpriteRenderer.sortingOrder = spriteRenderer.sortingOrder - 1;
+
+        positionBuffer = new Buffer<Vector3>(transform.position, 0.125f);
         positionBuffer.onWriteToBuffer += () => { GameManager.OnPlayerPositionUpdated += positionBuffer.GetBuffer; };
         agent.MovementCompleteEvent += StartMiningOrder;
-        pickaxeAnimator.LoopCompleteEvent += (ObjectAnimator animator, string completedAnimName) => {
-            if (completedAnimName != "SwingPickaxeAtStone")
+        pickaxeAnimator.TimeUpdateEvent += (float time, int currentIndex,string animName) => {
+            if (animName != "SwingPickaxeAtStone")
                 return;
-            GridInteraction.OnDamageDurability += () => {
-                return (GameManager.ins.WorldToCell(miningTargetPos), pickaxeDamage);
-            };
+            if(currentIndex == 1)
+            {
+                GridInteraction.OnDamageDurability += () => {
+                    return (GameManager.ins.WorldToCell(miningTargetPos), pickaxeDamage);
+                };
+            }
+        };
+        GridInteraction.StoneDestroyedEvent += (StoneDestroyedArgs args) => {
+            if (args.CellWorldPosition == miningTargetPos)
+            {
+                pickaxeAnimator.PlayAnimation("NotMining");
+                pickaxeSpriteRenderer.sortingOrder = spriteRenderer.sortingOrder - 1;
+            }
         };
     }
     void Update()
@@ -33,7 +49,8 @@ public class CharacterPlayer : MonoBehaviour
         //agent.MovementOrder("MoveToPosition", args.CellWorldPosition);
         //we should interrupt pickaxe animator
         pickaxeAnimator.PlayAnimation("NotMining");
-        if(args.durability > 0)
+        pickaxeSpriteRenderer.sortingOrder = spriteRenderer.sortingOrder - 1;
+        if (args.durability > 0)
         {
             //Then we have tapped on stone
             agent.MoveWithinDistanceOrder("MoveToMiningTarget", args.CellWorldPosition, 0.75f);
@@ -42,6 +59,9 @@ public class CharacterPlayer : MonoBehaviour
         else
         {
             agent.MovementOrder("MoveToPosition", args.CellWorldPosition);
+            //We need to clear this
+
+            miningTargetPos = Vector3.zero;
         }
     }
     void StartMiningOrder(string completedMovementOrderName)
@@ -50,6 +70,7 @@ public class CharacterPlayer : MonoBehaviour
         {
             //Then we are within range of mining
             //Debug.Log("Start mining!");
+            pickaxeSpriteRenderer.sortingOrder = spriteRenderer.sortingOrder + 10;
 
             ObjectAnimation pickaxeAnimation = new ObjectAnimation();
             pickaxeAnimation.animName = "SwingPickaxeAtStone";

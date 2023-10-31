@@ -28,6 +28,25 @@ public class ObjectAnimation
         }
     }
 }
+public class IndexProgress
+{
+    int lastIndex;
+    float threshold;
+    public delegate void OnThresholdReached();
+    public event OnThresholdReached onThresholdReached;
+    public IndexProgress(float threshold)
+    {
+        this.threshold = threshold;
+    }
+    public void Update(float time, int currentIndex)
+    {
+        if(time >= threshold && currentIndex != lastIndex)
+        {
+            lastIndex = currentIndex;
+            onThresholdReached?.Invoke();
+        }
+    }
+}
 public class ObjectAnimator : MonoBehaviour
 {
 
@@ -40,6 +59,11 @@ public class ObjectAnimator : MonoBehaviour
 
     public delegate void LoopCompleteHandler(ObjectAnimator animator, string completedAnimationName);
     public event LoopCompleteHandler LoopCompleteEvent;
+    public delegate void CurrentIndexChangedHandler(ObjectAnimator animator, int currentIndex, string animationName);
+    public event CurrentIndexChangedHandler CurrentIndexChangedEvent;
+    public delegate void TimeUpdateHandler(float currentTime, int currentIndex, string animationName);
+    public event TimeUpdateHandler TimeUpdateEvent;
+    IndexProgress Progress_ThreeQuarters;
     private void Start()
     {
         rectTransform = GetComponent<RectTransform>();
@@ -47,6 +71,14 @@ public class ObjectAnimator : MonoBehaviour
         {
             animation.SetUpRotations();
         }
+
+        Progress_ThreeQuarters = new IndexProgress(0.75f);
+        Progress_ThreeQuarters.onThresholdReached += () => {
+            if (currentAnimation == null)
+                return;
+            //Debug.Log($"Index Progress: Current Animation Time = {currentAnimation.time}");
+            TimeUpdateEvent?.Invoke(currentAnimation.time, currentIndex, currentAnimation.animName);
+        };
     }
     public void CreateAndPlayAnimation(ObjectAnimation animation)
     {
@@ -99,11 +131,15 @@ public class ObjectAnimator : MonoBehaviour
             return;
 
         currentAnimation.time += Time.deltaTime*animationSpeed;
-        if(currentAnimation.time > 1)
+        Progress_ThreeQuarters.Update(currentAnimation.time, currentIndex);
+
+        if(currentAnimation.time > 1f)
         {
             currentIndex = (currentIndex + 1) % currentAnimation.frames;
             targetIndex = (currentIndex + 1) % currentAnimation.frames;
             currentAnimation.time = 0;
+
+            CurrentIndexChangedEvent?.Invoke(this, currentIndex, currentAnimation.animName);
 
             if(currentIndex == currentAnimation.frames - 1)
             {

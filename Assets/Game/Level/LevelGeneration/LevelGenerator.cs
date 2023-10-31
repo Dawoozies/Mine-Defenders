@@ -39,6 +39,8 @@ public class LevelGenerator : MonoBehaviour
         ignoreCells.AddRange(spawnBoundary);
 
         GenerationLayer_StoneAndSeedOreWalkers();
+
+        GridInteraction.StoneDestroyedEvent += (StoneDestroyedArgs args) => { GenerateFloor(args.CellPosition); };
     }
     List<Vector3Int> Boundaries(Vector2Int bottomLeft, Vector2Int topRight)
     {

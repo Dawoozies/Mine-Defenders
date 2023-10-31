@@ -26,6 +26,7 @@ public class Buffer<T>
         {
             buffer = runningValue;
             onWriteToBuffer?.Invoke();
+            t = 0;
         }
     }
     public T GetBuffer()

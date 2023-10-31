@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -15,7 +16,7 @@ public class GridInteraction : MonoBehaviour
     public delegate void GridInteractDelegate(GridInteractArgs args);
     public static event GridInteractDelegate GridInteractEvent;
     //Stone destroyed event
-    public delegate void StoneDestroyed(Vector3Int cellPos);
+    public delegate void StoneDestroyed(StoneDestroyedArgs args);
     public static event StoneDestroyed StoneDestroyedEvent;
 
     public delegate (Vector3Int, int) DamageDurability();
@@ -83,13 +84,21 @@ public class GridInteraction : MonoBehaviour
     }
     int DamageDurabilityAtCell(Vector3Int cellPos, int damage)
     {
-        int durability = gridInformation.GetPositionProperty(cellPos, "Durability", 0);
+        int durability = GetDurabilityAtCell(cellPos);
         durability -= damage;
         if(durability <= 0)
         {
             //Then tile has been destroyed
-            StoneDestroyedEvent?.Invoke(cellPos);
+            StoneDestroyedArgs args = new StoneDestroyedArgs();
+            args.CellPosition = cellPos;
+            args.CellWorldPosition = GameManager.ins.CellToWorld(cellPos);
+            args.ore = GetOreNameAtCell(cellPos);
+            StoneDestroyedEvent?.Invoke(args);
+
             gridInformation.SetPositionProperty(cellPos, "Durability", 0);
+            if(GetOreNameAtCell(cellPos) != "No Ore")
+                gridInformation.SetPositionProperty(cellPos, "OreName", "No Ore");
+
             for (int i = 0; i < tilemaps.Length - 1; i++)
             {
                 tilemaps[i].SetTile(cellPos, null);
@@ -121,5 +130,7 @@ public class GridInteractArgs
 }
 public class StoneDestroyedArgs
 {
-
+    public Vector3Int CellPosition;
+    public Vector3 CellWorldPosition;
+    public string ore;
 }

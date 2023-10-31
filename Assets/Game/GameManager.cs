@@ -29,6 +29,10 @@ public class GameManager : MonoBehaviour
     {
         levelGenerator.ManagedStart();
         navMeshSurface.BuildNavMesh();
+        GridInteraction.StoneDestroyedEvent += (StoneDestroyedArgs args) => {
+            navMeshSurface.UpdateNavMesh(navMeshSurface.navMeshData); 
+        };
+
         characterGenerator.ManagedStart();
     }
     
@@ -66,5 +70,9 @@ public class GameManager : MonoBehaviour
     {
         worldPosition.z = 0;
         return levelGenerator.StoneTilemap.GetCellCenterWorld(WorldToCell(worldPosition));
+    }
+    public Vector3 CellToWorld(Vector3Int cellPos)
+    {
+        return levelGenerator.StoneTilemap.GetCellCenterWorld(cellPos);
     }
 }
