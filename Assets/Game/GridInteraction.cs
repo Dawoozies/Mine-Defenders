@@ -11,6 +11,12 @@ public class GridInteraction : MonoBehaviour
     Tilemap[] tilemaps;
     LevelGenerator levelGenerator;
 
+    List<Vector3Int> navDirections = new List<Vector3Int>{
+                                     new Vector3Int(0,1,0),
+            new Vector3Int(-1,0,0),                        new Vector3Int(1,0,0),
+                                     new Vector3Int(0,-1,0),
+    };
+
     //Returns all tilemap info
     //GridInformation
     public delegate void GridInteractDelegate(GridInteractArgs args);
@@ -42,6 +48,29 @@ public class GridInteraction : MonoBehaviour
             args.CellPosition = cellPos;
             args.CellWorldPosition = tilemaps[0].GetCellCenterWorld(cellPos);
             args.durability = GetDurabilityAtCell(cellPos);
+            args.isWalkable = 
+                !levelGenerator.StoneTilemap.HasTile(cellPos) &&
+                !levelGenerator.PitTilemap.HasTile(cellPos) &&
+                levelGenerator.FloorTilemap.HasTile(cellPos);
+
+            args.walkableNeighbours = new List<(Vector3Int, Vector3)>();
+
+            //stone and pit not walkable
+            foreach (Vector3Int direction in navDirections)
+            {
+                Vector3Int neighbourCellPos = cellPos + direction;
+                TileBase stoneTile = levelGenerator.StoneTilemap.GetTile(neighbourCellPos);
+                TileBase pitTile = levelGenerator.PitTilemap.GetTile(neighbourCellPos);
+                TileBase floorTile = levelGenerator.FloorTilemap.GetTile(neighbourCellPos);
+                if (stoneTile == null && pitTile == null && floorTile != null)
+                {
+                    //then tile is walkable
+                    //packaging CellPos + CellCenterWorldPos
+                    args.walkableNeighbours.Add((neighbourCellPos, tilemaps[0].GetCellCenterWorld(neighbourCellPos)));
+                    //Debug.Log($"Neighbour to {cellPos} at {neighbourCellPos} is walkable");
+                }
+            }
+
             GridInteractEvent?.Invoke(args);
 
             //DebugGridInteraction(cellPos);
@@ -88,13 +117,6 @@ public class GridInteraction : MonoBehaviour
         durability -= damage;
         if(durability <= 0)
         {
-            //Then tile has been destroyed
-            StoneDestroyedArgs args = new StoneDestroyedArgs();
-            args.CellPosition = cellPos;
-            args.CellWorldPosition = GameManager.ins.CellToWorld(cellPos);
-            args.ore = GetOreNameAtCell(cellPos);
-            StoneDestroyedEvent?.Invoke(args);
-
             gridInformation.SetPositionProperty(cellPos, "Durability", 0);
             if(GetOreNameAtCell(cellPos) != "No Ore")
                 gridInformation.SetPositionProperty(cellPos, "OreName", "No Ore");
@@ -103,10 +125,18 @@ public class GridInteraction : MonoBehaviour
             {
                 tilemaps[i].SetTile(cellPos, null);
             }
+
+            //Do after we have removed the tile
+            StoneDestroyedArgs args = new StoneDestroyedArgs();
+            args.CellPosition = cellPos;
+            args.CellWorldPosition = GameManager.ins.CellToWorld(cellPos);
+            args.ore = GetOreNameAtCell(cellPos);
+            StoneDestroyedEvent?.Invoke(args);
+
             return 0;
         }
         gridInformation.SetPositionProperty(cellPos, "Durability", durability);
-        Debug.Log($"CellPos={cellPos} DealtDamage={damage} DurabilityLeft={durability}");
+        //Debug.Log($"CellPos={cellPos} DealtDamage={damage} DurabilityLeft={durability}");
         return durability;
     }
     private void Update()
@@ -127,6 +157,8 @@ public class GridInteractArgs
     public Vector3 CellWorldPosition;
     public string oreName;
     public int durability;
+    public bool isWalkable;
+    public List<(Vector3Int, Vector3)> walkableNeighbours;
 }
 public class StoneDestroyedArgs
 {

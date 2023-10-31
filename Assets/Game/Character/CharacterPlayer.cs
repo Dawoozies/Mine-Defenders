@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class CharacterPlayer : MonoBehaviour
@@ -46,23 +47,33 @@ public class CharacterPlayer : MonoBehaviour
     }
     void PlayerTap(GridInteractArgs args)
     {
-        //agent.MovementOrder("MoveToPosition", args.CellWorldPosition);
-        //we should interrupt pickaxe animator
         pickaxeAnimator.PlayAnimation("NotMining");
         pickaxeSpriteRenderer.sortingOrder = spriteRenderer.sortingOrder - 1;
-        if (args.durability > 0)
+        if (args.isWalkable)
         {
-            //Then we have tapped on stone
-            agent.MoveWithinDistanceOrder("MoveToMiningTarget", args.CellWorldPosition, 0.75f);
+            agent.MovementOrder("MoveToPosition", args.CellPosition);
+            return;
+        }
+        else 
+        {
+            int neighbourIndex = -1;
+            int shortestPath = int.MaxValue;
+            for(int i = 0; i < args.walkableNeighbours.Count; i++) 
+            {
+                List<Vector3Int> path = Pathfinding.aStar(GameManager.ins.WorldToCell(transform.position), args.walkableNeighbours[i].Item1, GameManager.ins.GetNonWalkableTilemaps());
+                if (path.Count < shortestPath) {
+                    neighbourIndex = i;
+                    shortestPath = path.Count;
+                }
+            }
+            if (neighbourIndex < 0) 
+            {
+                return;
+            }
+            agent.MovementOrder("MoveToMiningTarget", args.walkableNeighbours[neighbourIndex].Item1);
             miningTargetPos = args.CellWorldPosition;
         }
-        else
-        {
-            agent.MovementOrder("MoveToPosition", args.CellWorldPosition);
-            //We need to clear this
-
-            miningTargetPos = Vector3.zero;
-        }
+        
     }
     void StartMiningOrder(string completedMovementOrderName)
     {

@@ -9,6 +9,7 @@ public class LevelGenerator : MonoBehaviour
     public Tilemap StoneTilemap;
     public Tilemap StoneColorTilemap;
     public Tilemap HiddenTilemap;
+    public Tilemap PitTilemap;
     public Tilemap FloorTilemap;
     List<Vector3Int> ignoreCells;
 
@@ -16,9 +17,12 @@ public class LevelGenerator : MonoBehaviour
     public Vector2Int topRightCorner;
     public Vector2Int spawnAreaBottomLeftCorner;
     public Vector2Int spawnAreaTopRightCorner;
+    public int minPitDistanceFromSpawn;
+    public int minPitDistanceFromEachOther;
 
     public RuleTile hiddenTile;
     public RuleTile floorTile;
+    public RuleTile pitTile;
     public RuleTile ore;
     public RuleTile stone;
     public RuleTile stoneColor;
@@ -27,7 +31,9 @@ public class LevelGenerator : MonoBehaviour
     public Ore emptyOre;
     public List<Ore> ores;
 
-    GridInformation GridInformation;
+    
+
+GridInformation GridInformation;
     public void ManagedStart()
     {
         GridInformation = GetComponent<GridInformation>();
@@ -39,8 +45,13 @@ public class LevelGenerator : MonoBehaviour
         ignoreCells.AddRange(spawnBoundary);
 
         GenerationLayer_StoneAndSeedOreWalkers();
+        GenerationLayer_GeneratePits();
 
         GridInteraction.StoneDestroyedEvent += (StoneDestroyedArgs args) => { GenerateFloor(args.CellPosition); };
+        GridInteraction.StoneDestroyedEvent += (StoneDestroyedArgs args) => {
+            if (GridInformation.GetPositionProperty(args.CellPosition, "IsPit", 0) == 1) {
+                UncoverPit(args.CellPosition);
+            } };
     }
     List<Vector3Int> Boundaries(Vector2Int bottomLeft, Vector2Int topRight)
     {
@@ -144,6 +155,67 @@ public class LevelGenerator : MonoBehaviour
     public void GenerateFloor(Vector3Int cellPos)
     {
         FloorTilemap.SetTile(cellPos, floorTile);
+    }
+    void GenerationLayer_GeneratePits()
+    {
+        List<Vector2> sampleResults = FastPoissonDiskSampling.Sampling(bottomLeftCorner, topRightCorner, minPitDistanceFromEachOther);
+        if (sampleResults == null || sampleResults.Count == 0)
+            return;
+
+        foreach (Vector2 sampledPoint in sampleResults)
+        {
+            Vector3Int point = new Vector3Int(Mathf.RoundToInt(sampledPoint.x), Mathf.RoundToInt(sampledPoint.y), 0);
+            bool inSpawnArea =
+                (spawnAreaBottomLeftCorner.x - minPitDistanceFromSpawn < point.x && point.x < spawnAreaTopRightCorner.x + minPitDistanceFromSpawn &&
+                 spawnAreaBottomLeftCorner.y - minPitDistanceFromSpawn < point.y && point.y < spawnAreaTopRightCorner.y + minPitDistanceFromSpawn);
+            if (inSpawnArea)
+                continue;
+
+            //1 for true
+            GridInformation.SetPositionProperty(point, "IsPit", 1);
+            foreach (Vector3Int direction in GameManager.ins.directions)
+            {
+                GridInformation.SetPositionProperty(point + direction, "IsPit", 1);
+            }
+            PitTilemap.SetTile(point, pitTile);
+        }
+    }
+    public void UncoverPit(Vector3Int uncoverPoint)
+    {
+        Vector3Int center = Vector3Int.zero;
+        foreach (Vector3Int direction in GameManager.ins.directions)
+        {
+            if (CountPitNeighbours(uncoverPoint + direction) == 8)
+            {
+                center = uncoverPoint + direction;
+            }
+        }
+        foreach (Vector3Int direction in GameManager.ins.directions)
+        {
+            PitTilemap.SetTile(center + direction, pitTile);
+            StoneTilemap.SetTile(center + direction, null);
+            StoneColorTilemap.SetTile(center + direction, null);
+            OreTilemap.SetTile(center + direction, null);
+            HiddenTilemap.SetTile(center + direction, null);
+
+        }
+        PitTilemap.SetTile(center, pitTile);
+        StoneTilemap.SetTile(center, null);
+        StoneColorTilemap.SetTile(center, null);
+        OreTilemap.SetTile(center, null);
+        HiddenTilemap.SetTile(center, null);
+    }
+
+    private int CountPitNeighbours(Vector3Int point) 
+    {
+        int count = 0;
+        foreach(Vector3Int direction in GameManager.ins.directions) {
+            if (GridInformation.GetPositionProperty(point + direction, "IsPit", 0) == 1)
+            {
+                count++;
+            }
+        }
+        return count;
     }
 }
 public class CellWalker

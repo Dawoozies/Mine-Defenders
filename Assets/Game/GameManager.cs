@@ -1,17 +1,27 @@
-using NavMeshPlus.Components;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.Tilemaps;
 public class GameManager : MonoBehaviour
 {
     public static GameManager ins;
 
     LevelGenerator levelGenerator;
-    NavMeshSurface navMeshSurface;
     CharacterGenerator characterGenerator;
 
     Camera mainCamera;
     ObjectAnimator cameraAnimator;
+
+    public List<Vector3Int> directions = new List<Vector3Int>{
+            new Vector3Int(-1,1,0), new Vector3Int(0,1,0), new Vector3Int(1,1,0),
+            new Vector3Int(-1,0,0),                        new Vector3Int(1,0,0),
+            new Vector3Int(-1,-1,0), new Vector3Int(0,-1,0), new Vector3Int(1,-1,0)
+    };
+
+    public List<Vector3Int> navDirections = new List<Vector3Int>{
+                                     new Vector3Int(0,1,0),
+            new Vector3Int(-1,0,0),                        new Vector3Int(1,0,0),
+                                     new Vector3Int(0,-1,0),
+    };
 
     //Player character
     //Defender character
@@ -20,7 +30,6 @@ public class GameManager : MonoBehaviour
     {
         ins = this;
         levelGenerator = GetComponentInChildren<LevelGenerator>();
-        navMeshSurface = GetComponentInChildren<NavMeshSurface>();
         characterGenerator = GetComponentInChildren<CharacterGenerator>();
         mainCamera = Camera.main;
         cameraAnimator = mainCamera.GetComponent<ObjectAnimator>();
@@ -28,16 +37,24 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         levelGenerator.ManagedStart();
-        navMeshSurface.BuildNavMesh();
-        GridInteraction.StoneDestroyedEvent += (StoneDestroyedArgs args) => {
-            navMeshSurface.UpdateNavMesh(navMeshSurface.navMeshData); 
-        };
-
         characterGenerator.ManagedStart();
     }
     
     public delegate Vector3 PlayerPositionUpdated();
     public static event PlayerPositionUpdated OnPlayerPositionUpdated;
+
+    public bool isInLevelBounds(Vector3Int position) {
+        if (position.x < levelGenerator.bottomLeftCorner.x || position.x > levelGenerator.topRightCorner.x)
+        {
+            return false;
+        }
+        if (position.y < levelGenerator.bottomLeftCorner.y || position.y > levelGenerator.topRightCorner.y)
+        {
+            return false;
+        }
+        return true;
+    }
+
     void Update()
     {
         //This is where we should manage external "coupling"
@@ -74,5 +91,13 @@ public class GameManager : MonoBehaviour
     public Vector3 CellToWorld(Vector3Int cellPos)
     {
         return levelGenerator.StoneTilemap.GetCellCenterWorld(cellPos);
+    }
+
+    public Tilemap[] GetNonWalkableTilemaps() 
+    { 
+        List<Tilemap> environments = new List<Tilemap>();
+        environments.Add(levelGenerator.StoneTilemap);
+        environments.Add(levelGenerator.PitTilemap);
+        return environments.ToArray();
     }
 }
