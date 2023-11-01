@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -26,7 +25,7 @@ public class LevelGenerator : MonoBehaviour
     public RuleTile ore;
     public RuleTile stone;
     public RuleTile stoneColor;
-    public Color defaultStoneColor;
+    public UnityEngine.Color defaultStoneColor;
 
     public Ore emptyOre;
     public List<Ore> ores;
@@ -173,9 +172,11 @@ GridInformation GridInformation;
 
             //1 for true
             GridInformation.SetPositionProperty(point, "IsPit", 1);
+            GridInformation.SetPositionProperty(point, "IsUncoveredPit", 0);
             foreach (Vector3Int direction in GameManager.ins.directions)
             {
                 GridInformation.SetPositionProperty(point + direction, "IsPit", 1);
+                GridInformation.SetPositionProperty(point, "IsUncoveredPit", 0);
             }
             PitTilemap.SetTile(point, pitTile);
         }
@@ -197,13 +198,15 @@ GridInformation GridInformation;
             StoneColorTilemap.SetTile(center + direction, null);
             OreTilemap.SetTile(center + direction, null);
             HiddenTilemap.SetTile(center + direction, null);
-
+            GridInformation.SetPositionProperty(center + direction, "IsUncoveredPit", 1);
         }
         PitTilemap.SetTile(center, pitTile);
         StoneTilemap.SetTile(center, null);
         StoneColorTilemap.SetTile(center, null);
         OreTilemap.SetTile(center, null);
         HiddenTilemap.SetTile(center, null);
+        GridInformation.SetPositionProperty(center, "IsUncoveredPit", 1);
+        GameManager.ins.UncoverPit(center);
     }
 
     private int CountPitNeighbours(Vector3Int point) 

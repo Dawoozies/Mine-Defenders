@@ -24,6 +24,8 @@ public static class Interpolation
     {
         switch (interpolationType)
         {
+            case InterpolationType.Linear:
+                return Linear(x);
             case InterpolationType.EaseInElastic:
                 return EaseInElastic(x);
             case InterpolationType.EaseOutElastic:
@@ -41,6 +43,10 @@ public static class Interpolation
             default:
                 return x;
         }
+    }
+    static float Linear(float x) 
+    {
+        return x;
     }
     static float EaseInElastic(float x)
     {
@@ -96,11 +102,12 @@ public static class Interpolation
 }
 public enum InterpolationType
 {
-    EaseInElastic = 0,
-    EaseOutElastic = 1,
-    EaseInOutElastic = 2,
-    EaseInExp = 3,
-    EaseOutExp = 4,
-    EaseInOutExp = 5,
-    EaseInOutSine = 6,
+    Linear = 0,
+    EaseInElastic = 1,
+    EaseOutElastic = 2,
+    EaseInOutElastic = 3,
+    EaseInExp = 4,
+    EaseOutExp = 5,
+    EaseInOutExp = 6,
+    EaseInOutSine = 7
 }

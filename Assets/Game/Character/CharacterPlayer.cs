@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 public class CharacterPlayer : MonoBehaviour
 {
@@ -16,6 +17,7 @@ public class CharacterPlayer : MonoBehaviour
     {
         GridInteraction.GridInteractEvent += PlayerTap;
         agent = GetComponent<CharacterAgent>();
+        agent.isEnemy = false;
         spriteRenderer = GetComponent<SpriteRenderer>();
         pickaxeSpriteRenderer = pickaxeAnimator.GetComponent<SpriteRenderer>();
         pickaxeSpriteRenderer.sortingOrder = spriteRenderer.sortingOrder - 1;
@@ -56,11 +58,12 @@ public class CharacterPlayer : MonoBehaviour
         }
         else 
         {
+
             int neighbourIndex = -1;
             int shortestPath = int.MaxValue;
             for(int i = 0; i < args.walkableNeighbours.Count; i++) 
             {
-                List<Vector3Int> path = Pathfinding.aStar(GameManager.ins.WorldToCell(transform.position), args.walkableNeighbours[i].Item1, GameManager.ins.GetNonWalkableTilemaps());
+                List<Vector3Int> path = Pathfinding.aStar(GameManager.ins.WorldToCell(transform.position), args.walkableNeighbours[i].Item1, GameManager.ins.GetPlayerInaccessibleTilemaps(), null);
                 if (path.Count < shortestPath) {
                     neighbourIndex = i;
                     shortestPath = path.Count;
@@ -68,6 +71,12 @@ public class CharacterPlayer : MonoBehaviour
             }
             if (neighbourIndex < 0) 
             {
+                return;
+            }
+
+            if(GameManager.ins.IsUncoveredPit(args.CellPosition))
+            {
+                agent.MovementOrder("MoveToPosition", args.walkableNeighbours[neighbourIndex].Item1);
                 return;
             }
             agent.MovementOrder("MoveToMiningTarget", args.walkableNeighbours[neighbourIndex].Item1);

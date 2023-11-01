@@ -1,4 +1,7 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 public class GameManager : MonoBehaviour
@@ -7,9 +10,14 @@ public class GameManager : MonoBehaviour
 
     LevelGenerator levelGenerator;
     CharacterGenerator characterGenerator;
+    PitManager pitManager;
 
     Camera mainCamera;
     ObjectAnimator cameraAnimator;
+
+    GridInformation gridInformation;
+    public Tilemap characterTilemap;
+    public RuleTile characterTile;
 
     public List<Vector3Int> directions = new List<Vector3Int>{
             new Vector3Int(-1,1,0), new Vector3Int(0,1,0), new Vector3Int(1,1,0),
@@ -24,6 +32,10 @@ public class GameManager : MonoBehaviour
     };
 
     //Player character
+    public Transform player;
+    public CharacterAgent playerAgent;
+    public Vector3Int playerLastCellPos;
+
     //Defender character
     //Enemy character
     void Awake()
@@ -31,17 +43,32 @@ public class GameManager : MonoBehaviour
         ins = this;
         levelGenerator = GetComponentInChildren<LevelGenerator>();
         characterGenerator = GetComponentInChildren<CharacterGenerator>();
+        pitManager = GetComponentInChildren<PitManager>();
         mainCamera = Camera.main;
         cameraAnimator = mainCamera.GetComponent<ObjectAnimator>();
+
+        gridInformation = GetComponentInChildren<GridInformation>();
     }
     void Start()
     {
         levelGenerator.ManagedStart();
-        characterGenerator.ManagedStart();
+
+        player = characterGenerator.ManagedStart();
+        playerLastCellPos = WorldToCell(player.position);
+        playerAgent = player.GetComponent<CharacterAgent>();
+        pitManager.ManagedStart();
+        //characterGenerator.CreateEnemy();
+        reservedTiles = new Hashtable();
     }
     
     public delegate Vector3 PlayerPositionUpdated();
     public static event PlayerPositionUpdated OnPlayerPositionUpdated;
+
+    public delegate void PlayerPositionUpdatedHandler(Vector3Int playerCellPosition, Vector3 playerWorldPosition);
+    public static event PlayerPositionUpdatedHandler PlayerPositionUpdatedEvent;
+
+    public delegate void PitUncoveredHandler((Vector3Int, Vector3) pit);
+    public static event PitUncoveredHandler PitUncoveredEvent;
 
     public bool isInLevelBounds(Vector3Int position) {
         if (position.x < levelGenerator.bottomLeftCorner.x || position.x > levelGenerator.topRightCorner.x)
@@ -54,7 +81,6 @@ public class GameManager : MonoBehaviour
         }
         return true;
     }
-
     void Update()
     {
         //This is where we should manage external "coupling"
@@ -63,6 +89,12 @@ public class GameManager : MonoBehaviour
             Vector3 PlayerPosition = OnPlayerPositionUpdated.Invoke();
             CameraTrackAnimation(PlayerPosition);
             OnPlayerPositionUpdated = null;
+        }
+
+        if(WorldToCell(player.position) != playerLastCellPos)
+        {
+            playerLastCellPos = WorldToCell(player.position);
+            PlayerPositionUpdatedEvent?.Invoke(playerLastCellPos, player.position);
         }
     }
     
@@ -93,11 +125,74 @@ public class GameManager : MonoBehaviour
         return levelGenerator.StoneTilemap.GetCellCenterWorld(cellPos);
     }
 
-    public Tilemap[] GetNonWalkableTilemaps() 
+    public Tilemap[] GetPlayerInaccessibleTilemaps() 
     { 
         List<Tilemap> environments = new List<Tilemap>();
         environments.Add(levelGenerator.StoneTilemap);
         environments.Add(levelGenerator.PitTilemap);
         return environments.ToArray();
+    }
+
+    public Tilemap[] GetEnemyInaccessibleTilemaps()
+    {
+        List<Tilemap> environments = new List<Tilemap>();
+        environments.Add(levelGenerator.StoneTilemap);
+        return environments.ToArray();
+    }
+
+    public void UncoverPit(Vector3Int pitCenter)
+    {
+        (Vector3Int, Vector3) pit = (pitCenter, CellToWorld(pitCenter));
+        PitUncoveredEvent?.Invoke(pit);
+    }
+    public bool IsUncoveredPit(Vector3Int cellPos)
+    {
+        return 
+            gridInformation.GetPositionProperty(cellPos, "IsPit", 0) == 1
+            && gridInformation.GetPositionProperty(cellPos, "IsUncoveredPit", 0) == 1;
+    }
+    public bool SpawnEnemy(Vector3 spawnPosition)
+    {
+        if (!CanEnemySpawnHere(spawnPosition)){
+            return false;
+        }
+        characterGenerator.CreateEnemy(spawnPosition);
+        return true;
+    }
+
+    public bool CanEnemySpawnHere(Vector3 spawnPosition) 
+    {
+        foreach (CharacterAgent agent in getEnemyAgents())
+        {
+            if (Vector3.Distance(agent.transform.position, spawnPosition) < 1.2f) 
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public List<CharacterAgent> getEnemyAgents() {
+        return characterGenerator.enemyAgents;
+    }
+
+    public Hashtable reservedTiles;
+    public bool TryReserve(Vector3Int cellPos)
+    {
+        if(reservedTiles.ContainsKey(cellPos))
+        {
+            return false;
+        }
+
+        reservedTiles.Add(cellPos, 1);
+        return true;
+    }
+    public void ReleaseReservation(Vector3Int cellPos)
+    {
+        if (reservedTiles.ContainsKey(cellPos))
+        {
+            reservedTiles.Remove(cellPos);
+        }
     }
 }
