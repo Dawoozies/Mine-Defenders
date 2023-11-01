@@ -107,7 +107,7 @@ MonoBehaviour:
     rotations: []
     sizeDeltas: []
     anchoredPositions: []
-    interpolationTypes: 04000000
+    interpolationTypes: 05000000
     loop: 1
     time: 0
 --- !u!1 &8754239654235546804

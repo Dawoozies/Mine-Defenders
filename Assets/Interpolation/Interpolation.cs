@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 //Interpolation thing using the many different easing curves on https://gizma.com/easing/
 public static class Interpolation

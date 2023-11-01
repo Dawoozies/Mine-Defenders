@@ -1,8 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Experimental.AI;
-using UnityEngine.Tilemaps;
 
 public class PitManager : MonoBehaviour
 {

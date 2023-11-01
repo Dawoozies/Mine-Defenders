@@ -315,7 +315,7 @@ MonoBehaviour:
     rotations: []
     sizeDeltas: []
     anchoredPositions: []
-    interpolationTypes: 0600000006000000
+    interpolationTypes: 0700000007000000
     loop: 0
     time: 0
 --- !u!1 &432218544
@@ -584,7 +584,7 @@ MonoBehaviour:
     rotations: []
     sizeDeltas: []
     anchoredPositions: []
-    interpolationTypes: 0600000006000000
+    interpolationTypes: 0700000007000000
     loop: 0
     time: 0
 --- !u!1 &793273480
@@ -905,7 +905,7 @@ MonoBehaviour:
     anchoredPositions:
     - {x: 350, y: 25}
     - {x: 350, y: -1082.5}
-    interpolationTypes: 0200000004000000
+    interpolationTypes: 0300000005000000
     loop: 0
     time: 0
   - animName: PullTitleUp
@@ -919,7 +919,7 @@ MonoBehaviour:
     anchoredPositions:
     - {x: 350, y: -1082.5}
     - {x: 350, y: -83.91107}
-    interpolationTypes: 0400000004000000
+    interpolationTypes: 0500000005000000
     loop: 0
     time: 0
   - animName: Float
@@ -933,7 +933,7 @@ MonoBehaviour:
     anchoredPositions:
     - {x: 350, y: -81.91107}
     - {x: 350, y: -85.91107}
-    interpolationTypes: 0600000006000000
+    interpolationTypes: 0700000007000000
     loop: 1
     time: 0
 --- !u!1 &1262255642
@@ -1038,7 +1038,7 @@ MonoBehaviour:
     anchoredPositions:
     - {x: -350, y: 25}
     - {x: -350, y: -1082.5}
-    interpolationTypes: 0200000004000000
+    interpolationTypes: 0300000005000000
     loop: 0
     time: 0
   - animName: PullTitleUp
@@ -1052,7 +1052,7 @@ MonoBehaviour:
     anchoredPositions:
     - {x: -350, y: -1082.5}
     - {x: -350, y: -83.91107}
-    interpolationTypes: 0400000004000000
+    interpolationTypes: 0500000005000000
     loop: 0
     time: 0
   - animName: Float
@@ -1066,7 +1066,7 @@ MonoBehaviour:
     anchoredPositions:
     - {x: -350, y: -81.91107}
     - {x: -350, y: -85.91107}
-    interpolationTypes: 0600000006000000
+    interpolationTypes: 0700000007000000
     loop: 1
     time: 0
 --- !u!1 &1295916023
