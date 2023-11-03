@@ -16,8 +16,6 @@ public class GameManager : MonoBehaviour
     ObjectAnimator cameraAnimator;
 
     GridInformation gridInformation;
-    public Tilemap characterTilemap;
-    public RuleTile characterTile;
 
     public List<Vector3Int> directions = new List<Vector3Int>{
             new Vector3Int(-1,1,0), new Vector3Int(0,1,0), new Vector3Int(1,1,0),
