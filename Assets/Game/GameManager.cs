@@ -34,12 +34,15 @@ public class GameManager : MonoBehaviour
     public CharacterAgent playerAgent;
     public Vector3Int playerLastCellPos;
 
+    
+
     //Defender character
     //Enemy character
     void Awake()
     {
         ins = this;
         levelGenerator = GetComponentInChildren<LevelGenerator>();
+        
         characterGenerator = GetComponentInChildren<CharacterGenerator>();
         pitManager = GetComponentInChildren<PitManager>();
         mainCamera = Camera.main;
@@ -49,7 +52,8 @@ public class GameManager : MonoBehaviour
     }
     void Start()
     {
-        levelGenerator.ManagedStart();
+        //levelGenerator.ManagedStart();
+        cellTable = levelGenerator.GenerateLevelHashtable();
 
         player = characterGenerator.ManagedStart();
         playerLastCellPos = WorldToCell(player.position);
@@ -89,6 +93,7 @@ public class GameManager : MonoBehaviour
             OnPlayerPositionUpdated = null;
         }
 
+        return;
         if(WorldToCell(player.position) != playerLastCellPos)
         {
             playerLastCellPos = WorldToCell(player.position);
@@ -193,4 +198,84 @@ public class GameManager : MonoBehaviour
             reservedTiles.Remove(cellPos);
         }
     }
+
+    public Hashtable cellTable;
+    public CellData GetCellDataAtPosition(Vector3Int cellPosition)
+    {
+        return (CellData)cellTable[cellPosition];
+    }
+    public bool CellTableHasKey(Vector3Int cellPosition)
+    {
+        return cellTable.ContainsKey(cellPosition);
+    }
+    public void SetCellDataAtPosition(Vector3Int cellPosition, CellData cellData)
+    {
+        cellTable.Add(cellPosition, cellData);
+    }
+    public List<CellData> GetAllNeighboursAroundCell(Vector3Int cell, bool includeSelf)
+    {
+        List<CellData> neighbours = new List<CellData>();
+        foreach (Vector3Int direction in directions)
+        {
+            CellData neighbourData = GetCellDataAtPosition(cell + direction);
+            neighbours.Add(neighbourData);
+        }
+        if (includeSelf)
+            neighbours.Add(GetCellDataAtPosition(cell));
+        return neighbours;
+    }
+    public List<CellData> GetCardinalNeighboursAroundCell(Vector3Int cell, bool includeSelf)
+    {
+        List<CellData> neighbours = new List<CellData>();
+        foreach (Vector3Int direction in navDirections)
+        {
+            CellData neighbourData = GetCellDataAtPosition(cell + direction);
+            neighbours.Add(neighbourData);
+        }
+        if (includeSelf)
+            neighbours.Add(GetCellDataAtPosition(cell));
+        return neighbours;
+    }
+    public List<CellData> GetAllNeighboursAroundCell_InGivenHashtable(Hashtable givenHashtable, Vector3Int cell, bool includeSelf)
+    {
+        List<CellData> neighbours = new List<CellData>();
+        foreach (Vector3Int direction in directions)
+        {
+            CellData neighbourData = (CellData)givenHashtable[cell + direction];
+            neighbours.Add(neighbourData);
+        }
+        if (includeSelf)
+            neighbours.Add((CellData)givenHashtable[cell]);
+        return neighbours;
+    }
+    public List<CellData> GetCardinalNeighboursAroundCell_InGivenHashtable(Hashtable givenHashtable, Vector3Int cell, bool includeSelf)
+    {
+        List<CellData> neighbours = new List<CellData>();
+        foreach (Vector3Int direction in navDirections)
+        {
+            CellData neighbourData = (CellData)givenHashtable[cell + direction];
+            neighbours.Add(neighbourData);
+        }
+        if (includeSelf)
+            neighbours.Add((CellData)givenHashtable[cell]);
+        return neighbours;
+    }
+}
+public class CellData
+{
+    public Vector3Int cellPosition;
+    public Vector3 cellCenterWorldPosition;
+    public bool isPlayerSpawnArea;
+    public bool isLevelBoundary;
+    public Ore ore;
+    public int durability;
+    public bool isPit;
+    public bool isUncoveredPit;
+}
+[Flags]
+public enum CellContents
+{
+    None = 0,
+    Ore = 1,
+    Stone = 2,
 }

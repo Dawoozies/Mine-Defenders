@@ -3,9 +3,7 @@ using UnityEngine;
 
 public class CharacterAgent : MonoBehaviour
 {
-
-    
-    public LinkedList<MoveOrder> currentMoveOrder;
+    public LinkedList<MoveOrder> moveOrders;
     public float speed;
 
     public bool isEnemy;
@@ -16,30 +14,29 @@ public class CharacterAgent : MonoBehaviour
     public event MovementCompleteHandler MovementCompleteEvent;
     public delegate void MovementInterruptedHandler(string interruptedOrderName, string replacingOrderName);
     public event MovementInterruptedHandler MovementInterruptedEvent;
-
     void Start()
     {
         startPosition = transform.position;
-        currentMoveOrder = new LinkedList<MoveOrder>();
+        moveOrders = new LinkedList<MoveOrder>();
     }
 
     public void MovementOrder(string orderName, Vector3Int targetPosition) {
 
-        if(currentMoveOrder.First != null)
-            MovementInterruptedEvent?.Invoke(currentMoveOrder.First.Value.orderName, orderName);
+        if(moveOrders.First != null)
+            MovementInterruptedEvent?.Invoke(moveOrders.First.Value.orderName, orderName);
 
         
 
-        MoveOrder lastOrder = currentMoveOrder.First != null ? currentMoveOrder.First.Value : null;
+        MoveOrder lastOrder = moveOrders.First != null ? moveOrders.First.Value : null;
 
-        currentMoveOrder.Clear();
+        moveOrders.Clear();
         if (lastOrder != null) { 
-            currentMoveOrder.AddFirst(lastOrder);
+            moveOrders.AddFirst(lastOrder);
         }
 
         
         List<Vector3Int> path = Pathfinding.aStar( 
-            currentMoveOrder.Count == 1 
+            moveOrders.Count == 1 
             ? lastOrder.position 
             : GameManager.ins.WorldToCell(transform.position), 
             targetPosition,
@@ -54,24 +51,24 @@ public class CharacterAgent : MonoBehaviour
             {
                 moveOrder.orderName = "MoveToMiningTarget";
             }
-            currentMoveOrder.AddLast(moveOrder);
+            moveOrders.AddLast(moveOrder);
         }
     }
     public void EnemyMovementOrder(string orderName, Vector3Int targetPosition)
     {
-        if (currentMoveOrder.First != null)
-            MovementInterruptedEvent?.Invoke(currentMoveOrder.First.Value.orderName, orderName);
+        if (moveOrders.First != null)
+            MovementInterruptedEvent?.Invoke(moveOrders.First.Value.orderName, orderName);
 
-        MoveOrder lastOrder = currentMoveOrder.First != null ? currentMoveOrder.First.Value : null;
+        MoveOrder lastOrder = moveOrders.First != null ? moveOrders.First.Value : null;
 
-        currentMoveOrder.Clear();
+        moveOrders.Clear();
         if (lastOrder != null)
         {
-            currentMoveOrder.AddFirst(lastOrder);
+            moveOrders.AddFirst(lastOrder);
         }
         
         List<Vector3Int> path = Pathfinding.aStar(
-            currentMoveOrder.Count == 1
+            moveOrders.Count == 1
             ? lastOrder.position
             : GameManager.ins.WorldToCell(transform.position),
             targetPosition, 
@@ -81,12 +78,12 @@ public class CharacterAgent : MonoBehaviour
         
         for (int i = path.Count - 1; i >= 0; i--)
         {
-            MoveOrder moveOrder = new MoveOrder(orderName, path[i]);
-            currentMoveOrder.AddLast(moveOrder);
+            MoveOrder moveOrder = new MoveOrder($"MovementOrder{i}", path[i]);
+            moveOrders.AddLast(moveOrder);
         }
         if (orderName == "MoveToPlayer")
         {
-            currentMoveOrder.RemoveFirst();
+            moveOrders.RemoveFirst();
         }
     }
     float interpolationProgress = 0;
@@ -94,11 +91,11 @@ public class CharacterAgent : MonoBehaviour
     void FixedUpdate()
     {
         
-        if (currentMoveOrder.Count == 0)
+        if (moveOrders.Count == 0)
             return;
         
        
-        Vector3 nextPosition = GameManager.ins.CellToWorld(currentMoveOrder.First.Value.position);
+        Vector3 nextPosition = GameManager.ins.CellToWorld(moveOrders.First.Value.position);
         // Debug.LogError(nextPosition);
 
         transform.position = Interpolation.Interpolate(startPosition, nextPosition, interpolationProgress, InterpolationType.Linear); //Fixed here to account for range of framerates
@@ -107,44 +104,49 @@ public class CharacterAgent : MonoBehaviour
         if (interpolationProgress > 1f || (startPosition == nextPosition && !isEnemy))
         {
             startPosition = nextPosition;
-            if (currentMoveOrder.Count == 1 && isEnemy)
+            if(moveOrders.Count == 2 && isEnemy)
             {
-                currentMoveOrder.AddFirst(new MoveOrder(currentMoveOrder.First.Value.orderName, GameManager.ins.WorldToCell(startPosition)));
+                //This code block runs when enemies are within 1 tile of the player
+
+            }
+            if (moveOrders.Count == 1 && isEnemy)
+            {
+                //I dont think this code block runs hmm
+                moveOrders.AddFirst(new MoveOrder(moveOrders.First.Value.orderName, GameManager.ins.WorldToCell(startPosition)));
+                Debug.Log("Enemy adding move orders to become static");
             }
 
-            
             if (!isEnemy)
             {
-                MovementCompleteEvent?.Invoke(currentMoveOrder.First.Value.orderName);
+                MovementCompleteEvent?.Invoke(moveOrders.First.Value.orderName);
             }
             
             
-            currentMoveOrder.RemoveFirst();
+            moveOrders.RemoveFirst();
             interpolationProgress = 0;
             
             if (!isEnemy)
             {
                 return;
             }
-            
             //Reserve
-            if (GameManager.ins.WorldToCell(nextPosition) == currentMoveOrder.First.Value.position)
+            if (GameManager.ins.WorldToCell(nextPosition) == moveOrders.First.Value.position)
             {
                 return;
             }
             bool isPlayerReservingTarget = false;
-            if (GameManager.ins.playerAgent.currentMoveOrder.First == null) {
-                isPlayerReservingTarget = GameManager.ins.playerLastCellPos == currentMoveOrder.First.Value.position;
+            if (GameManager.ins.playerAgent.moveOrders.First == null) {
+                isPlayerReservingTarget = GameManager.ins.playerLastCellPos == moveOrders.First.Value.position;
             }
             else
             {
-                isPlayerReservingTarget = GameManager.ins.playerAgent.currentMoveOrder.First.Value.position == currentMoveOrder.First.Value.position;
+                isPlayerReservingTarget = GameManager.ins.playerAgent.moveOrders.First.Value.position == moveOrders.First.Value.position;
             }
 
-            if (isPlayerReservingTarget || !GameManager.ins.TryReserve(currentMoveOrder.First.Value.position))
+            if (isPlayerReservingTarget || !GameManager.ins.TryReserve(moveOrders.First.Value.position))
             {
                 //insert move order which is where we are
-                currentMoveOrder.AddFirst(new MoveOrder(currentMoveOrder.First.Value.orderName, GameManager.ins.WorldToCell(startPosition)));
+                moveOrders.AddFirst(new MoveOrder(moveOrders.First.Value.orderName, GameManager.ins.WorldToCell(startPosition)));
             }
             else
             {

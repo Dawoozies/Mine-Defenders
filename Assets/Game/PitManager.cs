@@ -12,13 +12,13 @@ public class PitManager : MonoBehaviour
         public UncoveredPit((Vector3Int, Vector3) pitPositions)
         {
             this.pitPositions = pitPositions;
-            nextSpawn = Time.time + 0.5f;
+            nextSpawn = Time.time + 2f;
         }
 
         public void Update() {
             if (Time.time > nextSpawn) {
                 onTimeReached?.Invoke();
-                nextSpawn = Time.time + 0.5f;
+                nextSpawn = Time.time + 2f;
             }
         }
     }
@@ -39,6 +39,7 @@ public class PitManager : MonoBehaviour
 
     private void Update()
     {
+        return;
         foreach (var pit in uncoveredPits) { 
             pit.Update();
         }

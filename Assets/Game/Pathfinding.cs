@@ -12,7 +12,7 @@ public static class Pathfinding
         Dictionary<Vector3Int, PathNode> allNodes = new Dictionary<Vector3Int, PathNode>();
         PathNode startNode = new PathNode(start, null, end);
         startNode.g = 0;
-        FastPriorityQueue<PathNode> openList = new FastPriorityQueue<PathNode>(32 * 32);
+        FastPriorityQueue<PathNode> openList = new FastPriorityQueue<PathNode>(64 * 64);
 
 
 
@@ -50,10 +50,8 @@ public static class Pathfinding
                     if (!allNodes.ContainsKey(nodePosition))
                     {
                         allNodes.Add(nodePosition, new PathNode(nodePosition, current, end));
-
                     }
                     children.Add(allNodes[nodePosition]);
-
                 }
 
             }
@@ -75,6 +73,63 @@ public static class Pathfinding
                     {
                         openList.UpdatePriority(child, child.f);
                     }
+                }
+            }
+        }
+        return reconstructPath(null);
+    }
+    public static List<Vector3Int> aStarNew(Vector3Int x, Vector3Int y, Tilemap[] notWalkable, Hashtable reservedTiles)
+    {
+        Dictionary<Vector3Int, PathNode> allNodes = new Dictionary<Vector3Int, PathNode>();
+        PathNode startNode = new PathNode(x, null, y);
+        startNode.g = 0;
+        FastPriorityQueue<PathNode> openList = new FastPriorityQueue<PathNode>(64*64);
+
+        openList.Enqueue(startNode, startNode.f);
+        allNodes.Add(startNode.position, startNode);
+        while(openList.Count > 0)
+        {
+            PathNode current = openList.First;
+            if (current.position == y)
+                return reconstructPath(current);
+
+            openList.Dequeue();
+            List<PathNode> neighbourNodes = new List<PathNode>();
+            List<CellData> neighbours = GameManager.ins.GetCardinalNeighboursAroundCell(current.position, false);
+            foreach(CellData neighbour in neighbours)
+            {
+                if (!GameManager.ins.isInLevelBounds(neighbour.cellPosition))
+                    continue;
+                bool isWalkable = true;
+                foreach (Tilemap item in notWalkable)
+                {
+                    if(item.GetTile(neighbour.cellPosition) != null)
+                    {
+                        isWalkable = false;
+                        break;
+                    }
+                }
+                if(isWalkable)
+                {
+                    if (!allNodes.ContainsKey(neighbour.cellPosition))
+                        allNodes.Add(neighbour.cellPosition, new PathNode(neighbour.cellPosition, current, y));
+                    neighbourNodes.Add(allNodes[neighbour.cellPosition]);
+                }
+            }
+            foreach (PathNode neighbourNode in neighbourNodes)
+            {
+                //Make sure to include reserved costs here
+                float reservedCost = (reservedTiles != null && reservedTiles.ContainsKey(neighbourNode.position)) ? 0.5f : 0f;
+                float tentativeGScore = current.g + 1 + reservedCost;
+                if(tentativeGScore < neighbourNode.g)
+                {
+                    neighbourNode.parent = current;
+                    neighbourNode.g = tentativeGScore;
+                    neighbourNode.f = tentativeGScore + neighbourNode.h;
+                    if (!openList.Contains(neighbourNode))
+                        openList.Enqueue(neighbourNode, neighbourNode.f);
+                    else
+                        openList.UpdatePriority(neighbourNode, neighbourNode.f);
                 }
             }
         }
