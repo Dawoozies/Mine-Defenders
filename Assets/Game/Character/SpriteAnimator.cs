@@ -2,18 +2,19 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+[Serializable]
+public class SpriteAnimation
+{
+    public string animName;
+    public int frames;
+    public List<Sprite> sprites;
+    public List<int> spriteOrders;
+    public List<Color> spriteColors;
+    [HideInInspector]
+    public float time;
+}
 public class SpriteAnimator : MonoBehaviour
 {
-    [Serializable]
-    public class SpriteAnimation
-    {
-        public string animName;
-        public int frames;
-        public List<Sprite> sprites;
-        [HideInInspector]
-        public float time;
-    }
     public string playOnStartAnimName;
     public float animationSpeed;
     public List<SpriteAnimation> animations;
@@ -30,6 +31,31 @@ public class SpriteAnimator : MonoBehaviour
         { 
             PlayAnimation(playOnStartAnimName);
         }
+    }
+    public void CreateAndPlayAnimation(SpriteAnimation animation)
+    {
+        if (animations == null || animations.Count == 0)
+        {
+            animations = new List<SpriteAnimation> { animation };
+            PlayAnimation(animations[0].animName);
+            return;
+        }
+
+        for (int i = 0; i < animations.Count; i++)
+        {
+            if (animations[i].animName == animation.animName)
+            {
+                //Then we should just change the args of the animation that already has the same name
+                //instead of adding a new one
+                animations[i] = animation;
+                PlayAnimation(animations[i].animName);
+                return;
+            }
+        }
+
+        //If we got here then the animation does not exist in the list
+        animations.Add(animation);
+        PlayAnimation(animation.animName);
     }
     public void PlayAnimation(string animName)
     {
@@ -74,6 +100,14 @@ public class SpriteAnimator : MonoBehaviour
         if(currentAnimation.sprites != null && currentAnimation.sprites.Count > 0)
         {
             spriteRenderer.sprite = currentAnimation.sprites[currentIndex];
+        }
+        if(currentAnimation.spriteOrders != null && currentAnimation.spriteOrders.Count > 0)
+        {
+            spriteRenderer.sortingOrder = currentAnimation.spriteOrders[currentIndex];
+        }
+        if(currentAnimation.spriteColors != null && currentAnimation.spriteColors.Count > 0)
+        {
+            spriteRenderer.color = currentAnimation.spriteColors[currentIndex];
         }
     }
 }

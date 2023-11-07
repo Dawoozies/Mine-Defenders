@@ -50,12 +50,12 @@ public class ObjectAnimator : MonoBehaviour
 {
 
     RectTransform rectTransform;
+    public string playOnStartAnim;
     public float animationSpeed;
     public List<ObjectAnimation> animations;
     ObjectAnimation currentAnimation;
     int currentIndex;
     int targetIndex;
-
     public delegate void LoopCompleteHandler(ObjectAnimator animator, string completedAnimationName);
     public event LoopCompleteHandler LoopCompleteEvent;
     public delegate void CurrentIndexChangedHandler(ObjectAnimator animator, int currentIndex, string animationName);
@@ -78,6 +78,11 @@ public class ObjectAnimator : MonoBehaviour
             //Debug.Log($"Index Progress: Current Animation Time = {currentAnimation.time}");
             TimeUpdateEvent?.Invoke(currentAnimation.time, currentIndex, currentAnimation.animName);
         };
+
+        if(playOnStartAnim.Length > 0)
+        {
+            PlayAnimation(playOnStartAnim);
+        }
     }
     public void CreateAndPlayAnimation(ObjectAnimation animation)
     {

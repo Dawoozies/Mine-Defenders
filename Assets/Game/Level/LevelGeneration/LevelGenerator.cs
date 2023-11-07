@@ -164,10 +164,19 @@ public class LevelGenerator : MonoBehaviour
             {
                 cellData.isPit = true;
                 cellData.isUncoveredPit = false;
+                if (cellData.cellPosition == cell)
+                    cellData.isPitCenter = true;
             }
             PitTilemap.SetTile(cell, pitTile);
         }
         return cellTable;
+    }
+    public void RemoveStoneTileAtCell(Vector3Int cellPos)
+    {
+        OreTilemap.SetTile(cellPos, null);
+        StoneTilemap.SetTile(cellPos, null);
+        StoneColorTilemap.SetTile(cellPos, null);
+        HiddenTilemap.SetTile(cellPos, null);
     }
     public void ManagedStart()
     {
@@ -358,6 +367,34 @@ public class LevelGenerator : MonoBehaviour
             }
         }
         return count;
+    }
+    public CellData UncoverFullPit(CellData uncoveredCell)
+    {
+        //Find the center of the pit first
+        List<CellData> neighboursAroundUncover = GameManager.ins.GetAllNeighboursAroundCell(uncoveredCell.cellPosition, false);
+        CellData pitCenter = neighboursAroundUncover[0];
+        foreach (CellData neighbour in neighboursAroundUncover)
+        {
+            if(neighbour.isPitCenter)
+            {
+                pitCenter = neighbour;
+                //Debug.Log($"Pit center at {neighbour.cellPosition}");
+                break;
+            }
+        }
+        //Ensure we get all tiles in the pit
+        List<CellData> fullPit = GameManager.ins.GetAllNeighboursAroundCell(pitCenter.cellPosition, true);
+        foreach (CellData pitCell in fullPit)
+        {
+            pitCell.isUncoveredPit = true;
+            PitTilemap.SetTile(pitCell.cellPosition, pitTile);
+            StoneTilemap.SetTile(pitCell.cellPosition, null);
+            StoneColorTilemap.SetTile(pitCell.cellPosition, null);
+            OreTilemap.SetTile(pitCell.cellPosition, null);
+            HiddenTilemap.SetTile(pitCell.cellPosition, null);
+        }
+        //Return the pit center so we can add it to the uncovered pit hashtable
+        return pitCenter;
     }
 }
 public class CellWalker

@@ -10,7 +10,7 @@ public class GameManager : MonoBehaviour
 
     LevelGenerator levelGenerator;
     CharacterGenerator characterGenerator;
-    PitManager pitManager;
+    LootManager lootManager;
 
     Camera mainCamera;
     ObjectAnimator cameraAnimator;
@@ -30,37 +30,57 @@ public class GameManager : MonoBehaviour
     };
 
     //Player character
-    public Transform player;
+    //public Transform player;
     public CharacterAgent playerAgent;
     public Vector3Int playerLastCellPos;
 
-    
 
+    PlayerControls input;
     //Defender character
     //Enemy character
+    public Player player;
+    public float pitSpawnTime;
+    float pitSpawnTimer;
     void Awake()
     {
         ins = this;
         levelGenerator = GetComponentInChildren<LevelGenerator>();
         
         characterGenerator = GetComponentInChildren<CharacterGenerator>();
-        pitManager = GetComponentInChildren<PitManager>();
+        lootManager = GetComponentInChildren<LootManager>();
         mainCamera = Camera.main;
         cameraAnimator = mainCamera.GetComponent<ObjectAnimator>();
 
-        gridInformation = GetComponentInChildren<GridInformation>();
+        //On Tap event
+        input = new PlayerControls();
+        input.Player.Tap.performed += (input) => 
+        {
+            Vector3 screenPosition = input.ReadValue<Vector2>();
+            Vector3 worldPosition = mainCamera.ScreenToWorldPoint(screenPosition);
+            Vector3Int cellPosition = WorldToCell(worldPosition);
+            Vector3 cellCenterWorldPosition = WorldToCellCenter(worldPosition);
+            onTap?.Invoke((CellData)cellTable[cellPosition]);
+        };
+        input.Enable();
+    }
+    private void OnDisable()
+    {
+        input.Disable();
     }
     void Start()
     {
         //levelGenerator.ManagedStart();
         cellTable = levelGenerator.GenerateLevelHashtable();
+        uncoveredPitCenters = new Hashtable();
 
-        player = characterGenerator.ManagedStart();
-        playerLastCellPos = WorldToCell(player.position);
-        playerAgent = player.GetComponent<CharacterAgent>();
-        pitManager.ManagedStart();
+        //player = characterGenerator.ManagedStart();
+        //playerLastCellPos = WorldToCell(player.position);
+        //playerAgent = player.GetComponent<CharacterAgent>();
         //characterGenerator.CreateEnemy();
         reservedTiles = new Hashtable();
+
+        player = characterGenerator.CreatePlayer(Vector3Int.zero);
+        allAgents = new List<IAgent>();
     }
     
     public delegate Vector3 PlayerPositionUpdated();
@@ -71,6 +91,9 @@ public class GameManager : MonoBehaviour
 
     public delegate void PitUncoveredHandler((Vector3Int, Vector3) pit);
     public static event PitUncoveredHandler PitUncoveredEvent;
+
+    public delegate void OnTap(CellData cellData);
+    public static event OnTap onTap;
 
     public bool isInLevelBounds(Vector3Int position) {
         if (position.x < levelGenerator.bottomLeftCorner.x || position.x > levelGenerator.topRightCorner.x)
@@ -92,13 +115,31 @@ public class GameManager : MonoBehaviour
             CameraTrackAnimation(PlayerPosition);
             OnPlayerPositionUpdated = null;
         }
+        //Do pit spawning enemies
+        if(uncoveredPitCenters != null && uncoveredPitCenters.Keys.Count > 0)
+        {
+            pitSpawnTimer += Time.deltaTime;
+            if(pitSpawnTimer > pitSpawnTime)
+            {
+                //foreach (Vector3Int pitCenter in uncoveredPitCenters.Keys)
+                //{
+                //    characterGenerator.CreateEnemy(pitCenter);
+                //}
+                foreach (Vector3Int item in uncoveredPitCenters.Keys)
+                {
+                    //Debug.Log($"Spawn enemies at {item}");
+                    characterGenerator.CreateEnemy(item);
+                }
+                pitSpawnTimer = 0;
+            }
+        }
 
         return;
-        if(WorldToCell(player.position) != playerLastCellPos)
-        {
-            playerLastCellPos = WorldToCell(player.position);
-            PlayerPositionUpdatedEvent?.Invoke(playerLastCellPos, player.position);
-        }
+        //if(WorldToCell(player.position) != playerLastCellPos)
+        //{
+        //    playerLastCellPos = WorldToCell(player.position);
+        //    PlayerPositionUpdatedEvent?.Invoke(playerLastCellPos, player.position);
+        //}
     }
     
     void CameraTrackAnimation(Vector3 targetPos)
@@ -198,8 +239,9 @@ public class GameManager : MonoBehaviour
             reservedTiles.Remove(cellPos);
         }
     }
-
     public Hashtable cellTable;
+    public Hashtable uncoveredPitCenters;
+    public List<IAgent> allAgents;
     public CellData GetCellDataAtPosition(Vector3Int cellPosition)
     {
         return (CellData)cellTable[cellPosition];
@@ -260,6 +302,31 @@ public class GameManager : MonoBehaviour
             neighbours.Add((CellData)givenHashtable[cell]);
         return neighbours;
     }
+    public void BreakStone(CellData cellData)
+    {
+        //Remove stone via level generator method
+        //call method on loot manager for ores
+        levelGenerator.RemoveStoneTileAtCell(cellData.cellPosition);
+        levelGenerator.GenerateFloor(cellData.cellPosition);
+        Debug.Log("stone break");
+        if (cellData.isPit && !cellData.isUncoveredPit)
+        {
+            //Pit uncovered here
+            CellData pitCenter = levelGenerator.UncoverFullPit(cellData);
+            if (uncoveredPitCenters.ContainsKey(pitCenter.cellPosition))
+            {
+                uncoveredPitCenters[pitCenter.cellPosition] = pitCenter;
+            }
+            else
+            {
+                uncoveredPitCenters.Add(pitCenter.cellPosition, pitCenter);
+            }
+            return;
+        }
+        //Dont spawn ore if its a pit uncovering
+        if (cellData.ore != null)
+            cellData.loot = lootManager.InstantiateLoot_Ore(cellData.cellCenterWorldPosition, cellData.ore);
+    }
 }
 public class CellData
 {
@@ -271,6 +338,47 @@ public class CellData
     public int durability;
     public bool isPit;
     public bool isUncoveredPit;
+    public bool isPitCenter;
+    public CellLoot loot;
+    public List<CellData> GetAllNeighbours(bool includeSelf)
+    {
+        return GameManager.ins.GetAllNeighboursAroundCell(cellPosition, includeSelf);
+    }
+    public List<CellData> GetCardinalNeighbours(bool includeSelf)
+    {
+        return GameManager.ins.GetCardinalNeighboursAroundCell(cellPosition, includeSelf);
+    }
+    public List<Vector3Int> GetPathToClosestCardinalNeighbour(Vector3Int point, Tilemap[] notWalkable, Hashtable reservedTiles)
+    {
+        List<CellData> neighbours = GetCardinalNeighbours(true);
+        List<Vector3Int> shortestPath = null;
+        foreach (CellData neighbour in neighbours)
+        {
+            List<Vector3Int> path;
+            path = Pathfinding.aStarNew(point, neighbour.cellPosition, notWalkable, reservedTiles);
+            if (path == null || path.Count == 0)
+                continue;
+            if (shortestPath == null)
+                shortestPath = path;
+            else
+                shortestPath = path.Count < shortestPath.Count ? path : shortestPath;
+        }
+        return shortestPath;
+    }
+    public void CellInfoDebug()
+    {
+        Debug.Log("[--------------------------------]");
+        Debug.Log($"cellPosition = {cellPosition}");
+        Debug.Log($"cellCenterWorldPosition = {cellCenterWorldPosition}");
+        Debug.Log($"isPlayerSpawnArea = {cellPosition}");
+        Debug.Log($"isLevelBoundary = {cellCenterWorldPosition}");
+        string oreDebug = ore == null ? "ore = null" : $"ore = {ore.name}";
+        Debug.Log(oreDebug);
+        Debug.Log($"durability = {durability}");
+        Debug.Log($"isPit = {isPit}");
+        Debug.Log($"isUncoveredPit = {isUncoveredPit}");
+        Debug.Log("[--------------------------------]");
+    }
 }
 [Flags]
 public enum CellContents

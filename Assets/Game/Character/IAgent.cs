@@ -4,7 +4,13 @@ using UnityEngine;
 
 public interface IAgent
 {
-    NavigationOrder Order { get; set; }
-    public void SetMovementOrder();
-    public void ReserveCell();
+    public AgentType AgentType { get; }
+    public void SetMovementOrder(CellData cellData);
+    public void ReserveCell(CellData cellData);
+}
+public enum AgentType
+{
+    Player = 0,
+    Enemy = 1,
+    Defender = 2,
 }

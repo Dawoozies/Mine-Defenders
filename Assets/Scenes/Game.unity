@@ -294,6 +294,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerPrefab: {fileID: 8754239654235546804, guid: e95766edba758bd4b8c35f61ee466cf7, type: 3}
   enemyPrefab: {fileID: 8754239654235546804, guid: 5e5e6ff24d774f745be1f6108e826d95, type: 3}
+  enemyBasePrefab: {fileID: 8754239654235546804, guid: 69e4d37105eb8d64196e40423dde0ab2, type: 3}
+  enemyBases:
+  - {fileID: 11400000, guid: 7669a4ecb54d566448f522dcfd762461, type: 2}
+  - {fileID: 11400000, guid: 7669a4ecb54d566448f522dcfd762461, type: 2}
   enemyAgents: []
 --- !u!1 &226689017
 GameObject:
@@ -1644,8 +1648,8 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 95951028}
+  - {fileID: 1792390836}
   - {fileID: 195271772}
-  - {fileID: 1953096071}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &755437059
@@ -1674,9 +1678,10 @@ MonoBehaviour:
   - {x: -1, y: 0, z: 0}
   - {x: 1, y: 0, z: 0}
   - {x: 0, y: -1, z: 0}
-  player: {fileID: 0}
   playerAgent: {fileID: 0}
   playerLastCellPos: {x: 0, y: 0, z: 0}
+  player: {fileID: 0}
+  pitSpawnTime: 2
 --- !u!1 &774018938
 GameObject:
   m_ObjectHideFlags: 0
@@ -1782,8 +1787,54 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc25a3fd600d27e479de0e4e044997ac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playOnStartAnim: 
   animationSpeed: 1
   animations: []
+--- !u!1 &1792390835
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1792390836}
+  - component: {fileID: 1792390837}
+  m_Layer: 0
+  m_Name: Loot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1792390836
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1792390835}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 755437058}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1792390837
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1792390835}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f806fb2604e39cf43a291a5511313fcc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lootRockPrefab: {fileID: 8754239654235546804, guid: 6a71a47293844d744801e564eef41e5f, type: 3}
 --- !u!1 &1938534557
 GameObject:
   m_ObjectHideFlags: 0
@@ -2140,50 +2191,6 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
---- !u!1 &1953096070
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1953096071}
-  - component: {fileID: 1953096072}
-  m_Layer: 0
-  m_Name: PitManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1953096071
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1953096070}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 755437058}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1953096072
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1953096070}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2a46d130d416ad441a2c1d0f157091b1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &2109154843
 GameObject:
   m_ObjectHideFlags: 0
