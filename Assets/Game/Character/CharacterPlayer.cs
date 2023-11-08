@@ -23,7 +23,9 @@ public class CharacterPlayer : MonoBehaviour
         pickaxeSpriteRenderer.sortingOrder = spriteRenderer.sortingOrder - 1;
 
         positionBuffer = new Buffer<Vector3>(transform.position, 0.125f);
-        positionBuffer.onWriteToBuffer += () => { GameManager.OnPlayerPositionUpdated += positionBuffer.GetBuffer; };
+        positionBuffer.onWriteToBuffer += () => {
+            GameManager.OnPlayerPositionBufferUpdated += () => { return GameManager.ins.WorldToCell(positionBuffer.GetBuffer()); }; ; 
+        };
         agent.MovementCompleteEvent += StartMiningOrder;
         pickaxeAnimator.TimeUpdateEvent += (float time, int currentIndex,string animName) => {
             if (animName != "SwingPickaxeAtStone")

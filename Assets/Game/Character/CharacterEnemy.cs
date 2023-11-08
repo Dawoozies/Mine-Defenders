@@ -7,7 +7,7 @@ public class CharacterEnemy : MonoBehaviour
 
         agent = GetComponent<CharacterAgent>();
         agent.isEnemy = true;
-        GameManager.PlayerPositionUpdatedEvent += MoveToPlayer;
+        //GameManager.PlayerPositionUpdatedEvent += MoveToPlayer;
         agent.MovementCompleteEvent += Attack;
         agent.EnemyMovementOrder("MoveToPlayer", GameManager.ins.playerLastCellPos);
 

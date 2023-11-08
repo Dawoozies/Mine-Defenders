@@ -10,12 +10,15 @@ public class CharacterGenerator : MonoBehaviour
     public List<CharacterAgent> enemyAgents = new List<CharacterAgent>();
     public Player CreatePlayer(Vector3Int cellToSpawnAt)
     {
-        return Instantiate(playerPrefab, GameManager.ins.CellToWorld(cellToSpawnAt), Quaternion.identity, transform).GetComponent<Player>();
+        Player player = Instantiate(playerPrefab, GameManager.ins.CellToWorld(cellToSpawnAt), Quaternion.identity, transform).GetComponent<Player>();
+        //GameManager.ins.allAgents.Add(player);
+        return player;
     }
     public Enemy CreateEnemy(Vector3Int cellToSpawnAt)
     {
         Enemy createdEnemy = Instantiate(enemyBasePrefab, GameManager.ins.CellToWorld(cellToSpawnAt), Quaternion.identity, transform).GetComponent<Enemy>();
         createdEnemy.Initialise(enemyBases[0]);
+        //GameManager.ins.allAgents.Add(createdEnemy);
         return createdEnemy;
     }
     public Transform ManagedStart()

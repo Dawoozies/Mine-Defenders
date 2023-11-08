@@ -5,13 +5,21 @@ using UnityEngine;
 public class Player : MonoBehaviour, IAgent
 {
     NavigationOrder order;
-    public float movementSpeed;
+    public float moveSpeed;
     public InterpolationType moveInterpolationType;
     Vector3Int agentCellPos { get { return GameManager.ins.WorldToCell(transform.position); } }
     Vector3 agentCellCenterPos { get { return GameManager.ins.WorldToCellCenter(transform.position); } }
     AgentType IAgent.AgentType { 
         get => AgentType.Player; 
     }
+
+    AgentArgs IAgent.args { get { return agentData; } }
+    AgentArgs agentData;
+
+    AgentNavigator IAgent.navigator { get { return agentNavigator; } }
+    AgentNavigator agentNavigator;
+    
+
     Buffer<Vector3> agentPositionBuffer;
     [Serializable]
     public class Tool
@@ -27,10 +35,19 @@ public class Player : MonoBehaviour, IAgent
     public Tool tool;
     private void Awake()
     {
-        GameManager.onTap += InteractWithCell;
+        //Set up agentData
+        agentData = new AgentArgs(transform);
+        agentData.moveSpeed = moveSpeed;
+        agentData.notWalkable = GameManager.ins.GetPlayerInaccessibleTilemaps();
+        agentData.reservedTiles = null;
+        agentData.moveInterpolationType = moveInterpolationType;
+
+        GameManager.onTap += SetTarget;
 
         agentPositionBuffer = new Buffer<Vector3>(agentCellCenterPos, 0.125f);
-        agentPositionBuffer.onWriteToBuffer += () => { GameManager.OnPlayerPositionUpdated += agentPositionBuffer.GetBuffer; };
+        agentPositionBuffer.onWriteToBuffer += () => {
+            GameManager.OnPlayerPositionBufferUpdated += () => { return agentCellPos; };
+        };
 
         tool.objectAnimator.TimeUpdateEvent += (float time, int index, string animName) => {
             if (animName != "Mining")
@@ -49,34 +66,15 @@ public class Player : MonoBehaviour, IAgent
             }
         };
     }
-    void InteractWithCell(CellData tappedCell)
+    void SetTarget(CellData tappedCell)
     {
-        //tappedCell.CellInfoDebug();
-        //if no durability move
-        bool hasDurability = tappedCell.durability > 0;
-        if(hasDurability)
-            SetMiningOrder(tappedCell);
-        if (!hasDurability)
-            SetMovementOrder(tappedCell);
-    }
-    public void SetMovementOrder(CellData cellData)
-    {
-        order = new NavigationOrder(
-            "MoveToCell",
-            agentCellPos,
-            cellData.cellPosition,
-            GameManager.ins.GetPlayerInaccessibleTilemaps(),
-            false,
-            0,
-            moveInterpolationType
-            );
     }
     public void SetMiningOrder(CellData cellData)
     {
         tool.toolTargetCellPos = cellData.cellPosition;
         tool.toolTargetCellCenterWorldPos = cellData.cellCenterWorldPosition;
         List<Vector3Int> shortestPathToNeighbour
-            = cellData.GetPathToClosestCardinalNeighbour(agentCellPos, GameManager.ins.GetPlayerInaccessibleTilemaps(), null);
+            = cellData.GetPathToClosestCardinalNeighbour(this);
         //If we are right next to what we want to mine then just start mining animation
         if(Vector3Int.Distance(agentCellPos, cellData.cellPosition) == 1)
         {
@@ -86,6 +84,7 @@ public class Player : MonoBehaviour, IAgent
         if (shortestPathToNeighbour == null)
             return;
         order = new NavigationOrder(
+            this,
             "MoveToMiningTarget",
             shortestPathToNeighbour,
             GameManager.ins.GetPlayerInaccessibleTilemaps(),
@@ -136,18 +135,8 @@ public class Player : MonoBehaviour, IAgent
         miningAnimation.loop = true;
         tool.objectAnimator.CreateAndPlayAnimation(miningAnimation);
     }
-    public void ReserveCell(CellData cellData)
-    {
-        //Reserve next cell in path segments
-    }
     void Update()
     {
         agentPositionBuffer.UpdateBuffer(Time.deltaTime, agentCellCenterPos);
-    }
-    void FixedUpdate()
-    {
-        if (order == null)
-            return;
-        order.Navigate(Time.fixedDeltaTime * movementSpeed, transform);
     }
 }

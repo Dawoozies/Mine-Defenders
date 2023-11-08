@@ -78,7 +78,7 @@ public static class Pathfinding
         }
         return reconstructPath(null);
     }
-    public static List<Vector3Int> aStarNew(Vector3Int x, Vector3Int y, Tilemap[] notWalkable, Hashtable reservedTiles)
+    public static List<Vector3Int> aStarNew(IAgent agent, Vector3Int x, Vector3Int y, Tilemap[] notWalkable, Hashtable reservedTiles)
     {
         Dictionary<Vector3Int, PathNode> allNodes = new Dictionary<Vector3Int, PathNode>();
         PathNode startNode = new PathNode(x, null, y);
@@ -119,9 +119,79 @@ public static class Pathfinding
             foreach (PathNode neighbourNode in neighbourNodes)
             {
                 //Make sure to include reserved costs here
-                float reservedCost = (reservedTiles != null && reservedTiles.ContainsKey(neighbourNode.position)) ? 0.5f : 0f;
+                bool reservedTilesContainsKey = reservedTiles != null && reservedTiles.ContainsKey(neighbourNode.position);
+                bool tileReservedByOther = reservedTilesContainsKey && reservedTiles[neighbourNode.position] != agent;
+                float reservedCost = tileReservedByOther ? 0.5f : 0f;
+
                 float tentativeGScore = current.g + 1 + reservedCost;
                 if(tentativeGScore < neighbourNode.g)
+                {
+                    neighbourNode.parent = current;
+                    neighbourNode.g = tentativeGScore;
+                    neighbourNode.f = tentativeGScore + neighbourNode.h;
+                    if (!openList.Contains(neighbourNode))
+                        openList.Enqueue(neighbourNode, neighbourNode.f);
+                    else
+                        openList.UpdatePriority(neighbourNode, neighbourNode.f);
+                }
+            }
+        }
+        return reconstructPath(null);
+    }
+    public static List<Vector3Int> aStarWithIgnore(Vector3Int start, Vector3Int end, Tilemap[] notWalkable, List<Vector3Int> cellsToIgnore)
+    {
+        Dictionary<Vector3Int, PathNode> allNodes = new Dictionary<Vector3Int, PathNode>();
+        PathNode startNode = new PathNode(start, null, end);
+        startNode.g = 0;
+        FastPriorityQueue<PathNode> openList = new FastPriorityQueue<PathNode>(64 * 64);
+
+        openList.Enqueue(startNode, startNode.f);
+        allNodes.Add(startNode.position, startNode);
+        while (openList.Count > 0)
+        {
+            PathNode current = openList.First;
+            if (current.position == end)
+                return reconstructPath(current);
+
+            openList.Dequeue();
+            List<PathNode> neighbourNodes = new List<PathNode>();
+            List<CellData> neighbours = GameManager.ins.GetCardinalNeighboursAroundCell(current.position, false);
+            foreach (CellData neighbour in neighbours)
+            {
+                if (!GameManager.ins.isInLevelBounds(neighbour.cellPosition))
+                    continue;
+                bool isWalkable = true;
+                foreach (Tilemap item in notWalkable)
+                {
+                    if (item.GetTile(neighbour.cellPosition) != null)
+                    {
+                        isWalkable = false;
+                        break;
+                    }
+                }
+                if(cellsToIgnore != null && cellsToIgnore.Count > 0)
+                {
+                    if(cellsToIgnore.Contains(neighbour.cellPosition))
+                    {
+                        isWalkable = false;
+                    }
+                }
+                if (isWalkable)
+                {
+                    if (!allNodes.ContainsKey(neighbour.cellPosition))
+                        allNodes.Add(neighbour.cellPosition, new PathNode(neighbour.cellPosition, current, end));
+                    neighbourNodes.Add(allNodes[neighbour.cellPosition]);
+                }
+            }
+            foreach (PathNode neighbourNode in neighbourNodes)
+            {
+                //Make sure to include reserved costs here
+                //bool reservedTilesContainsKey = reservedTiles != null && reservedTiles.ContainsKey(neighbourNode.position);
+                //bool tileReservedByOther = reservedTilesContainsKey && reservedTiles[neighbourNode.position] != agent;
+                //float reservedCost = tileReservedByOther ? 0.5f : 0f;
+
+                float tentativeGScore = current.g + 1;
+                if (tentativeGScore < neighbourNode.g)
                 {
                     neighbourNode.parent = current;
                     neighbourNode.g = tentativeGScore;

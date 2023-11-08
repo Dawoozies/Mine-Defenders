@@ -12,6 +12,13 @@ public class Enemy : MonoBehaviour, IAgent
     AgentType IAgent.AgentType {
         get => AgentType.Enemy;
     }
+    AgentArgs IAgent.args { get { return agentData; } }
+    AgentArgs agentData;
+
+    AgentNavigator IAgent.navigator { get { return agentNavigator; } }
+    AgentNavigator agentNavigator;
+
+
     [Serializable]
     public class Graphics
     {
@@ -28,14 +35,12 @@ public class Enemy : MonoBehaviour, IAgent
         defaultAnimation.frames = 2;
         defaultAnimation.sprites = new List<Sprite>() { enemyBase.defaultSprites[0], enemyBase.defaultSprites[1] };
         baseGraphics.spriteAnimator.CreateAndPlayAnimation(defaultAnimation);
-    }
-    void IAgent.ReserveCell(CellData cellData)
-    {
-        throw new System.NotImplementedException();
-    }
 
-    void IAgent.SetMovementOrder(CellData cellData)
-    {
-        throw new System.NotImplementedException();
+        //Set up agent data
+        agentData = new AgentArgs(transform);
+        agentData.moveSpeed = enemyBase.moveSpeed;
+        agentData.notWalkable = GameManager.ins.GetEnemyInaccessibleTilemaps();
+        agentData.reservedTiles = GameManager.ins.reservedTiles;
+        agentData.moveInterpolationType = enemyBase.moveInterpolationType;
     }
 }
