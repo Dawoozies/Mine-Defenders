@@ -42,5 +42,6 @@ public class Enemy : MonoBehaviour, IAgent
         agentData.notWalkable = GameManager.ins.GetEnemyInaccessibleTilemaps();
         agentData.reservedTiles = GameManager.ins.reservedTiles;
         agentData.moveInterpolationType = enemyBase.moveInterpolationType;
+        agentData.previousPoint = new Vector3Int(0, 0, -1);
     }
 }

@@ -23,28 +23,25 @@ public class AgentArgs
     public Tilemap[] notWalkable;
     public Hashtable reservedTiles;
     public InterpolationType moveInterpolationType;
-    public List<Vector3Int> path;
-    public int pathIndex;
-    public float moveProgress;
+    public AgentPath path;
+    public Vector3Int previousPoint;
+    public bool hasInstruction;
     public AgentArgs(Transform transform)
     {
         this.transform = transform;
     }
-    public void IncrementProgress(float timeDelta)
+    public void MoveAlongPath(float timeDelta)
     {
-        if(pathIndex >= path.Count)
+        if (path == null)
+            return;
+        if (path.completed)
         {
+            previousPoint = path.start;
+            if (hasInstruction)
+                hasInstruction = false;
             return;
         }
-        moveProgress += timeDelta;
-        transform.position = Interpolation.Interpolate(path[pathIndex], path[pathIndex + 1], moveProgress, moveInterpolationType);
-        if (moveProgress >= 1)
-        {
-            if(pathIndex < path.Count)
-            {
-                pathIndex++;
-            }
-        }
+        transform.position = path.Traverse(timeDelta * moveSpeed);
     }
 }
 //Dont need order name lmao
@@ -138,6 +135,27 @@ public class Segment
     public Vector3 TraverseSegment(float timeDelta)
     {
         var p = Interpolation.Interpolate(start.cellPosition, end.cellPosition, t, interpolationType);
+        t += timeDelta;
+        return p;
+    }
+}
+public class AgentPath
+{
+    public Vector3Int start;
+    public Vector3Int end;
+    public InterpolationType interpolationType;
+    public float t;
+    public bool completed { get { return t >= 1; } }
+    public AgentPath(Vector3Int start, Vector3Int end, InterpolationType interpolationType)
+    {
+        this.start = start;
+        this.end = end;
+        this.interpolationType = interpolationType;
+        t = 0;
+    }
+    public Vector3 Traverse(float timeDelta)
+    {
+        var p = Interpolation.Interpolate(start, end, t, interpolationType);
         t += timeDelta;
         return p;
     }

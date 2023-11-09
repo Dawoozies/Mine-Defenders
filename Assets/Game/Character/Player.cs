@@ -42,8 +42,6 @@ public class Player : MonoBehaviour, IAgent
         agentData.reservedTiles = null;
         agentData.moveInterpolationType = moveInterpolationType;
 
-        GameManager.onTap += SetTarget;
-
         agentPositionBuffer = new Buffer<Vector3>(agentCellCenterPos, 0.125f);
         agentPositionBuffer.onWriteToBuffer += () => {
             GameManager.OnPlayerPositionBufferUpdated += () => { return agentCellPos; };
@@ -65,9 +63,6 @@ public class Player : MonoBehaviour, IAgent
                 }
             }
         };
-    }
-    void SetTarget(CellData tappedCell)
-    {
     }
     public void SetMiningOrder(CellData cellData)
     {
@@ -94,7 +89,7 @@ public class Player : MonoBehaviour, IAgent
             );
         order.onNavigationComplete += StartMiningAnimation;
     }
-    void StartMiningAnimation()
+    public void StartMiningAnimation()
     {
         tool.spriteAnimator.PlayAnimation("Pickaxe_Default");
         ObjectAnimation miningAnimation = new ObjectAnimation();

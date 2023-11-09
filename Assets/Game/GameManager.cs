@@ -1,8 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 public class GameManager : MonoBehaviour
@@ -36,130 +34,164 @@ public class GameManager : MonoBehaviour
     public Vector3Int playerLastCellPos;
     public class AgentController
     {
-        public IAgent player;
+        public Player player;
+        public IAgent playerAgent;
+        public List<AgentPath> playerFullPath;
+        public delegate void OnPlayerCompletedFullPath();
+        public event OnPlayerCompletedFullPath onPlayerCompletedFullPath;
         public List<IAgent> enemies;
-        public (List<Vector3Int>, List<Vector3Int>) Enemies_PathCalculate()
+        public void Player_PathCalculate(CellData cellData)
+        {
+            onPlayerCompletedFullPath = null;
+            bool targetingStone = cellData.durability > 0;
+            if(targetingStone)
+            {
+                #region Set up pickaxe animation stuff
+                player.tool.toolTargetCellPos = cellData.cellPosition;
+                player.tool.toolTargetCellCenterWorldPos = cellData.cellCenterWorldPosition;
+                #endregion
+                List<Vector3Int> shortestPathToNeighbour =
+                    cellData.GetPathToClosestCardinalNeighbour(player);
+                #region Case : Where we are right next to the stone we targeted
+                if (Vector3Int.Distance(playerAgent.args.cellPos, cellData.cellPosition) == 1)
+                {
+                    player.StartMiningAnimation();
+                    //then we can just start mining
+                }
+                #endregion
+                if (shortestPathToNeighbour == null)
+                    return;
+                #region Case : Where we have to path to the stone
+                #region Set up playerFullPath
+                List<AgentPath> fullPath = new List<AgentPath>();
+                for (int i = shortestPathToNeighbour.Count - 1; i > 0; i--)
+                {
+                    var path = new AgentPath(
+                        shortestPathToNeighbour[i], 
+                        shortestPathToNeighbour[i - 1], 
+                        playerAgent.args.moveInterpolationType);
+                    fullPath.Add(path);
+                }
+                playerFullPath = fullPath;
+                #endregion
+                onPlayerCompletedFullPath += player.StartMiningAnimation;
+                #endregion
+            }
+            else
+            {
+                List<Vector3Int> points = Pathfinding.aStarNew(
+                    playerAgent, 
+                    playerAgent.args.cellPos, 
+                    cellData.cellPosition, 
+                    GameManager.ins.GetPlayerInaccessibleTilemaps(), 
+                    null
+                    );
+
+                if (points == null || points.Count == 0)
+                    return;
+                #region Set up playerFullPath
+                List<AgentPath> fullPath = new List<AgentPath>();
+                for (int i = points.Count - 1; i > 0; i--)
+                {
+                    var path = new AgentPath(
+                        points[i],
+                        points[i - 1],
+                        playerAgent.args.moveInterpolationType);
+                    fullPath.Add(path);
+                }
+                playerFullPath = fullPath;
+                #endregion
+            }
+        }
+        public void Enemies_PathCalculate()
         {
             if (enemies == null || enemies.Count == 0)
-                return (null, null);
+                return;
+
+            #region CurrentPositions + Clear NextStep List
             List<Vector3Int> agentCurrentPositionList = new List<Vector3Int>();
             foreach (IAgent agent in enemies)
             {
                 agentCurrentPositionList.Add(agent.args.cellPos);
             }
             List<Vector3Int> agentNextStepList = new List<Vector3Int>();
+            #endregion
             for (int i = 0;  i < enemies.Count; i++)
             {
                 IAgent agent = enemies[i];
-                agent.args.path = new List<Vector3Int>();
+                //path to write to
+                if (agent.args.hasInstruction)
+                    continue;
+                AgentPath path = new AgentPath(agent.args.cellPos, agent.args.cellPos, agent.args.moveInterpolationType);
+                agent.args.path = path;
+                List<Vector3Int> points = new List<Vector3Int>();
+                #region Calculate Neighbour Positions To Ignore
                 //Assume all neighbours are valid to start
                 List<Vector3Int> neighbourPositions = GameManager.ins.GetCardinalNeighbourPositions(agent.args.cellPos, false);
                 List<Vector3Int> invalidNeighbourPositions = new List<Vector3Int>();
-                if (i == 0)
-                {
-                    //For i == 0 we don't need to check next steps
-                    //since this will be the first enemy moving
-                    foreach (Vector3Int neighbourPosition in neighbourPositions)
-                    {
-                        bool neighbourPositionInvalid = false;
-                        foreach (Vector3Int item in agentCurrentPositionList)
-                        {
-                            if(neighbourPosition == item)
-                            {
-                                neighbourPositionInvalid = true;
-                            }
-                        }
-                        if(neighbourPositionInvalid)
-                            invalidNeighbourPositions.Add(neighbourPosition);
-                    }
-                    if(invalidNeighbourPositions.Count == 4)
-                    {
-                        //then this agent cannot move next update
-                        continue;
-                    }
-                    agent.args.path =
-                        Pathfinding.aStarWithIgnore(
-                            agent.args.cellPos,
-                            player.args.cellPos,
-                            GameManager.ins.GetEnemyInaccessibleTilemaps(),
-                            invalidNeighbourPositions
-                            );
-                    if(agent.args.path != null && agent.args.path.Count > 1)
-                    {
-                        agentNextStepList.Add(agent.args.path[agent.args.path.Count - 2]);
-                        agent.args.pathIndex = agent.args.path.Count - 1;
-                    }
-                    continue;
-                }
                 foreach (Vector3Int neighbourPosition in neighbourPositions)
                 {
                     bool neighbourPositionInvalid = false;
                     foreach (Vector3Int item in agentCurrentPositionList)
                     {
-                        if(neighbourPosition == item)
+                        if(neighbourPosition == item && item != agent.args.cellPos)
                         {
                             neighbourPositionInvalid = true;
                         }
                     }
-                    foreach (Vector3Int item in agentNextStepList)
+                    if (i != 0)
                     {
-                        if(neighbourPosition == item)
+                        foreach (Vector3Int item in agentNextStepList)
+                        {
+                            if (neighbourPosition == item)
+                            {
+                                neighbourPositionInvalid = true;
+                            }
+                        }
+                    }
+                    if (agent.args.previousPoint.z != -1)
+                    {
+                        if (neighbourPosition == agent.args.previousPoint)
                         {
                             neighbourPositionInvalid = true;
                         }
                     }
-                    if(neighbourPositionInvalid)
+                    if (neighbourPositionInvalid)
                         invalidNeighbourPositions.Add(neighbourPosition);
                 }
-                if(invalidNeighbourPositions.Count == 4)
+                #endregion
+                if (invalidNeighbourPositions.Count == 4)
                 {
                     //Then this agent cannot move next update
                     continue;
                 }
-                agent.args.path =
+                #region Call Pathfinding.aStartWithIgnore
+                points =
                     Pathfinding.aStarWithIgnore(
                         agent.args.cellPos,
-                        player.args.cellPos,
+                        playerAgent.args.cellPos,
                         GameManager.ins.GetEnemyInaccessibleTilemaps(),
                         invalidNeighbourPositions
                         );
-                if(agent.args.path != null && agent.args.path.Count > 1)
+                #endregion
+                #region Setup Non Trivial End For Path
+                if (points != null && points.Count > 1)
                 {
-                    agentNextStepList.Add(agent.args.path[agent.args.path.Count - 2]);
-                    agent.args.pathIndex = agent.args.path.Count - 1;
+                    if (points[points.Count - 2] != playerAgent.args.cellPos)
+                    {
+                        agentNextStepList.Add(points[points.Count - 2]);
+                        path.end = points[points.Count - 2];
+                        if (!agent.args.hasInstruction)
+                            agent.args.hasInstruction = true;
+                        continue;
+                    }
                 }
-                continue;
+                #endregion
             }
-            return (agentCurrentPositionList, agentNextStepList);
         }
-        public void Enemies_MoveToNextStep()
+        public void Player_CompletePath()
         {
-            if (enemies == null || enemies.Count == 0)
-                return;
-            List<Vector3Int> agentCurrentPositionList = new List<Vector3Int>();
-            foreach (IAgent agent in enemies)
-            {
-                agentCurrentPositionList.Add(agent.args.cellPos);
-            }
-            List<Vector3Int> agentNextStepList = new List<Vector3Int>();
-            for (int i = 0; i < enemies.Count; i++)
-            {
-                IAgent agent = enemies[i];
-                if(agent.args.pathIndex < agent.args.path.Count - 1)
-                {
-                    int nextIndex = agent.args.pathIndex + 1;
-                    Vector3Int nextStepPosition = agent.args.path[nextIndex];
-                    if(agentCurrentPositionList.Contains(nextStepPosition))
-                    {
-                        continue;
-                    }
-                    if(agentNextStepList.Contains(nextStepPosition))
-                    {
-                        continue;
-                    }
-                    agent.args.IncrementProgress(Time.fixedDeltaTime);
-                }
-            }
+            onPlayerCompletedFullPath?.Invoke();
         }
     }
     AgentController agentController;
@@ -178,6 +210,8 @@ public class GameManager : MonoBehaviour
         lootManager = GetComponentInChildren<LootManager>();
         mainCamera = Camera.main;
         cameraAnimator = mainCamera.GetComponent<ObjectAnimator>();
+
+
 
         //On Tap event
         input = new PlayerControls();
@@ -214,8 +248,10 @@ public class GameManager : MonoBehaviour
         //Enemy enemyTwo = characterGenerator.CreateEnemy(-Vector3Int.one);
         agentController = new AgentController();
         agentController.player = characterGenerator.CreatePlayer(Vector3Int.zero);
+        agentController.playerAgent = agentController.player;
+        onTap += agentController.Player_PathCalculate;
 
-        agentController.enemies = new List<IAgent>() 
+        agentController.enemies = new List<IAgent>()
         {
             characterGenerator.CreateEnemy(new Vector3Int(2,3,0)),
             characterGenerator.CreateEnemy(new Vector3Int(0,2,0)),
@@ -225,6 +261,8 @@ public class GameManager : MonoBehaviour
             characterGenerator.CreateEnemy(new Vector3Int(-1,2,0)),
             characterGenerator.CreateEnemy(new Vector3Int(-3,3,0)),
         };
+
+        computePaths = true;
     }
     
     public delegate Vector3Int PlayerPositionBufferUpdated(); //Just updates cell position
@@ -254,8 +292,6 @@ public class GameManager : MonoBehaviour
         return true;
     }
     public bool computePaths;
-    List<Vector3Int> agentCurrentPositionList;
-    List<Vector3Int> agentNextStepList;
     public bool moveAlongPaths;
     void Update()
     {
@@ -295,21 +331,9 @@ public class GameManager : MonoBehaviour
 
         if(computePaths)
         {
-            (List<Vector3Int>, List<Vector3Int>) PathCalculate_Debug = agentController.Enemies_PathCalculate();
-            if(PathCalculate_Debug != (null, null))
-            {
-                agentCurrentPositionList = PathCalculate_Debug.Item1;
-                agentNextStepList = PathCalculate_Debug.Item2;
-            }
+            agentController.Enemies_PathCalculate();
             computePaths = false;
         }
-
-        if(moveAlongPaths)
-        {
-            agentController.Enemies_MoveToNextStep();
-            moveAlongPaths = false;
-        }
-
         return;
         //if(WorldToCell(player.position) != playerLastCellPos)
         //{
@@ -317,7 +341,50 @@ public class GameManager : MonoBehaviour
         //    PlayerPositionUpdatedEvent?.Invoke(playerLastCellPos, player.position);
         //}
     }
-    
+    private void FixedUpdate()
+    {
+        if(agentController.playerFullPath != null && agentController.playerFullPath.Count > 0)
+        {
+            #region Set player agent path to be next one in full path
+            if (agentController.playerAgent.args.path == null)
+            {
+                agentController.playerAgent.args.path = agentController.playerFullPath[0];
+            }
+            if(agentController.playerAgent.args.path != null)
+            {
+                if(agentController.playerAgent.args.path != agentController.playerFullPath[0])
+                {
+                    agentController.playerAgent.args.path = agentController.playerFullPath[0];
+                }
+            }
+            #endregion
+            if (!agentController.playerAgent.args.path.completed)
+            {
+                agentController.playerAgent.args.MoveAlongPath(Time.fixedDeltaTime);
+            }
+            else
+            {
+                if(agentController.playerFullPath.Count == 1)
+                {
+                    //then this is last path we just completed
+                    agentController.Player_CompletePath();
+                    agentController.playerFullPath = null;
+                }
+                else
+                {
+                    agentController.playerFullPath.RemoveAt(0);
+                }
+                agentController.Enemies_PathCalculate();
+            }
+        }
+        foreach (IAgent agent in agentController.enemies)
+        {
+            if(agent.args.hasInstruction)
+            {
+                agent.args.MoveAlongPath(Time.fixedDeltaTime);
+            }
+        }
+    }
     void CameraTrackAnimation(Vector3 targetPos)
     {
         targetPos.z = mainCamera.transform.position.z;
@@ -400,25 +467,56 @@ public class GameManager : MonoBehaviour
     public Hashtable reservedTiles;
     private void OnDrawGizmos()
     {
+        if (!Application.isPlaying)
+            return;
         Color gizmoColor = Color.black;
-        if(agentCurrentPositionList != null && agentCurrentPositionList.Count > 0)
+        foreach (IAgent agent in agentController.enemies)
         {
-            gizmoColor = Color.white;
-            gizmoColor.a = 0.5f;
-            Gizmos.color = gizmoColor;
-            foreach (var item in agentCurrentPositionList)
+            if(!agent.args.hasInstruction)
             {
-                Gizmos.DrawCube(CellToWorld(item), Vector3.one);
+                gizmoColor = Color.black;
+                gizmoColor.a = 0.5f;
+                Gizmos.color = gizmoColor;
+                Gizmos.DrawWireCube(agent.args.cellPos, Vector3.one);
+                continue;
+            }
+            if (agent.args.path != null && !agent.args.path.completed)
+            {
+                gizmoColor = Color.red;
+                gizmoColor.a = 0.5f;
+                Gizmos.color = gizmoColor;
+            }
+            if (agent.args.path != null && agent.args.path.completed)
+            {
+                gizmoColor = Color.green;
+                gizmoColor.a = 0.5f;
+                Gizmos.color = gizmoColor;
+            }
+            Gizmos.DrawWireCube(agent.args.worldPos, Vector3.one);
+            if (agent.args.previousPoint.z != -1)
+            {
+                gizmoColor = Color.red * 0.5f;
+                Gizmos.color = gizmoColor;
+                Gizmos.DrawWireCube(agent.args.previousPoint, Vector3.one * 0.5f);
+            }
+            if (agent.args.path != null && !agent.args.path.completed)
+            {
+                gizmoColor = Color.blue;
+                gizmoColor.a = 0.5f;
+                Gizmos.color = gizmoColor;
+                Gizmos.DrawWireCube(agent.args.path.end, Vector3.one * 0.75f);
             }
         }
-        if(agentNextStepList != null && agentNextStepList.Count > 0)
+
+        if(agentController.playerFullPath != null && agentController.playerFullPath.Count > 0)
         {
-            gizmoColor = Color.blue;
-            gizmoColor.a = 0.5f;
-            Gizmos.color = gizmoColor;
-            foreach (var item in agentNextStepList)
+            foreach (AgentPath path in agentController.playerFullPath)
             {
-                Gizmos.DrawCube(CellToWorld(item), Vector3.one);
+                gizmoColor = Color.magenta;
+                gizmoColor.a = 0.5f;
+                Gizmos.color = gizmoColor;
+                Gizmos.DrawWireCube(path.start, Vector3.one * 0.35f);
+                Gizmos.DrawWireCube(path.end, Vector3.one * 0.35f);
             }
         }
     }
