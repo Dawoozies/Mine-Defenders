@@ -297,7 +297,7 @@ MonoBehaviour:
   enemyBasePrefab: {fileID: 8754239654235546804, guid: 69e4d37105eb8d64196e40423dde0ab2, type: 3}
   enemyBases:
   - {fileID: 11400000, guid: 7669a4ecb54d566448f522dcfd762461, type: 2}
-  - {fileID: 11400000, guid: 7669a4ecb54d566448f522dcfd762461, type: 2}
+  - {fileID: 11400000, guid: 8f01d4a2d45483d4d800a0bd9a0af402, type: 2}
   enemyAgents: []
 --- !u!1 &226689017
 GameObject:
@@ -1682,6 +1682,8 @@ MonoBehaviour:
   playerLastCellPos: {x: 0, y: 0, z: 0}
   player: {fileID: 0}
   pitSpawnTime: 2
+  computePaths: 0
+  moveAlongPaths: 0
 --- !u!1 &774018938
 GameObject:
   m_ObjectHideFlags: 0

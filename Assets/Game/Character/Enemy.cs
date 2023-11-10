@@ -9,9 +9,6 @@ public class Enemy : MonoBehaviour, IAgent
     EnemyBase enemyBase;
     Vector3Int agentCellPos { get { return GameManager.ins.WorldToCell(transform.position); } }
     Vector3 agentCellCenterPos { get { return GameManager.ins.WorldToCellCenter(transform.position); } }
-    AgentType IAgent.AgentType {
-        get => AgentType.Enemy;
-    }
     AgentArgs IAgent.args { get { return agentData; } }
     AgentArgs agentData;
 
@@ -26,6 +23,7 @@ public class Enemy : MonoBehaviour, IAgent
         public ObjectAnimator objectAnimator;
     }
     public Graphics baseGraphics;
+    float attackCharge;
     public void Initialise(EnemyBase enemyBase)
     {
         this.enemyBase = enemyBase;
@@ -37,11 +35,22 @@ public class Enemy : MonoBehaviour, IAgent
         baseGraphics.spriteAnimator.CreateAndPlayAnimation(defaultAnimation);
 
         //Set up agent data
-        agentData = new AgentArgs(transform);
+        agentData = new AgentArgs(transform, AgentType.Enemy);
         agentData.moveSpeed = enemyBase.moveSpeed;
         agentData.notWalkable = GameManager.ins.GetEnemyInaccessibleTilemaps();
         agentData.reservedTiles = GameManager.ins.reservedTiles;
         agentData.moveInterpolationType = enemyBase.moveInterpolationType;
         agentData.previousPoint = new Vector3Int(0, 0, -1);
+        agentData.movesLeft = enemyBase.moveSpeed;
     }
+    void Update()
+    {
+        attackCharge += Time.deltaTime;
+        if(attackCharge >= enemyBase.attackChargeTime)
+        {
+
+            attackCharge = 0;
+        }
+    }
+
 }

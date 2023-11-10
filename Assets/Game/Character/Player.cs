@@ -1,17 +1,17 @@
+using ItemFactory;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Material = ItemFactory.Material;
+
 public class Player : MonoBehaviour, IAgent
 {
     NavigationOrder order;
-    public float moveSpeed;
+    public int moveSpeed;
     public InterpolationType moveInterpolationType;
     Vector3Int agentCellPos { get { return GameManager.ins.WorldToCell(transform.position); } }
     Vector3 agentCellCenterPos { get { return GameManager.ins.WorldToCellCenter(transform.position); } }
-    AgentType IAgent.AgentType { 
-        get => AgentType.Player; 
-    }
 
     AgentArgs IAgent.args { get { return agentData; } }
     AgentArgs agentData;
@@ -29,19 +29,22 @@ public class Player : MonoBehaviour, IAgent
         [HideInInspector]
         public Vector3 toolTargetCellCenterWorldPos;
         public int baseDamage;
-        public SpriteAnimator spriteAnimator;
+        public Equipment equipmentBase;
+        public Material materialBase;
         public ObjectAnimator objectAnimator;
+        public SpriteRenderer materialPartRenderer;
+        public SpriteRenderer basePartRenderer;
     }
     public Tool tool;
     private void Awake()
     {
         //Set up agentData
-        agentData = new AgentArgs(transform);
+        agentData = new AgentArgs(transform, AgentType.Player);
         agentData.moveSpeed = moveSpeed;
         agentData.notWalkable = GameManager.ins.GetPlayerInaccessibleTilemaps();
         agentData.reservedTiles = null;
         agentData.moveInterpolationType = moveInterpolationType;
-
+        agentData.movesLeft = moveSpeed;
         agentPositionBuffer = new Buffer<Vector3>(agentCellCenterPos, 0.125f);
         agentPositionBuffer.onWriteToBuffer += () => {
             GameManager.OnPlayerPositionBufferUpdated += () => { return agentCellPos; };
@@ -59,7 +62,9 @@ public class Player : MonoBehaviour, IAgent
                 {
                     GameManager.ins.BreakStone(refToCell);
                     tool.objectAnimator.PlayAnimation("NotMining");
-                    tool.spriteAnimator.PlayAnimation("PutAway");
+                    //tool.spriteAnimator.PlayAnimation("PutAway");
+                    tool.basePartRenderer.color = Color.clear;
+                    tool.materialPartRenderer.color = Color.clear;
                 }
             }
         };
@@ -91,7 +96,13 @@ public class Player : MonoBehaviour, IAgent
     }
     public void StartMiningAnimation()
     {
-        tool.spriteAnimator.PlayAnimation("Pickaxe_Default");
+        #region Construct Pickaxe Sprite
+        tool.basePartRenderer.sprite = tool.equipmentBase.basePart;
+        tool.materialPartRenderer.sprite = tool.equipmentBase.materialPart;
+        tool.basePartRenderer.color = Color.white;
+        tool.materialPartRenderer.color = tool.materialBase.color;
+        #endregion
+        #region Create And Play Object Animation
         ObjectAnimation miningAnimation = new ObjectAnimation();
         miningAnimation.animName = "Mining";
         miningAnimation.frames = 3;
@@ -129,6 +140,7 @@ public class Player : MonoBehaviour, IAgent
         };
         miningAnimation.loop = true;
         tool.objectAnimator.CreateAndPlayAnimation(miningAnimation);
+        #endregion
     }
     void Update()
     {

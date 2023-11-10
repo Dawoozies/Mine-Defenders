@@ -37,7 +37,7 @@ public static class Pathfinding
                     continue;
                 }
                 bool isWalkable = true;
-                foreach (Tilemap environment in environments)
+                foreach (Tilemap environment in environments) //Could merge tilemaps at the beginning to save time
                 {
                     if (environment.GetTile(nodePosition) != null)
                     {
@@ -91,8 +91,9 @@ public static class Pathfinding
         {
             PathNode current = openList.First;
             if (current.position == y)
+            {
                 return reconstructPath(current);
-
+            }
             openList.Dequeue();
             List<PathNode> neighbourNodes = new List<PathNode>();
             List<CellData> neighbours = GameManager.ins.GetCardinalNeighboursAroundCell(current.position, false);
@@ -109,7 +110,7 @@ public static class Pathfinding
                         break;
                     }
                 }
-                if(isWalkable)
+                if (isWalkable)
                 {
                     if (!allNodes.ContainsKey(neighbour.cellPosition))
                         allNodes.Add(neighbour.cellPosition, new PathNode(neighbour.cellPosition, current, y));
@@ -130,9 +131,13 @@ public static class Pathfinding
                     neighbourNode.g = tentativeGScore;
                     neighbourNode.f = tentativeGScore + neighbourNode.h;
                     if (!openList.Contains(neighbourNode))
+                    {
                         openList.Enqueue(neighbourNode, neighbourNode.f);
+                    }
                     else
+                    {
                         openList.UpdatePriority(neighbourNode, neighbourNode.f);
+                    }
                 }
             }
         }

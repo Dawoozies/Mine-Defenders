@@ -6,7 +6,6 @@ public interface IAgent
 {
     public AgentArgs args { get; }
     public AgentNavigator navigator { get; }
-    public AgentType AgentType { get; }
 }
 public enum AgentType
 {
@@ -16,8 +15,9 @@ public enum AgentType
 }
 public class AgentArgs
 {
+    public AgentType type;
     public Transform transform { get; set; }
-    public float moveSpeed;
+    public int moveSpeed;
     public Vector3Int cellPos { get => GameManager.ins.WorldToCell(transform.position); }
     public Vector3 worldPos { get => GameManager.ins.WorldToCellCenter(transform.position); }
     public Tilemap[] notWalkable;
@@ -26,22 +26,78 @@ public class AgentArgs
     public AgentPath path;
     public Vector3Int previousPoint;
     public bool hasInstruction;
-    public AgentArgs(Transform transform)
+    public int movesLeft;
+
+    public List<AgentPath> playerPath;
+    public int playerPathIndex;
+    public bool pathAtIndexCompleted;
+    public bool finalPathCompleted;
+    public delegate void PlayerNoMovesLeft();
+    public event PlayerNoMovesLeft onPlayerNoMovesLeft;
+    public AgentArgs(Transform transform, AgentType type)
     {
         this.transform = transform;
+        this.type = type;
     }
     public void MoveAlongPath(float timeDelta)
     {
-        if (path == null)
-            return;
-        if (path.completed)
+        if(type == AgentType.Enemy)
         {
-            previousPoint = path.start;
-            if (hasInstruction)
-                hasInstruction = false;
-            return;
+            if (path == null)
+                return;
+            if (path.completed)
+            {
+                Debug.Log("path part completed");
+                previousPoint = path.start;
+                if (hasInstruction)
+                    hasInstruction = false;
+                movesLeft--;
+                return;
+            }
+            transform.position = path.Traverse(timeDelta * moveSpeed);
         }
-        transform.position = path.Traverse(timeDelta * moveSpeed);
+        if(type == AgentType.Player)
+        {
+            if(movesLeft <= 0)
+            {
+                onPlayerNoMovesLeft?.Invoke();
+                movesLeft = moveSpeed;
+            }
+            if (playerPath == null || playerPath.Count == 0)
+                return;
+            if (playerPathIndex >= playerPath.Count)
+            {
+                Debug.Log("player path is complete");
+                playerPath = null;
+                return;
+            }
+            if (playerPath[playerPathIndex].completed)
+            {
+                if (playerPathIndex + 1 <= playerPath.Count)
+                {
+                    Debug.Log($"player path at index {playerPathIndex} is complete and there is another");
+                    //this makes the player move from current path to next one
+                    movesLeft--;
+                    playerPathIndex++;
+                    return;
+                    //Debug.Log($"Increase path index to {playerPathIndex}");
+                }
+                else
+                {
+                    if (!finalPathCompleted)
+                    {
+                        Debug.Log("This is the last path index");
+                        finalPathCompleted = true;
+                    }
+                }
+            }
+            transform.position = playerPath[playerPathIndex].Traverse(timeDelta * moveSpeed);
+        }
+    }
+    public void RefreshMovesLeft()
+    {
+        Debug.Log($"Refreshing movesLeft for {transform.name}");
+        movesLeft = moveSpeed;
     }
 }
 //Dont need order name lmao
@@ -113,7 +169,7 @@ public class AgentNavigator
         if (segments[activeSegment].completed)
         {
             segments[activeSegment].start.ReleaseOccupation(agent);
-            if (agent.AgentType == AgentType.Player)
+            if (agent.args.type == AgentType.Player)
                 GameManager.ins.Update_EnemyAgentsOnPlayerNewCell(segments[activeSegment].end);
             activeSegment++;
         }

@@ -5,7 +5,8 @@ using UnityEngine;
 public class EnemyBase : ScriptableObject
 {
     public Color bloodColor;
-    public int moveSpeed; //Tiles per second
+    public float attackChargeTime;
+    public int moveSpeed; //Tiles per movement update
     public InterpolationType moveInterpolationType;
     public InterpolationType attackInterpolationType;
     public Sprite[] defaultSprites;

@@ -17,7 +17,7 @@ public class CharacterGenerator : MonoBehaviour
     public Enemy CreateEnemy(Vector3Int cellToSpawnAt)
     {
         Enemy createdEnemy = Instantiate(enemyBasePrefab, GameManager.ins.CellToWorld(cellToSpawnAt), Quaternion.identity, transform).GetComponent<Enemy>();
-        createdEnemy.Initialise(enemyBases[0]);
+        createdEnemy.Initialise(enemyBases[Random.Range(0, enemyBases.Length)]);
         //GameManager.ins.allAgents.Add(createdEnemy);
         return createdEnemy;
     }

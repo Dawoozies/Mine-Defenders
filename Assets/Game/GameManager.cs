@@ -36,7 +36,6 @@ public class GameManager : MonoBehaviour
     {
         public Player player;
         public IAgent playerAgent;
-        public List<AgentPath> playerFullPath;
         public delegate void OnPlayerCompletedFullPath();
         public event OnPlayerCompletedFullPath onPlayerCompletedFullPath;
         public List<IAgent> enemies;
@@ -72,7 +71,7 @@ public class GameManager : MonoBehaviour
                         playerAgent.args.moveInterpolationType);
                     fullPath.Add(path);
                 }
-                playerFullPath = fullPath;
+                playerAgent.args.playerPath = fullPath;
                 #endregion
                 onPlayerCompletedFullPath += player.StartMiningAnimation;
                 #endregion
@@ -99,7 +98,8 @@ public class GameManager : MonoBehaviour
                         playerAgent.args.moveInterpolationType);
                     fullPath.Add(path);
                 }
-                playerFullPath = fullPath;
+                playerAgent.args.playerPath = fullPath;
+                playerAgent.args.playerPathIndex = 0;
                 #endregion
             }
         }
@@ -110,17 +110,23 @@ public class GameManager : MonoBehaviour
 
             #region CurrentPositions + Clear NextStep List
             List<Vector3Int> agentCurrentPositionList = new List<Vector3Int>();
+            List<Vector3Int> agentNextStepList = new List<Vector3Int>();
             foreach (IAgent agent in enemies)
             {
                 agentCurrentPositionList.Add(agent.args.cellPos);
+                if(agent.args.path != null)
+                {
+                    agentNextStepList.Add(agent.args.path.end);
+                }
             }
-            List<Vector3Int> agentNextStepList = new List<Vector3Int>();
             #endregion
             for (int i = 0;  i < enemies.Count; i++)
             {
                 IAgent agent = enemies[i];
                 //path to write to
                 if (agent.args.hasInstruction)
+                    continue;
+                if (agent.args.movesLeft <= 0)
                     continue;
                 AgentPath path = new AgentPath(agent.args.cellPos, agent.args.cellPos, agent.args.moveInterpolationType);
                 agent.args.path = path;
@@ -193,6 +199,13 @@ public class GameManager : MonoBehaviour
         {
             onPlayerCompletedFullPath?.Invoke();
         }
+        public void Agents_RefreshMovesLeft()
+        {
+            foreach (IAgent agent in enemies)
+            {
+                agent.args.RefreshMovesLeft();
+            }
+        }
     }
     AgentController agentController;
     PlayerControls input;
@@ -210,8 +223,6 @@ public class GameManager : MonoBehaviour
         lootManager = GetComponentInChildren<LootManager>();
         mainCamera = Camera.main;
         cameraAnimator = mainCamera.GetComponent<ObjectAnimator>();
-
-
 
         //On Tap event
         input = new PlayerControls();
@@ -243,12 +254,12 @@ public class GameManager : MonoBehaviour
         reservedTiles = new Hashtable();
 
         allAgents = new List<IAgent>();
-        //player = characterGenerator.CreatePlayer(Vector3Int.zero);
-        //Enemy enemyOne = characterGenerator.CreateEnemy(Vector3Int.one);
-        //Enemy enemyTwo = characterGenerator.CreateEnemy(-Vector3Int.one);
         agentController = new AgentController();
         agentController.player = characterGenerator.CreatePlayer(Vector3Int.zero);
         agentController.playerAgent = agentController.player;
+
+        agentController.playerAgent.args.onPlayerNoMovesLeft += agentController.Agents_RefreshMovesLeft;
+
         onTap += agentController.Player_PathCalculate;
 
         agentController.enemies = new List<IAgent>()
@@ -261,8 +272,6 @@ public class GameManager : MonoBehaviour
             characterGenerator.CreateEnemy(new Vector3Int(-1,2,0)),
             characterGenerator.CreateEnemy(new Vector3Int(-3,3,0)),
         };
-
-        computePaths = true;
     }
     
     public delegate Vector3Int PlayerPositionBufferUpdated(); //Just updates cell position
@@ -328,12 +337,6 @@ public class GameManager : MonoBehaviour
                 pitSpawnTimer = 0;
             }
         }
-
-        if(computePaths)
-        {
-            agentController.Enemies_PathCalculate();
-            computePaths = false;
-        }
         return;
         //if(WorldToCell(player.position) != playerLastCellPos)
         //{
@@ -343,47 +346,18 @@ public class GameManager : MonoBehaviour
     }
     private void FixedUpdate()
     {
-        if(agentController.playerFullPath != null && agentController.playerFullPath.Count > 0)
-        {
-            #region Set player agent path to be next one in full path
-            if (agentController.playerAgent.args.path == null)
-            {
-                agentController.playerAgent.args.path = agentController.playerFullPath[0];
-            }
-            if(agentController.playerAgent.args.path != null)
-            {
-                if(agentController.playerAgent.args.path != agentController.playerFullPath[0])
-                {
-                    agentController.playerAgent.args.path = agentController.playerFullPath[0];
-                }
-            }
-            #endregion
-            if (!agentController.playerAgent.args.path.completed)
-            {
-                agentController.playerAgent.args.MoveAlongPath(Time.fixedDeltaTime);
-            }
-            else
-            {
-                if(agentController.playerFullPath.Count == 1)
-                {
-                    //then this is last path we just completed
-                    agentController.Player_CompletePath();
-                    agentController.playerFullPath = null;
-                }
-                else
-                {
-                    agentController.playerFullPath.RemoveAt(0);
-                }
-                agentController.Enemies_PathCalculate();
-            }
-        }
+        agentController.playerAgent.args.MoveAlongPath(Time.fixedDeltaTime);
         foreach (IAgent agent in agentController.enemies)
         {
-            if(agent.args.hasInstruction)
+            //Debug.Log($"agent.args.hasInstruction = {agent.args.hasInstruction}");
+            //Debug.Log($"agent.args.movesLeft = {agent.args.movesLeft}");
+            //Debug.Log($"agent.args.path == null = {agent.args.path == null}");
+            if (agent.args.hasInstruction)
             {
                 agent.args.MoveAlongPath(Time.fixedDeltaTime);
             }
         }
+        agentController.Enemies_PathCalculate();
     }
     void CameraTrackAnimation(Vector3 targetPos)
     {
@@ -508,9 +482,9 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        if(agentController.playerFullPath != null && agentController.playerFullPath.Count > 0)
+        if(agentController.playerAgent.args.playerPath != null && agentController.playerAgent.args.playerPath.Count > 0)
         {
-            foreach (AgentPath path in agentController.playerFullPath)
+            foreach (AgentPath path in agentController.playerAgent.args.playerPath)
             {
                 gizmoColor = Color.magenta;
                 gizmoColor.a = 0.5f;
@@ -744,7 +718,7 @@ public class CellData
         {
             return GetPathToClosestCardinalNeighbour((IAgent)agent);
         }
-        if(agent.AgentType == AgentType.Enemy)
+        if(agent.args.type == AgentType.Enemy)
         {
 
         }
@@ -772,7 +746,7 @@ public class CellData
             return;
         if(agent == occupyingAgent)
         {
-            Debug.Log($"Successfully released occupation of {agent.AgentType}");
+            Debug.Log($"Successfully released occupation of {agent.args.type}");
             occupyingAgent = null;
             GameManager.ins.Update_OccupiedTiles(this, null);
         }
@@ -806,7 +780,7 @@ public class CellData
             return;
         if(releasingAgent == reservingAgent)
         {
-            Debug.Log($"Successfully released occupation of {releasingAgent.AgentType}");
+            Debug.Log($"Successfully released occupation of {releasingAgent.args.type}");
             reservingAgent = null;
             GameManager.ins.Update_ReservedTiles(this, null);
         }
