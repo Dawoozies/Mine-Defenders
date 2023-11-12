@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class Enemy : MonoBehaviour, IAgent
 {
@@ -12,10 +13,8 @@ public class Enemy : MonoBehaviour, IAgent
     AgentArgs IAgent.args { get { return agentData; } }
     AgentArgs agentData;
 
-    AgentNavigator IAgent.navigator { get { return agentNavigator; } }
-    AgentNavigator agentNavigator;
-
-
+    List<Attack> onCooldown = new();
+    List<Attack> available = new();
     [Serializable]
     public class Graphics
     {
@@ -34,6 +33,12 @@ public class Enemy : MonoBehaviour, IAgent
         defaultAnimation.sprites = new List<Sprite>() { enemyBase.defaultSprites[0], enemyBase.defaultSprites[1] };
         baseGraphics.spriteAnimator.CreateAndPlayAnimation(defaultAnimation);
 
+        foreach (AttackBase attackBase in enemyBase.attackBases)
+        {
+            Attack attack = new Attack(attackBase);
+            available.Add(attack);
+        }
+
         //Set up agent data
         agentData = new AgentArgs(transform, AgentType.Enemy);
         agentData.moveSpeed = enemyBase.moveSpeed;
@@ -46,11 +51,66 @@ public class Enemy : MonoBehaviour, IAgent
     void Update()
     {
         attackCharge += Time.deltaTime;
-        if(attackCharge >= enemyBase.attackChargeTime)
+        bool canAttack = GameManager.ins.DistanceFromPlayer(this) <= 1 && available.Count > 0;
+        if(attackCharge >= enemyBase.attackChargeTime && canAttack)
         {
-
+            StartAttackAnimation();
             attackCharge = 0;
         }
+        Cooldown();
     }
+    void Cooldown()
+    {
+        List<Attack> onCooldownNew = new List<Attack>();
+        foreach (Attack attack in onCooldown)
+        {
+            attack.CooldownUpdate(Time.deltaTime);
+            if(!attack.offCooldown)
+            {
+                onCooldownNew.Add(attack);
+            }
+            else
+            {
+                available.Add(attack);
+            }
+        }
+        onCooldown = onCooldownNew;
+    }
+    Attack GetAttack()
+    {
+        int selectedIndex = Random.Range(0, available.Count);
+        Attack selectedAttack = available[selectedIndex];
+        onCooldown.Add(available[selectedIndex]);
+        available.RemoveAt(selectedIndex);
+        return selectedAttack;
+    }
+    void StartAttackAnimation()
+    {
+        Attack selectedAttack = GetAttack();
+        ObjectAnimation attackAnimation = new ObjectAnimation();
+        attackAnimation.animName = "Attack";
+        attackAnimation.frames = 3;
+        Vector3 dirToPlayer = Vector3.Normalize(GameManager.ins.GetPlayerWorldPosition() - agentCellCenterPos);
+        attackAnimation.positions = new List<Vector3>
+        {
+            Vector3.zero,
+            dirToPlayer,
+            Vector3.zero,
+        };
+        attackAnimation.interpolationTypes = new List<InterpolationType>
+        {
+            selectedAttack.attackBase.interpolationType,
+            selectedAttack.attackBase.interpolationType,
+            selectedAttack.attackBase.interpolationType,
+        };
+        baseGraphics.objectAnimator.animationSpeed = selectedAttack.attackBase.interpolationSpeed;
+        baseGraphics.objectAnimator.CreateAndPlayAnimation(attackAnimation);
 
+        //do ui action display
+        UIManager.ins.Get_Action_Display().TrackingRequest(
+            this, 
+            selectedAttack.attackBase.icon, 
+            1/ selectedAttack.attackBase.interpolationSpeed
+            );
+    }
 }

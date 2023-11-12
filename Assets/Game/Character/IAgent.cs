@@ -5,7 +5,6 @@ using UnityEngine.Tilemaps;
 public interface IAgent
 {
     public AgentArgs args { get; }
-    public AgentNavigator navigator { get; }
 }
 public enum AgentType
 {
@@ -20,6 +19,7 @@ public class AgentArgs
     public int moveSpeed;
     public Vector3Int cellPos { get => GameManager.ins.WorldToCell(transform.position); }
     public Vector3 worldPos { get => GameManager.ins.WorldToCellCenter(transform.position); }
+    public Vector3 screenPos { get => GameManager.ins.WorldToScreenPosition(transform.position); }
     public Tilemap[] notWalkable;
     public Hashtable reservedTiles;
     public InterpolationType moveInterpolationType;
@@ -36,6 +36,7 @@ public class AgentArgs
     public event PlayerNoMovesLeft onPlayerNoMovesLeft;
     public delegate void PlayerCompletedFullPath();
     public event PlayerCompletedFullPath onPlayerCompletedFullPath;
+
     public AgentArgs(Transform transform, AgentType type)
     {
         this.transform = transform;
@@ -176,8 +177,6 @@ public class AgentNavigator
         if (segments[activeSegment].completed)
         {
             segments[activeSegment].start.ReleaseOccupation(agent);
-            if (agent.args.type == AgentType.Player)
-                GameManager.ins.Update_EnemyAgentsOnPlayerNewCell(segments[activeSegment].end);
             activeSegment++;
         }
     }

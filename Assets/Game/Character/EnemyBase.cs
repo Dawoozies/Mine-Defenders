@@ -8,6 +8,6 @@ public class EnemyBase : ScriptableObject
     public float attackChargeTime;
     public int moveSpeed; //Tiles per movement update
     public InterpolationType moveInterpolationType;
-    public InterpolationType attackInterpolationType;
     public Sprite[] defaultSprites;
+    public AttackBase[] attackBases;
 }

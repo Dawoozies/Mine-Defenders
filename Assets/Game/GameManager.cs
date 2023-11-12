@@ -393,6 +393,10 @@ public class GameManager : MonoBehaviour
         worldPosition.z = 0;
         return levelGenerator.StoneTilemap.GetCellCenterWorld(WorldToCell(worldPosition));
     }
+    public Vector3 WorldToScreenPosition(Vector3 worldPosition)
+    {
+        return mainCamera.WorldToScreenPoint(worldPosition);
+    }
     public Vector3 CellToWorld(Vector3Int cellPos)
     {
         return levelGenerator.StoneTilemap.GetCellCenterWorld(cellPos);
@@ -650,14 +654,13 @@ public class GameManager : MonoBehaviour
             reservedTiles.Add(key, agent);
         }
     }
-    public void Update_EnemyAgentsOnPlayerNewCell(CellData cellData)
+    public float DistanceFromPlayer(IAgent agent)
     {
-        if (allAgents == null || allAgents.Count == 0)
-            return;
-        foreach (IAgent agent in allAgents)
-        {
-            agent.navigator.SetNewTarget(cellData);
-        }
+        return Vector3.Distance(agent.args.cellPos, agentController.playerAgent.args.cellPos);
+    }
+    public Vector3 GetPlayerWorldPosition()
+    {
+        return agentController.playerAgent.args.worldPos;
     }
 }
 public class CellData

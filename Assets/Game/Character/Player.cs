@@ -16,10 +16,6 @@ public class Player : MonoBehaviour, IAgent
     AgentArgs IAgent.args { get { return agentData; } }
     AgentArgs agentData;
 
-    AgentNavigator IAgent.navigator { get { return agentNavigator; } }
-    AgentNavigator agentNavigator;
-    
-
     Buffer<Vector3> agentPositionBuffer;
     [Serializable]
     public class Tool
