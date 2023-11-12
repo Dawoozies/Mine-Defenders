@@ -34,6 +34,8 @@ public class AgentArgs
     public bool finalPathCompleted;
     public delegate void PlayerNoMovesLeft();
     public event PlayerNoMovesLeft onPlayerNoMovesLeft;
+    public delegate void PlayerCompletedFullPath();
+    public event PlayerCompletedFullPath onPlayerCompletedFullPath;
     public AgentArgs(Transform transform, AgentType type)
     {
         this.transform = transform;
@@ -43,11 +45,11 @@ public class AgentArgs
     {
         if(type == AgentType.Enemy)
         {
-            if (path == null)
+            if (path == null || movesLeft <= 0)
                 return;
             if (path.completed)
             {
-                Debug.Log("path part completed");
+                //Debug.Log("path part completed");
                 previousPoint = path.start;
                 if (hasInstruction)
                     hasInstruction = false;
@@ -68,6 +70,7 @@ public class AgentArgs
             if (playerPathIndex >= playerPath.Count)
             {
                 Debug.Log("player path is complete");
+                onPlayerCompletedFullPath?.Invoke();
                 playerPath = null;
                 return;
             }
@@ -75,7 +78,7 @@ public class AgentArgs
             {
                 if (playerPathIndex + 1 <= playerPath.Count)
                 {
-                    Debug.Log($"player path at index {playerPathIndex} is complete and there is another");
+                    //Debug.Log($"player path at index {playerPathIndex} is complete and there is another");
                     //this makes the player move from current path to next one
                     movesLeft--;
                     playerPathIndex++;
@@ -98,6 +101,10 @@ public class AgentArgs
     {
         Debug.Log($"Refreshing movesLeft for {transform.name}");
         movesLeft = moveSpeed;
+    }
+    public void ResetCompletedFullPathEvent()
+    {
+        onPlayerCompletedFullPath = null;
     }
 }
 //Dont need order name lmao

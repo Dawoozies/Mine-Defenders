@@ -36,12 +36,10 @@ public class GameManager : MonoBehaviour
     {
         public Player player;
         public IAgent playerAgent;
-        public delegate void OnPlayerCompletedFullPath();
-        public event OnPlayerCompletedFullPath onPlayerCompletedFullPath;
         public List<IAgent> enemies;
         public void Player_PathCalculate(CellData cellData)
         {
-            onPlayerCompletedFullPath = null;
+            playerAgent.args.ResetCompletedFullPathEvent();
             bool targetingStone = cellData.durability > 0;
             if(targetingStone)
             {
@@ -72,8 +70,9 @@ public class GameManager : MonoBehaviour
                     fullPath.Add(path);
                 }
                 playerAgent.args.playerPath = fullPath;
+                playerAgent.args.playerPathIndex = 0;
                 #endregion
-                onPlayerCompletedFullPath += player.StartMiningAnimation;
+                playerAgent.args.onPlayerCompletedFullPath += player.StartMiningAnimation;
                 #endregion
             }
             else
@@ -160,6 +159,7 @@ public class GameManager : MonoBehaviour
                         if (neighbourPosition == agent.args.previousPoint)
                         {
                             neighbourPositionInvalid = true;
+                            agent.args.previousPoint = new Vector3Int(0, 0, -1);
                         }
                     }
                     if (neighbourPositionInvalid)
@@ -195,16 +195,24 @@ public class GameManager : MonoBehaviour
                 #endregion
             }
         }
-        public void Player_CompletePath()
-        {
-            onPlayerCompletedFullPath?.Invoke();
-        }
         public void Agents_RefreshMovesLeft()
         {
             foreach (IAgent agent in enemies)
             {
                 agent.args.RefreshMovesLeft();
             }
+        }
+        public bool CheckAgentCanSpawnAtPosition(Vector3Int spawnPosition)
+        {
+            bool canSpawnHere = true;
+            foreach (IAgent agent in enemies)
+            {
+                if (agent.args.cellPos == spawnPosition)
+                {
+                    canSpawnHere = false;
+                }
+            }
+            return canSpawnHere;
         }
     }
     AgentController agentController;
@@ -332,7 +340,11 @@ public class GameManager : MonoBehaviour
                 foreach (Vector3Int item in uncoveredPitCenters.Keys)
                 {
                     //Debug.Log($"Spawn enemies at {item}");
-                    characterGenerator.CreateEnemy(item);
+                    if(agentController.CheckAgentCanSpawnAtPosition(item))
+                    {
+                        Enemy newEnemy = characterGenerator.CreateEnemy(item);
+                        agentController.enemies.Add(newEnemy);
+                    }
                 }
                 pitSpawnTimer = 0;
             }
@@ -411,31 +423,6 @@ public class GameManager : MonoBehaviour
         return 
             gridInformation.GetPositionProperty(cellPos, "IsPit", 0) == 1
             && gridInformation.GetPositionProperty(cellPos, "IsUncoveredPit", 0) == 1;
-    }
-    public bool SpawnEnemy(Vector3 spawnPosition)
-    {
-        if (!CanEnemySpawnHere(spawnPosition)){
-            return false;
-        }
-        characterGenerator.CreateEnemy(spawnPosition);
-        return true;
-    }
-
-    public bool CanEnemySpawnHere(Vector3 spawnPosition) 
-    {
-        foreach (CharacterAgent agent in getEnemyAgents())
-        {
-            if (Vector3.Distance(agent.transform.position, spawnPosition) < 1.2f) 
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    public List<CharacterAgent> getEnemyAgents() {
-        return characterGenerator.enemyAgents;
     }
     public Hashtable occupiedTiles;
     public Hashtable reservedTiles;

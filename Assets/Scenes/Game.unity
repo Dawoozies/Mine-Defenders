@@ -235,8 +235,8 @@ MonoBehaviour:
   topRightCorner: {x: 32, y: 32}
   spawnAreaBottomLeftCorner: {x: -4, y: -4}
   spawnAreaTopRightCorner: {x: 4, y: 4}
-  minPitDistanceFromSpawn: 3
-  minPitDistanceFromEachOther: 5
+  minPitDistanceFromSpawn: 5
+  minPitDistanceFromEachOther: 12
   hiddenTile: {fileID: 11400000, guid: cfbe5202f4b997a47933668b8ac111e9, type: 2}
   floorTile: {fileID: 11400000, guid: 4ec5ca44acb356640b5e6fd12719b687, type: 2}
   pitTile: {fileID: 11400000, guid: b573a7e59b0e5644eb2f00d2ac298f21, type: 2}
@@ -298,7 +298,6 @@ MonoBehaviour:
   enemyBases:
   - {fileID: 11400000, guid: 7669a4ecb54d566448f522dcfd762461, type: 2}
   - {fileID: 11400000, guid: 8f01d4a2d45483d4d800a0bd9a0af402, type: 2}
-  enemyAgents: []
 --- !u!1 &226689017
 GameObject:
   m_ObjectHideFlags: 0

@@ -23,20 +23,6 @@ public class PitManager : MonoBehaviour
         }
     }
     List<UncoveredPit> uncoveredPits;
-    public void ManagedStart()
-    {
-        uncoveredPits = new List<UncoveredPit>();
-        GameManager.PitUncoveredEvent += OnPitUncovered;
-    }
-    void OnPitUncovered((Vector3Int, Vector3) pit)
-    {
-        UncoveredPit newPit = new UncoveredPit(pit);
-        newPit.onTimeReached += () => {
-            return GameManager.ins.SpawnEnemy(pit.Item2);
-        };
-        uncoveredPits.Add(newPit);
-    }
-
     private void Update()
     {
         return;
