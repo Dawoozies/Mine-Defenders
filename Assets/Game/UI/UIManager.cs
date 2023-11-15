@@ -33,7 +33,7 @@ public class UIManager : MonoBehaviour
         UI_Action_Display newPoolObject =
             Instantiate(UI_Action_Display_Prefab, transform).GetComponent<UI_Action_Display>();
 
-        newPoolObject.onTimeDone += ConfigureDeactivated_Action_Display;
+        newPoolObject.ReturnToPoolEvent += ConfigureDeactivated_Action_Display;
 
         newPoolObject.gameObject.SetActive(false);
 

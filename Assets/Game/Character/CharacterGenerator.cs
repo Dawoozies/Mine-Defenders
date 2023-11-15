@@ -10,6 +10,8 @@ public class CharacterGenerator : MonoBehaviour
     public Player CreatePlayer(Vector3Int cellToSpawnAt)
     {
         Player player = Instantiate(playerPrefab, GameManager.ins.CellToWorld(cellToSpawnAt), Quaternion.identity, transform).GetComponent<Player>();
+        IAgent playerAgent = player;
+        playerAgent.args.health = 100;
         return player;
     }
     public Enemy CreateEnemy(Vector3Int cellToSpawnAt)

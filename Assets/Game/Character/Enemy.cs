@@ -47,6 +47,7 @@ public class Enemy : MonoBehaviour, IAgent
         agentData.moveInterpolationType = enemyBase.moveInterpolationType;
         agentData.previousPoint = new Vector3Int(0, 0, -1);
         agentData.movesLeft = enemyBase.moveSpeed;
+        agentData.health = enemyBase.hearts * 4;
     }
     void Update()
     {
@@ -94,7 +95,7 @@ public class Enemy : MonoBehaviour, IAgent
         attackAnimation.positions = new List<Vector3>
         {
             Vector3.zero,
-            dirToPlayer,
+            dirToPlayer*0.5f,
             Vector3.zero,
         };
         attackAnimation.interpolationTypes = new List<InterpolationType>
@@ -105,12 +106,12 @@ public class Enemy : MonoBehaviour, IAgent
         };
         baseGraphics.objectAnimator.animationSpeed = selectedAttack.attackBase.interpolationSpeed;
         baseGraphics.objectAnimator.CreateAndPlayAnimation(attackAnimation);
-
         //do ui action display
-        UIManager.ins.Get_Action_Display().TrackingRequest(
+        UI_Action_Display actionDisplay = UIManager.ins.Get_Action_Display().TrackingRequest(
             this, 
-            selectedAttack.attackBase.icon, 
-            1/ selectedAttack.attackBase.interpolationSpeed
+            Vector3.zero,
+            selectedAttack.attackBase.icon
             );
+        baseGraphics.objectAnimator.onAnimationComplete += actionDisplay.ReturnToPool;
     }
 }

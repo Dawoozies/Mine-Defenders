@@ -7,6 +7,7 @@ public class ObjectAnimation
     public string animName;
     public int frames;
     public List<Vector3> positions;
+    public List<Vector3> localScales;
     public List<Vector3> eulerAngles;
     [HideInInspector]
     public List<Quaternion> rotations;
@@ -63,6 +64,9 @@ public class ObjectAnimator : MonoBehaviour
     public delegate void TimeUpdateHandler(float currentTime, int currentIndex, string animationName);
     public event TimeUpdateHandler TimeUpdateEvent;
     IndexProgress Progress_ThreeQuarters;
+
+    public delegate void AnimationComplete();
+    public event AnimationComplete onAnimationComplete;
     private void Start()
     {
         rectTransform = GetComponent<RectTransform>();
@@ -152,6 +156,8 @@ public class ObjectAnimator : MonoBehaviour
                 LoopCompleteEvent?.Invoke(this, currentAnimation.animName);
                 if(LoopCompleteEvent == null && !currentAnimation.loop)
                 {
+                    onAnimationComplete?.Invoke();
+                    onAnimationComplete = null;
                     currentAnimation = null;
                 }
             }
@@ -168,6 +174,16 @@ public class ObjectAnimator : MonoBehaviour
                     currentAnimation.positions[targetIndex % currentAnimation.positions.Count],
                     currentAnimation.time,
                     currentAnimation.interpolationTypes[currentIndex % currentAnimation.positions.Count]
+                );
+        }
+        if(currentAnimation.localScales != null && currentAnimation.localScales.Count > 0)
+        {
+            transform.localScale = Interpolation.Interpolate
+                (
+                    currentAnimation.localScales[currentIndex % currentAnimation.localScales.Count],
+                    currentAnimation.localScales[targetIndex % currentAnimation.localScales.Count],
+                    currentAnimation.time,
+                    currentAnimation.interpolationTypes[currentIndex % currentAnimation.localScales.Count]
                 );
         }
         if(currentAnimation.rotations != null && currentAnimation.rotations.Count > 0)

@@ -19,7 +19,7 @@ public class AgentArgs
     public int moveSpeed;
     public Vector3Int cellPos { get => GameManager.ins.WorldToCell(transform.position); }
     public Vector3 worldPos { get => GameManager.ins.WorldToCellCenter(transform.position); }
-    public Vector3 screenPos { get => GameManager.ins.WorldToScreenPosition(transform.position); }
+    public Vector3 screenPos { get => ScreenTrackingWithOffset(Vector3.zero); }
     public Tilemap[] notWalkable;
     public Hashtable reservedTiles;
     public InterpolationType moveInterpolationType;
@@ -36,6 +36,8 @@ public class AgentArgs
     public event PlayerNoMovesLeft onPlayerNoMovesLeft;
     public delegate void PlayerCompletedFullPath();
     public event PlayerCompletedFullPath onPlayerCompletedFullPath;
+
+    public int health;
 
     public AgentArgs(Transform transform, AgentType type)
     {
@@ -107,9 +109,11 @@ public class AgentArgs
     {
         onPlayerCompletedFullPath = null;
     }
+    public Vector3 ScreenTrackingWithOffset(Vector3 offset)
+    {
+        return GameManager.ins.WorldToScreenPosition(transform.position + offset);
+    }
 }
-//Dont need order name lmao
-//just need event
 public class AgentNavigator
 {
     public IAgent agent;
