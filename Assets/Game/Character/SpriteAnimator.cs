@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 [Serializable]
 public class SpriteAnimation
 {
@@ -20,13 +21,17 @@ public class SpriteAnimator : MonoBehaviour
     public List<SpriteAnimation> animations;
     SpriteAnimation currentAnimation;
     SpriteRenderer spriteRenderer;
+    Image image;
     int currentIndex;
 
     public delegate void LoopCompleteHandler(SpriteAnimator animator, string completedAnimationName);
     public event LoopCompleteHandler LoopCompleteEvent;
+    public delegate void EndFrameHandler(int frame);
+    public event EndFrameHandler EndFrameEvent;
     private void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
+        image = GetComponent<Image>();
         if(playOnStartAnimName != null && playOnStartAnimName.Length > 0) 
         { 
             PlayAnimation(playOnStartAnimName);
@@ -73,6 +78,11 @@ public class SpriteAnimator : MonoBehaviour
     {
         currentAnimation = null;
     }
+    bool stopAtNextFrame;
+    public void StopAtNextFrame()
+    {
+        stopAtNextFrame = true;
+    }
     public string GetCurrentAnimationName()
     {
         if (currentAnimation == null)
@@ -86,6 +96,13 @@ public class SpriteAnimator : MonoBehaviour
         currentAnimation.time += Time.deltaTime * animationSpeed;
         if(currentAnimation.time > 1)
         {
+            if(stopAtNextFrame)
+            {
+                StopAnimation();
+                stopAtNextFrame = false;
+                return;
+            }
+            EndFrameEvent?.Invoke(currentIndex);
             currentIndex = (currentIndex + 1) % currentAnimation.frames;
             currentAnimation.time = 0;
 
@@ -96,18 +113,35 @@ public class SpriteAnimator : MonoBehaviour
         }
         if (currentAnimation == null)
             return;
-
-        if(currentAnimation.sprites != null && currentAnimation.sprites.Count > 0)
+        #region SpriteRenderer Animation
+        if (spriteRenderer != null)
         {
-            spriteRenderer.sprite = currentAnimation.sprites[currentIndex];
+            if (currentAnimation.sprites != null && currentAnimation.sprites.Count > 0)
+            {
+                spriteRenderer.sprite = currentAnimation.sprites[currentIndex];
+            }
+            if (currentAnimation.spriteOrders != null && currentAnimation.spriteOrders.Count > 0)
+            {
+                spriteRenderer.sortingOrder = currentAnimation.spriteOrders[currentIndex];
+            }
+            if (currentAnimation.spriteColors != null && currentAnimation.spriteColors.Count > 0)
+            {
+                spriteRenderer.color = currentAnimation.spriteColors[currentIndex];
+            }
         }
-        if(currentAnimation.spriteOrders != null && currentAnimation.spriteOrders.Count > 0)
+        #endregion
+        #region Image Animation
+        if (image != null)
         {
-            spriteRenderer.sortingOrder = currentAnimation.spriteOrders[currentIndex];
+            if (currentAnimation.sprites != null && currentAnimation.sprites.Count > 0)
+            {
+                image.sprite = currentAnimation.sprites[currentIndex];
+            }
+            if (currentAnimation.spriteColors != null && currentAnimation.spriteColors.Count > 0)
+            {
+                image.color = currentAnimation.spriteColors[currentIndex];
+            }
         }
-        if(currentAnimation.spriteColors != null && currentAnimation.spriteColors.Count > 0)
-        {
-            spriteRenderer.color = currentAnimation.spriteColors[currentIndex];
-        }
+        #endregion
     }
 }
