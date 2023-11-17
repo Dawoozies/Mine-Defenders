@@ -23,11 +23,4 @@ public class PitManager : MonoBehaviour
         }
     }
     List<UncoveredPit> uncoveredPits;
-    private void Update()
-    {
-        return;
-        foreach (var pit in uncoveredPits) { 
-            pit.Update();
-        }
-    }
 }

@@ -11,11 +11,13 @@ public class RadialButton : MonoBehaviour
     public float minRadius;
     public float maxRadius;
     PlayerControls input;
+    public SpriteAnimator selectFX_spriteAnimator;
+    public ObjectAnimator selectFX_objectAnimator;
     private void Start()
     {
         rectTransform = GetComponent<RectTransform>();
-        isOn = false;
         menuController = GetComponentInParent<RadialMenu>();
+
         input = new PlayerControls();
         input.Player.Tap.performed += (input) =>
         {
@@ -51,9 +53,21 @@ public class RadialButton : MonoBehaviour
                 }
             }
             //Debug.Log($"(angle = {angle}, r = {r})");
-            isOn = !isOn;
-            menuController.ButtonPressed(buttonNumber, isOn);
+            menuController.ButtonPressed(this);
         };
         input.Enable();
+    }
+    public void ToggleButton(RadialButton pressedButton)
+    {
+        if(pressedButton != this)
+        {
+            isOn = false;
+        }
+        else
+        {
+            isOn = true;
+            selectFX_spriteAnimator.PlayOnce("SelectEffect");
+            selectFX_objectAnimator.PlayOnce("SelectEffect");
+        }
     }
 }

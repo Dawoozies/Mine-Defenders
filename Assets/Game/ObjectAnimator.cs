@@ -59,8 +59,8 @@ public class ObjectAnimator : MonoBehaviour
     int targetIndex;
     public delegate void LoopCompleteHandler(ObjectAnimator animator, string completedAnimationName);
     public event LoopCompleteHandler LoopCompleteEvent;
-    public delegate void CurrentIndexChangedHandler(ObjectAnimator animator, int currentIndex, string animationName);
-    public event CurrentIndexChangedHandler CurrentIndexChangedEvent;
+    public delegate void EndFrameHandler(int frame);
+    public event EndFrameHandler EndFrameEvent;
     public delegate void TimeUpdateHandler(float currentTime, int currentIndex, string animationName);
     public event TimeUpdateHandler TimeUpdateEvent;
     IndexProgress Progress_ThreeQuarters;
@@ -129,9 +129,20 @@ public class ObjectAnimator : MonoBehaviour
             }
         }
     }
+    bool playOnce;
+    public void PlayOnce(string animName)
+    {
+        playOnce = true;
+        PlayAnimation(animName);
+    }
     public void StopAnimation()
     {
         currentAnimation = null;
+    }
+    bool stopAtNextFrame;
+    public void StopAtNextFrame()
+    {
+        stopAtNextFrame = true;
     }
     void Update()
     {
@@ -143,11 +154,16 @@ public class ObjectAnimator : MonoBehaviour
 
         if(currentAnimation.time > 1f)
         {
+            if(stopAtNextFrame)
+            {
+                StopAnimation();
+                stopAtNextFrame = false;
+                return;
+            }
+            EndFrameEvent?.Invoke(currentIndex);
             currentIndex = (currentIndex + 1) % currentAnimation.frames;
             targetIndex = (currentIndex + 1) % currentAnimation.frames;
             currentAnimation.time = 0;
-
-            CurrentIndexChangedEvent?.Invoke(this, currentIndex, currentAnimation.animName);
 
             if(currentIndex == currentAnimation.frames - 1)
             {
@@ -159,6 +175,12 @@ public class ObjectAnimator : MonoBehaviour
                     onAnimationComplete?.Invoke();
                     onAnimationComplete = null;
                     currentAnimation = null;
+                }
+                if (playOnce)
+                {
+                    playOnce = false;
+                    currentAnimation = null;
+                    return;
                 }
             }
         }

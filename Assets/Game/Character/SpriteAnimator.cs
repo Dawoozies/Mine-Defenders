@@ -11,6 +11,7 @@ public class SpriteAnimation
     public List<Sprite> sprites;
     public List<int> spriteOrders;
     public List<Color> spriteColors;
+    public List<InterpolationType> interpolationTypes;
     [HideInInspector]
     public float time;
 }
@@ -23,6 +24,7 @@ public class SpriteAnimator : MonoBehaviour
     SpriteRenderer spriteRenderer;
     Image image;
     int currentIndex;
+    int targetIndex;
 
     public delegate void LoopCompleteHandler(SpriteAnimator animator, string completedAnimationName);
     public event LoopCompleteHandler LoopCompleteEvent;
@@ -70,9 +72,16 @@ public class SpriteAnimator : MonoBehaviour
             {
                 currentAnimation = animation;
                 currentIndex = 0;
+                targetIndex = 1;
                 currentAnimation.time = 0;
             }
         }
+    }
+    bool playOnce;
+    public void PlayOnce(string animName)
+    {
+        playOnce = true;
+        PlayAnimation(animName);
     }
     public void StopAnimation()
     {
@@ -104,11 +113,18 @@ public class SpriteAnimator : MonoBehaviour
             }
             EndFrameEvent?.Invoke(currentIndex);
             currentIndex = (currentIndex + 1) % currentAnimation.frames;
+            targetIndex = (currentIndex + 1) % currentAnimation.frames;
             currentAnimation.time = 0;
 
             if(currentIndex == currentAnimation.frames - 1)
             {
                 LoopCompleteEvent?.Invoke(this, currentAnimation.animName);
+                if(playOnce)
+                {
+                    playOnce = false;
+                    currentAnimation = null;
+                    return;
+                }
             }
         }
         if (currentAnimation == null)
@@ -126,7 +142,20 @@ public class SpriteAnimator : MonoBehaviour
             }
             if (currentAnimation.spriteColors != null && currentAnimation.spriteColors.Count > 0)
             {
-                spriteRenderer.color = currentAnimation.spriteColors[currentIndex];
+                if(currentAnimation.interpolationTypes != null && currentAnimation.interpolationTypes.Count > 0)
+                {
+                    spriteRenderer.color = Interpolation.Interpolate
+                        (
+                            currentAnimation.spriteColors[currentIndex % currentAnimation.spriteColors.Count],
+                            currentAnimation.spriteColors[targetIndex % currentAnimation.spriteColors.Count],
+                            currentAnimation.time,
+                            currentAnimation.interpolationTypes[currentIndex % currentAnimation.spriteColors.Count]
+                        );
+                }
+                else
+                {
+                    spriteRenderer.color = currentAnimation.spriteColors[currentIndex];
+                }
             }
         }
         #endregion
@@ -139,7 +168,20 @@ public class SpriteAnimator : MonoBehaviour
             }
             if (currentAnimation.spriteColors != null && currentAnimation.spriteColors.Count > 0)
             {
-                image.color = currentAnimation.spriteColors[currentIndex];
+                if (currentAnimation.interpolationTypes != null && currentAnimation.interpolationTypes.Count > 0)
+                {
+                    image.color = Interpolation.Interpolate
+                        (
+                            currentAnimation.spriteColors[currentIndex % currentAnimation.spriteColors.Count],
+                            currentAnimation.spriteColors[targetIndex % currentAnimation.spriteColors.Count],
+                            currentAnimation.time,
+                            currentAnimation.interpolationTypes[currentIndex % currentAnimation.spriteColors.Count]
+                        );
+                }
+                else
+                {
+                    image.color = currentAnimation.spriteColors[currentIndex];
+                }
             }
         }
         #endregion

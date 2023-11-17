@@ -14,9 +14,16 @@ public class RadialMenu : MonoBehaviour
     public Sprite closeButtonSprite;
     bool menuOpen;
     public GameObject[] buttonObjects;
+    RadialButton[] radialButtons;
     private void Start()
     {
         menuAnimator.EndFrameEvent += OnMenuOpening;
+        List<RadialButton> buttons = new List<RadialButton>();
+        foreach (GameObject buttonObject in buttonObjects)
+        {
+            buttons.Add(buttonObject.GetComponent<RadialButton>());
+        }
+        radialButtons = buttons.ToArray();
     }
 
     public void ToggleMenu()
@@ -56,8 +63,11 @@ public class RadialMenu : MonoBehaviour
             menuAnimator.StopAtNextFrame();
         }
     }
-    public void ButtonPressed(int buttonPressed, bool isOn)
+    public void ButtonPressed(RadialButton pressedButton)
     {
-        Debug.Log($"Button {buttonPressed} pressed. isOn = {isOn}");
+        foreach (RadialButton radialButton in radialButtons)
+        {
+            radialButton.ToggleButton(pressedButton);
+        }
     }
 }
