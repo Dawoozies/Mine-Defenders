@@ -1,7 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
-
+using UnityEngine.UI;
 public class RadialButton : MonoBehaviour
 {
     RectTransform rectTransform;
@@ -13,10 +14,14 @@ public class RadialButton : MonoBehaviour
     PlayerControls input;
     public SpriteAnimator selectFX_spriteAnimator;
     public ObjectAnimator selectFX_objectAnimator;
+    public ObjectAnimator icon_objectAnimator;
+    public Color selectedColor;
+    Image image;
     private void Start()
     {
         rectTransform = GetComponent<RectTransform>();
         menuController = GetComponentInParent<RadialMenu>();
+        image = GetComponent<Image>();
 
         input = new PlayerControls();
         input.Player.Tap.performed += (input) =>
@@ -57,17 +62,25 @@ public class RadialButton : MonoBehaviour
         };
         input.Enable();
     }
+    private void OnDisable()
+    {
+        isOn = false;
+        image.color = Color.white;
+    }
     public void ToggleButton(RadialButton pressedButton)
     {
         if(pressedButton != this)
         {
             isOn = false;
+            image.color = Color.white;
         }
         else
         {
             isOn = true;
+            image.color = selectedColor;
             selectFX_spriteAnimator.PlayOnce("SelectEffect");
             selectFX_objectAnimator.PlayOnce("SelectEffect");
+            icon_objectAnimator.PlayOnce("ShakeX");
         }
     }
 }

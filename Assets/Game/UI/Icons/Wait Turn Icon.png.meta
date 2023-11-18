@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: fad7ad7e47cdc504395cb2fe86149cc2
+guid: 8389e78ed98e36a44864b8f743e2b55f
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -136,13 +136,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: gdp_icons_0
+      name: Wait Turn Icon_0
       rect:
         serializedVersion: 2
-        x: 175
-        y: 247
-        width: 8
-        height: 8
+        x: 2
+        y: 352
+        width: 28
+        height: 45
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -150,20 +150,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 91f72eadd9c77144c8456e3dfaa8ba6b
-      internalID: 1107417547
+      spriteID: f7bfe8b7bfc6d0c47b31b19ff664f29f
+      internalID: 650585020
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: gdp_icons_1
+      name: Wait Turn Icon_1
       rect:
         serializedVersion: 2
-        x: 176
-        y: 239
-        width: 6
-        height: 4
+        x: 34
+        y: 352
+        width: 28
+        height: 45
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -171,20 +171,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: b02d954e3aced574eb145dfdc8fe576a
-      internalID: -400045930
+      spriteID: 849f9931c85cd0448b41c28376466514
+      internalID: -361299173
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: gdp_icons_2
+      name: Wait Turn Icon_2
       rect:
         serializedVersion: 2
-        x: 206
-        y: 238
-        width: 5
-        height: 7
+        x: 66
+        y: 352
+        width: 28
+        height: 45
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -192,20 +192,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 73f743b0a2652f04d92c4736a22f45d8
-      internalID: -782284774
+      spriteID: 772631ec62aed224d8bcfe61af1053c2
+      internalID: -536694002
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: gdp_icons_3
+      name: Wait Turn Icon_3
       rect:
         serializedVersion: 2
-        x: 206
-        y: 229
-        width: 5
-        height: 7
+        x: 98
+        y: 352
+        width: 28
+        height: 45
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -213,20 +213,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 18b222a7eb96a494eae149c2b947cec4
-      internalID: 428404222
+      spriteID: c767273eaf8be3545940ed88c4e5e365
+      internalID: 59890531
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: gdp_icons_4
+      name: Wait Turn Icon_4
       rect:
         serializedVersion: 2
-        x: 205
-        y: 194
-        width: 7
-        height: 7
+        x: 130
+        y: 352
+        width: 28
+        height: 45
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -234,20 +234,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ffff9fba26a2a2a44a8bb04d10da9669
-      internalID: -768467676
+      spriteID: fe60c5cd2b8cc0c4cb1f3a7d7c7c2223
+      internalID: -1102154710
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: gdp_icons_5
+      name: Wait Turn Icon_5
       rect:
         serializedVersion: 2
-        x: 205
-        y: 185
-        width: 7
-        height: 7
+        x: 162
+        y: 352
+        width: 28
+        height: 45
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -255,20 +255,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 1769a5ec49288b84785f894f6a8344ec
-      internalID: -1061120308
+      spriteID: b7a020c09c361fb42ada45d6be094898
+      internalID: 1930235463
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: gdp_icons_selection0
+      name: Wait Turn Icon_6
       rect:
         serializedVersion: 2
-        x: 145
-        y: 33
-        width: 14
-        height: 14
+        x: 194
+        y: 352
+        width: 28
+        height: 45
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -276,20 +276,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: ded82e507de9a154ab83cd047b045a1e
-      internalID: 2029337595
+      spriteID: 1ebe81ca9e854f843bade8b74eaa49a9
+      internalID: -1368922433
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: gdp_icons_selection1
+      name: Wait Turn Icon_7
       rect:
         serializedVersion: 2
-        x: 161
-        y: 33
-        width: 14
-        height: 14
+        x: 226
+        y: 352
+        width: 28
+        height: 45
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -297,20 +297,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 6b4b7e31a7db35b42973f00a1d6cc323
-      internalID: -1614505601
+      spriteID: 74cc83ee7fe84aa4fbe22e450667b603
+      internalID: -1410196345
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: gdp_icons_selection2
+      name: Wait Turn Icon_8
       rect:
         serializedVersion: 2
-        x: 177
-        y: 33
-        width: 14
-        height: 14
+        x: 258
+        y: 352
+        width: 28
+        height: 45
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -318,20 +318,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 42462f8c3a3f2134093d4a99832189a1
-      internalID: 374309607
+      spriteID: fddc542e7047ba348affa940fa2c2c1a
+      internalID: 1770655443
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: gdp_icons_selection3
+      name: Wait Turn Icon_9
       rect:
         serializedVersion: 2
-        x: 193
-        y: 33
-        width: 14
-        height: 14
+        x: 290
+        y: 352
+        width: 28
+        height: 45
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -339,209 +339,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 909dd603defe5af4f915543c9a4f7ebf
-      internalID: 1843368274
+      spriteID: a57bcf733eddb91468a0bdb66cd998cd
+      internalID: 456939577
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: gdp_icons_6
+      name: Wait Turn Icon_10
       rect:
         serializedVersion: 2
-        x: 246
-        y: 66
-        width: 9
-        height: 10
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 7c912adc9d54ca348870d504f183145e
-      internalID: 1415253685
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: gdp_icons_7
-      rect:
-        serializedVersion: 2
-        x: 249
-        y: 96
-        width: 7
-        height: 8
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: cbe7c37df09316c4e912789d675bfcb7
-      internalID: -282376813
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: gdp_icons_8
-      rect:
-        serializedVersion: 2
-        x: 249
-        y: 87
-        width: 6
-        height: 8
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 77c03f67fc252cd4cbcf26aac616308f
-      internalID: -1513102268
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: gdp_icons_9
-      rect:
-        serializedVersion: 2
-        x: 116
-        y: 89
-        width: 23
-        height: 21
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 9e42bb9aa4b74364698983fd87d1f2b2
-      internalID: 646226233
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: gdp_icons_10
-      rect:
-        serializedVersion: 2
-        x: 116
-        y: 66
-        width: 23
-        height: 21
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: dd03fc48e7881d24faa85b33d81a639d
-      internalID: 40292649
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: gdp_icons_11
-      rect:
-        serializedVersion: 2
-        x: 116
-        y: 43
-        width: 23
-        height: 21
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: a30e7ceeaae37e24f91e835ae7807e22
-      internalID: -238712763
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: gdp_icons_12
-      rect:
-        serializedVersion: 2
-        x: 239
-        y: 151
-        width: 14
-        height: 15
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: fdb0015d6bd7058448e6ab586683f986
-      internalID: -1109780473
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: gdp_icons_13
-      rect:
-        serializedVersion: 2
-        x: 112
-        y: 112
-        width: 18
-        height: 23
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 3bc69994d3aee5848824cf3ab5239b5e
-      internalID: 1121437561
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: gdp_icons_14
-      rect:
-        serializedVersion: 2
-        x: 112
-        y: 136
-        width: 18
-        height: 23
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 5626bb5475f69c44797d8e7f2e403316
-      internalID: -1101996361
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: gdp_icons_15
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 213
+        x: 2
+        y: 321
         width: 45
-        height: 43
+        height: 28
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -549,20 +360,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: f164fe387963e24448d653a1e4e069b6
-      internalID: 1477951806
+      spriteID: cc6349f4522f5ec4b9c7df487f8aa665
+      internalID: -1646781487
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: gdp_icons_16
+      name: Wait Turn Icon_11
       rect:
         serializedVersion: 2
-        x: 214
-        y: 167
-        width: 7
-        height: 7
+        x: 50
+        y: 304
+        width: 28
+        height: 45
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -570,20 +381,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 5e2ec083cf2951d4ea2123b956cf5a06
-      internalID: 312741582
+      spriteID: 8ffdee9b216fcfd4996d0ab5a6fd15bf
+      internalID: -136478155
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: gdp_icons_17
+      name: Wait Turn Icon_12
       rect:
         serializedVersion: 2
-        x: 186
-        y: 198
-        width: 7
-        height: 6
+        x: 82
+        y: 304
+        width: 28
+        height: 45
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -591,20 +402,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 353f0500e0997bb46ba6c5e9096988a5
-      internalID: 1319081139
+      spriteID: 36b4c32ba1fd2a546a390077966a26b9
+      internalID: 1254032570
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: gdp_icons_18
+      name: Wait Turn Icon_13
       rect:
         serializedVersion: 2
-        x: 186
-        y: 208
-        width: 7
-        height: 6
+        x: 1
+        y: 288
+        width: 11
+        height: 11
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -612,29 +423,71 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 5186fb91c6abb764e82f11b0c90bb403
-      internalID: -144589321
+      spriteID: ba1c0cdda1ccdcf40aa2b03fe43d2743
+      internalID: -21805677
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: gdp_icons_19
+      name: Wait Turn Icon_14
       rect:
         serializedVersion: 2
-        x: 165
-        y: 147
-        width: 7
-        height: 7
+        x: 13
+        y: 288
+        width: 11
+        height: 11
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 2aa4a9c8d1a3f9841bdbe287d63fb1eb
-      internalID: -1255102417
+      spriteID: 1c1ec8c94317e7e409b6402c42f97bc3
+      internalID: -1207235051
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Wait Turn Icon_15
+      rect:
+        serializedVersion: 2
+        x: 25
+        y: 288
+        width: 11
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 127c0e39a94520a42a911286a3d8ff56
+      internalID: 2143849455
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Wait Turn Icon_16
+      rect:
+        serializedVersion: 2
+        x: 37
+        y: 288
+        width: 11
+        height: 11
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 751daee55138242439f00477375dadd6
+      internalID: 2060219906
       vertices: []
       indices: 
       edges: []
@@ -650,30 +503,23 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     nameFileIdTable:
-      gdp_icons_0: 1107417547
-      gdp_icons_1: -400045930
-      gdp_icons_10: 40292649
-      gdp_icons_11: -238712763
-      gdp_icons_12: -1109780473
-      gdp_icons_13: 1121437561
-      gdp_icons_14: -1101996361
-      gdp_icons_15: 1477951806
-      gdp_icons_16: 312741582
-      gdp_icons_17: 1319081139
-      gdp_icons_18: -144589321
-      gdp_icons_19: -1255102417
-      gdp_icons_2: -782284774
-      gdp_icons_3: 428404222
-      gdp_icons_4: -768467676
-      gdp_icons_5: -1061120308
-      gdp_icons_6: 1415253685
-      gdp_icons_7: -282376813
-      gdp_icons_8: -1513102268
-      gdp_icons_9: 646226233
-      gdp_icons_selection0: 2029337595
-      gdp_icons_selection1: -1614505601
-      gdp_icons_selection2: 374309607
-      gdp_icons_selection3: 1843368274
+      Wait Turn Icon_0: 650585020
+      Wait Turn Icon_1: -361299173
+      Wait Turn Icon_10: -1646781487
+      Wait Turn Icon_11: -136478155
+      Wait Turn Icon_12: 1254032570
+      Wait Turn Icon_13: -21805677
+      Wait Turn Icon_14: -1207235051
+      Wait Turn Icon_15: 2143849455
+      Wait Turn Icon_16: 2060219906
+      Wait Turn Icon_2: -536694002
+      Wait Turn Icon_3: 59890531
+      Wait Turn Icon_4: -1102154710
+      Wait Turn Icon_5: 1930235463
+      Wait Turn Icon_6: -1368922433
+      Wait Turn Icon_7: -1410196345
+      Wait Turn Icon_8: 1770655443
+      Wait Turn Icon_9: 456939577
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

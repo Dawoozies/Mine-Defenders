@@ -18,6 +18,10 @@ public static class Interpolation
     {
         return Vector2.Lerp(start, end, Interpolator(x, interpolationType));
     }
+    public static float Interpolate(float start, float end, float x, InterpolationType interpolationType)
+    {
+        return Mathf.Lerp(start, end, Interpolator(x, interpolationType));
+    }
     static float Interpolator(float x, InterpolationType interpolationType)
     {
         switch (interpolationType)
