@@ -17,6 +17,7 @@ public class RadialButton : MonoBehaviour
     public ObjectAnimator icon_objectAnimator;
     public Color selectedColor;
     Image image;
+    public GameObject namePopup;
     private void Start()
     {
         rectTransform = GetComponent<RectTransform>();
@@ -73,6 +74,7 @@ public class RadialButton : MonoBehaviour
         {
             isOn = false;
             image.color = Color.white;
+            namePopup.SetActive(false);
         }
         else
         {
@@ -81,6 +83,7 @@ public class RadialButton : MonoBehaviour
             selectFX_spriteAnimator.PlayOnce("SelectEffect");
             selectFX_objectAnimator.PlayOnce("SelectEffect");
             icon_objectAnimator.PlayOnce("ShakeX");
+            namePopup.SetActive(true);
         }
     }
 }

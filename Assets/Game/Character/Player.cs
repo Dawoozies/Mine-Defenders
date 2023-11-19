@@ -64,6 +64,17 @@ public class Player : MonoBehaviour, IAgent
                 }
             }
         };
+
+        //On tap we should interrupt mining animation if we are doing that
+        GameManager.onTap += (CellData cellData) =>
+        {
+            if (tool.objectAnimator.GetCurrentAnimationName() == "Mining")
+            {
+                tool.objectAnimator.PlayAnimation("NotMining");
+                tool.basePartRenderer.color = Color.clear;
+                tool.materialPartRenderer.color = Color.clear;
+            }
+        };
     }
     public void SetMiningOrder(CellData cellData)
     {

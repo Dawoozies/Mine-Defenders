@@ -3,173 +3,292 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using System;
-using Unity.VisualScripting;
+using Matrix4x4 = UnityEngine.Matrix4x4;
 
 [Serializable]
 public class TextAnimation
 {
     public string animName;
     public int frames;
-    public List<float> horizontalSpaces;
-    public List<float> rotations;
+    public List<Vector3> positions;
+    public List<Vector3> eulerAngles;
+    public List<Vector3> scales;
     public List<Color> colors;
-    public List<float> verticalOffsets;
-    public List<InterpolationType> horizontalSpaces_interpolationTypes;
-    public List<InterpolationType> rotations_interpolationTypes;
-    public List<InterpolationType> colors_interpolationTypes;
-    public List<InterpolationType> verticalOffsets_interpolationTypes;
+    public List<InterpolationType> positions_InterpolationTypes;
+    public List<InterpolationType> eulerAngles_InterpolationTypes;
+    public List<InterpolationType> scales_InterpolationTypes;
+    public List<InterpolationType> colors_InterpolationTypes;
     [HideInInspector]
     public float time;
-    public string horizontalTag(int index, int targetIndex, float argTime)
+    public Vector3 position(int index, int targetIndex, float t)
     {
-        if (horizontalSpaces == null || horizontalSpaces.Count == 0)
-            return string.Empty;
-        float tagValue = Interpolation.Interpolate(
-            horizontalSpaces[index % horizontalSpaces.Count],
-            horizontalSpaces[targetIndex % horizontalSpaces.Count],
-            argTime,
-            horizontalSpaces_interpolationTypes[index % horizontalSpaces_interpolationTypes.Count]
+        if (positions == null || positions.Count == 0)
+            return Vector3.zero;
+        return Interpolation.Interpolate(
+            positions[index % positions.Count],
+            positions[targetIndex % positions.Count],
+            t,
+            positions_InterpolationTypes[index % positions.Count]
             );
-        return $"<space={tagValue}>";
     }
-    public (string, string) rotationTag(int index, int targetIndex, float argTime)
+    public Quaternion rotation(int index, int targetIndex, float t)
     {
-        if (rotations == null || rotations.Count == 0)
-            return (string.Empty, string.Empty);
-        float tagValue = Interpolation.Interpolate(
-            rotations[index % rotations.Count],
-            rotations[targetIndex % rotations.Count],
-            argTime,
-            rotations_interpolationTypes[index % rotations_interpolationTypes.Count]
+        if(eulerAngles == null || eulerAngles.Count == 0)
+            return Quaternion.identity;
+
+        Quaternion current = Quaternion.Euler(eulerAngles[index % eulerAngles.Count]);
+        Quaternion target = Quaternion.Euler(eulerAngles[targetIndex % eulerAngles.Count]);
+
+        return Interpolation.Interpolate(
+            current,
+            target,
+            t,
+            eulerAngles_InterpolationTypes[index % eulerAngles.Count]
             );
-        return ($"<rotate={tagValue}>", "</rotate>");
     }
-    public (string, string) colorTag(int index, int targetIndex, float argTime)
+    public Vector3 scale(int index, int targetIndex, float t)
+    {
+        if(scales == null || scales.Count == 0)
+            return Vector3.one;
+        return Interpolation.Interpolate(
+            scales[index % scales.Count],
+            scales[targetIndex % scales.Count],
+            t,
+            scales_InterpolationTypes[index % scales.Count]
+            );
+    }
+    public Color color(int index, int targetIndex, float t)
     {
         if (colors == null || colors.Count == 0)
-            return (string.Empty, string.Empty);
-        Color tagValue = Interpolation.Interpolate(
+            return Color.white;
+        return Interpolation.Interpolate(
             colors[index % colors.Count],
             colors[targetIndex % colors.Count],
-            argTime,
-            colors_interpolationTypes[index % colors_interpolationTypes.Count]
+            t,
+            colors_InterpolationTypes[index % colors.Count]
             );
-        string tagHexString = tagValue.ToHexString();
-        return ($"<color=#{tagHexString}>","</color>");
-    }
-    public (string, string) verticalOffsetTag(int index, int targetIndex, float argTime)
-    {
-        if (verticalOffsets == null || verticalOffsets.Count == 0)
-            return (string.Empty, string.Empty);
-        float tagValue = Interpolation.Interpolate(
-            verticalOffsets[index % verticalOffsets.Count],
-            verticalOffsets[targetIndex % verticalOffsets.Count],
-            argTime,
-            verticalOffsets_interpolationTypes[index % verticalOffsets_interpolationTypes.Count]
-            );
-        return ($"<voffset={tagValue}>", "</voffset>");
     }
 }
-public class CharAnimationArgs
+public class AnimationArgs
 {
     public int currentIndex;
     public int targetIndex;
     public float time;
-    public CharAnimationArgs()
+    public bool started;
+    public bool dontPlayAnymore;
+    public AnimationArgs()
     {
         currentIndex = 0;
         targetIndex = 1;
         time = 0;
+        started = false;
+        dontPlayAnymore = false;
     }
-    public void Update(int frames, float timeDelta)
+    public void Update(int frames, float timeDelta, bool playOnce)
     {
+        if (!started || dontPlayAnymore)
+            return;
         time += timeDelta;
-        Debug.Log($"currentIndex = {currentIndex} targetIndex = {targetIndex} time = {time}");
-        if (time > 1)
+        if(time > 1)
         {
             currentIndex = (currentIndex + 1) % frames;
             targetIndex = (currentIndex + 1) % frames;
             time = 0;
+            if (playOnce)
+            {
+                if (currentIndex == frames - 1)
+                {
+                    dontPlayAnymore = true;
+                }
+            }
         }
+    }
+    public void ClearArgs()
+    {
+        currentIndex = 0;
+        targetIndex = 1;
+        time = 0;
+        started = false;
+        dontPlayAnymore = false;
     }
 }
-//apply to all characters
-//apply to each character individually
 public class TextAnimator : MonoBehaviour
 {
-    TextMeshProUGUI textMesh;
-    [TextArea(10,20)]
-    public string textInput;
-    public float charIterationSpeed;
+    public string playOnStartAnimName;
+    TMP_Text textComponent;
     public float animationSpeed;
-    public TextAnimation currentAnimation;
-    int currentChar;
-    List<CharAnimationArgs> charAnimationArgs = new List<CharAnimationArgs>();
-    public bool onlyResetAll;
+    float iterateTime;
+    public float argsIterationSpeed;
+    TextAnimation currentAnimation;
+    TMP_TextInfo textInfo;
+    TMP_MeshInfo[] cachedMeshInfo;
+
+    Matrix4x4 matrix;
+    int currentIndex;
+    int targetIndex;
+    int currentArgs;
+    public bool oneAtATime;
+    public bool playOnce;
+    List<AnimationArgs> animationArgs;
+    public List<TextAnimation> animations;
+    bool dontPlayAnymore;
     private void Start()
     {
-        textMesh = GetComponent<TextMeshProUGUI>();
-        foreach (char c in textInput)
-        {
-            charAnimationArgs.Add(new CharAnimationArgs());
-        }
-        currentChar = 0;
-    }
+        textComponent = GetComponent<TMP_Text>();
+        textComponent.ForceMeshUpdate();
+        textInfo = textComponent.textInfo;
+        cachedMeshInfo = textInfo.CopyMeshInfoVertexData();
+        currentIndex = 0;
+        targetIndex = 1;
 
+        if(oneAtATime)
+        {
+            animationArgs = new List<AnimationArgs>();
+            foreach (char c in textComponent.text)
+            {
+                animationArgs.Add(new AnimationArgs());
+            }
+            animationArgs[0].started = true;
+        }
+        if(playOnStartAnimName != null && playOnStartAnimName.Length > 0)
+        {
+            PlayAnimation(playOnStartAnimName, textComponent.text, oneAtATime, playOnce);
+        }
+    }
+    public void PlayAnimation(string animName, string textInput, bool oneAtATimeOption, bool playOnce)
+    {
+        this.playOnce = playOnce;
+        foreach (var animation in animations)
+        {
+            if(animation.animName == animName)
+            {
+                currentAnimation = animation;
+                currentAnimation.time = 0;
+                currentIndex = 0;
+                targetIndex = 1;
+                iterateTime = 0;
+                currentArgs = 0;
+                oneAtATime = oneAtATimeOption;
+                textComponent.SetText(textInput);
+                textComponent.ForceMeshUpdate();
+                textInfo = textComponent.textInfo;
+                cachedMeshInfo = textInfo.CopyMeshInfoVertexData();
+                if (oneAtATime)
+                {
+                    animationArgs = new List<AnimationArgs>();
+                    foreach (char c in textComponent.text)
+                    {
+                        animationArgs.Add(new AnimationArgs());
+                    }
+                    animationArgs[0].started = true;
+                }
+                dontPlayAnymore = false;
+            }
+        }
+    }
     private void Update()
     {
-        if (charAnimationArgs == null || charAnimationArgs.Count == 0)
+        if (currentAnimation == null || dontPlayAnymore)
             return;
-
-        currentAnimation.time += Time.deltaTime * charIterationSpeed;
+        currentAnimation.time += Time.deltaTime * animationSpeed;
         if(currentAnimation.time > 1)
         {
-            currentChar = (currentChar + 1) % charAnimationArgs.Count;
-
-            int iterationGuard = 0;
-            while (char.IsWhiteSpace(textInput[currentChar]))
-            {
-                currentChar = (currentChar + 1) % charAnimationArgs.Count;
-
-                iterationGuard++;
-                if (iterationGuard > 30)
-                    break;
-            }
-
+            currentIndex = (currentIndex + 1) % currentAnimation.frames;
+            targetIndex = (currentIndex + 1) % currentAnimation.frames;
             currentAnimation.time = 0;
-        }
-        string displayedText = string.Empty;
-        for (int i = 0; i < charAnimationArgs.Count; i++)
-        {
-            if (char.IsWhiteSpace(textInput[i]))
+            if(playOnce && !oneAtATime)
             {
-                displayedText = displayedText + " ";
-                continue;
+                if(currentIndex == currentAnimation.frames - 1)
+                {
+                    dontPlayAnymore = true;
+                }
             }
-            string s = textInput[i].ToString();
-
-            CharAnimationArgs args = charAnimationArgs[i];
-
-            string horizontalSpaceTag = currentAnimation.horizontalTag(args.currentIndex, args.targetIndex, args.time);
-            (string, string) rotateTag = currentAnimation.rotationTag(args.currentIndex, args.targetIndex, args.time);
-            (string, string) colorTag = currentAnimation.colorTag(args.currentIndex, args.targetIndex, args.time);
-            (string, string) verticalOffsetTag = currentAnimation.verticalOffsetTag(args.currentIndex, args.targetIndex, args.time);
-            displayedText =
-                displayedText
-                + horizontalSpaceTag
-                + rotateTag.Item1
-                + colorTag.Item1
-                + verticalOffsetTag.Item1
-                + s
-                + verticalOffsetTag.Item2
-                + colorTag.Item2
-                + rotateTag.Item2
-                ;
-
-            args.Update(currentAnimation.frames, Time.deltaTime * animationSpeed);
         }
-        textMesh.text = displayedText;
-        //Debug.Log($"textMesh.text.Length = {textMesh.text.Length}");
-    }
+        if(animationArgs != null && animationArgs.Count > 0)
+        {
+            iterateTime += Time.deltaTime * argsIterationSpeed;
+            if (iterateTime > 1)
+            {
+                currentArgs = (currentArgs + 1) % animationArgs.Count;
+                iterateTime = 0;
 
+                animationArgs[currentArgs].started = true;
+            }
+            foreach (AnimationArgs args in animationArgs)
+            {
+                args.Update(currentAnimation.frames, Time.deltaTime*animationSpeed, playOnce);
+            }
+        }
+
+        for (int i = 0; i < textInfo.characterCount; i++)
+        {
+            TMP_CharacterInfo charInfo = textInfo.characterInfo[i];
+            if (!charInfo.isVisible)
+                continue;
+            int materialIndex = textInfo.characterInfo[i].materialReferenceIndex;
+            int vertexIndex = textInfo.characterInfo[i].vertexIndex;
+            Vector3[] sourceVertices = cachedMeshInfo[materialIndex].vertices;
+
+            Vector3[] destinationVertices = textInfo.meshInfo[materialIndex].vertices;
+            Vector3 offset = new Vector2(
+                (sourceVertices[vertexIndex].x + sourceVertices[vertexIndex+2].x)/2,
+                textInfo.characterInfo[i].baseLine
+                );
+
+
+            destinationVertices[vertexIndex] = sourceVertices[vertexIndex] - offset;
+            destinationVertices[vertexIndex + 1] = sourceVertices[vertexIndex + 1] - offset;
+            destinationVertices[vertexIndex + 2] = sourceVertices[vertexIndex + 2] - offset;
+            destinationVertices[vertexIndex + 3] = sourceVertices[vertexIndex + 3] - offset;
+
+            Vector3 translation = Vector3.zero;
+            Quaternion rotation = Quaternion.identity;
+            Vector3 scale = Vector3.one;
+            Color color = Color.white;
+            if (oneAtATime)
+            {
+                AnimationArgs args = animationArgs[i];
+                translation = currentAnimation.position(args.currentIndex, args.targetIndex, args.time);
+                rotation = currentAnimation.rotation(args.currentIndex, args.targetIndex, args.time);
+                scale = currentAnimation.scale(args.currentIndex, args.targetIndex, args.time);
+                color = currentAnimation.color(args.currentIndex, args.targetIndex, args.time);
+
+            }
+            else
+            {
+                translation = currentAnimation.position(currentIndex, targetIndex, currentAnimation.time);
+                rotation = currentAnimation.rotation(currentIndex, targetIndex, currentAnimation.time);
+                scale = currentAnimation.scale(currentIndex, targetIndex, currentAnimation.time);
+                color = currentAnimation.color(currentIndex, targetIndex, currentAnimation.time);
+
+            }
+
+            #region Translation, rotation, scaling
+            matrix = Matrix4x4.TRS(translation, rotation, scale);
+
+
+            destinationVertices[vertexIndex] = matrix.MultiplyPoint3x4(destinationVertices[vertexIndex]);
+            destinationVertices[vertexIndex + 1] = matrix.MultiplyPoint3x4(destinationVertices[vertexIndex + 1]);
+            destinationVertices[vertexIndex + 2] = matrix.MultiplyPoint3x4(destinationVertices[vertexIndex + 2]);
+            destinationVertices[vertexIndex + 3] = matrix.MultiplyPoint3x4(destinationVertices[vertexIndex + 3]);
+
+            destinationVertices[vertexIndex] += offset;
+            destinationVertices[vertexIndex + 1] += offset;
+            destinationVertices[vertexIndex + 2] += offset;
+            destinationVertices[vertexIndex + 3] += offset;
+            #endregion
+            Color32[] newVertexColors = textInfo.meshInfo[materialIndex].colors32;
+            newVertexColors[vertexIndex] = color;
+            newVertexColors[vertexIndex + 1] = color;
+            newVertexColors[vertexIndex + 2] = color;
+            newVertexColors[vertexIndex + 3] = color;
+        }
+        for (int i = 0; i < textInfo.meshInfo.Length; i++)
+        {
+            textInfo.meshInfo[i].mesh.vertices = textInfo.meshInfo[i].vertices;
+            textComponent.UpdateGeometry(textInfo.meshInfo[i].mesh, i);
+            textComponent.UpdateVertexData(TMP_VertexDataUpdateFlags.Colors32);
+        }
+
+    }
 }

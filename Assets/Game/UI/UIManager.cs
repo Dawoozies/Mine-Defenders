@@ -14,6 +14,8 @@ public class UIManager : MonoBehaviour
     const int UI_ACTION_DISPLAY_POOL_SIZE = 30;
     private readonly List<UI_Action_Display> actionDisplayPool = new();
     private UI_Action_Display actionDisplay_FirstAvailable;
+
+    //event for radial buttons which are pressed 
     private void Start()
     {
         for (int i = 0; i < UI_ACTION_DISPLAY_POOL_SIZE; i++)
