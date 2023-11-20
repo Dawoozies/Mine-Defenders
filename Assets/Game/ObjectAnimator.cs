@@ -17,6 +17,7 @@ public class ObjectAnimation
     public bool loop;
     [HideInInspector]
     public float time;
+    public bool useWorldPosition;
     public void SetUpRotations()
     {
         if (eulerAngles == null || eulerAngles.Count == 0)
@@ -135,8 +136,50 @@ public class ObjectAnimator : MonoBehaviour
         playOnce = true;
         PlayAnimation(animName);
     }
+    string animToPlayAfterTime;
+    float timeToPlayAfter;
+    public void PlayAfterTime(string animName, float timeToPlayAfter)
+    {
+        animToPlayAfterTime = animName;
+        this.timeToPlayAfter = timeToPlayAfter;
+    }
+    public void CreateAndPlayAfterTime(ObjectAnimation animation, float timeToPlayAfter)
+    {
+        animToPlayAfterTime = animation.animName;
+        this.timeToPlayAfter = timeToPlayAfter;
+
+        Debug.Log($"Anim to play {animToPlayAfterTime} time to play after {timeToPlayAfter}");
+
+        if (animation.eulerAngles != null && animation.eulerAngles.Count > 0)
+            animation.SetUpRotations();
+
+        if (animations == null || animations.Count == 0)
+        {
+            animations = new List<ObjectAnimation> { animation };
+            return;
+        }
+
+        for (int i = 0; i < animations.Count; i++)
+        {
+            if (animations[i].animName == animation.animName)
+            {
+                //Then we should just change the args of the animation that already has the same name
+                //instead of adding a new one
+                animations[i] = animation;
+                return;
+            }
+        }
+
+        //If we got here then the animation does not exist in the list
+        animations.Add(animation);
+    }
     public void StopAnimation()
     {
+        playOnce = false;
+        animToPlayAfterTime = string.Empty;
+        timeToPlayAfter = -1;
+        stopAtNextFrame = false;
+        onAnimationComplete = null;
         currentAnimation = null;
     }
     bool stopAtNextFrame;
@@ -146,6 +189,16 @@ public class ObjectAnimator : MonoBehaviour
     }
     void Update()
     {
+        if(animToPlayAfterTime != string.Empty && timeToPlayAfter >= 0)
+        {
+            timeToPlayAfter -= Time.deltaTime;
+            if(timeToPlayAfter <= 0)
+            {
+                PlayAnimation(animToPlayAfterTime);
+                animToPlayAfterTime = string.Empty;
+            }
+        }
+
         if (currentAnimation == null)
             return;
 
@@ -190,13 +243,26 @@ public class ObjectAnimator : MonoBehaviour
 
         if(currentAnimation.positions != null && currentAnimation.positions.Count > 0)
         {
-            transform.localPosition = Interpolation.Interpolate
-                (
-                    currentAnimation.positions[currentIndex % currentAnimation.positions.Count],
-                    currentAnimation.positions[targetIndex % currentAnimation.positions.Count],
-                    currentAnimation.time,
-                    currentAnimation.interpolationTypes[currentIndex % currentAnimation.positions.Count]
-                );
+            if(currentAnimation.useWorldPosition)
+            {
+                transform.position = Interpolation.Interpolate
+                    (
+                        currentAnimation.positions[currentIndex % currentAnimation.positions.Count],
+                        currentAnimation.positions[targetIndex % currentAnimation.positions.Count],
+                        currentAnimation.time,
+                        currentAnimation.interpolationTypes[currentIndex % currentAnimation.positions.Count]
+                    );
+            }
+            else
+            {
+                transform.localPosition = Interpolation.Interpolate
+                    (
+                        currentAnimation.positions[currentIndex % currentAnimation.positions.Count],
+                        currentAnimation.positions[targetIndex % currentAnimation.positions.Count],
+                        currentAnimation.time,
+                        currentAnimation.interpolationTypes[currentIndex % currentAnimation.positions.Count]
+                    );
+            }
         }
         if(currentAnimation.localScales != null && currentAnimation.localScales.Count > 0)
         {

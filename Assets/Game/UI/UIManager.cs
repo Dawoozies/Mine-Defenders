@@ -10,14 +10,20 @@ public class UIManager : MonoBehaviour
     {
         ins = this;
     }
+    #region UI ACTION DISPLAY VARIABLES
     public GameObject UI_Action_Display_Prefab;
     const int UI_ACTION_DISPLAY_POOL_SIZE = 30;
     private readonly List<UI_Action_Display> actionDisplayPool = new();
     private UI_Action_Display actionDisplay_FirstAvailable;
-
-    //event for radial buttons which are pressed 
+    #endregion
+    #region RADIAL MENU VARIABLES
+    public delegate (int, bool) RadialButtonPressed();
+    public event RadialButtonPressed onRadialButtonPressed;
+    public GameObject[] radialMenus;
+    #endregion
     private void Start()
     {
+        #region UI ACTION DISPLAY START
         for (int i = 0; i < UI_ACTION_DISPLAY_POOL_SIZE; i++)
         {
             Generate_Action_Display();
@@ -28,6 +34,7 @@ public class UIManager : MonoBehaviour
             actionDisplayPool[i].next = actionDisplayPool[i + 1];
         }
         actionDisplayPool[^1].next = null;
+        #endregion
     }
     #region UI ACTION DISPLAY
     public void Generate_Action_Display()
@@ -67,4 +74,24 @@ public class UIManager : MonoBehaviour
         return newActionDisplay;
     }
     #endregion
+    private void Update()
+    {
+        #region RADIAL MENU UPDATE
+        if(onRadialButtonPressed != null)
+        {
+            foreach (var item in onRadialButtonPressed.GetInvocationList())
+            {
+                (int, bool) buttonArgs = ((int, bool))item.DynamicInvoke();
+                radialMenus[buttonArgs.Item1].SetActive(buttonArgs.Item2);
+            }
+            //(int, bool) buttonArgs = onRadialButtonPressed.Invoke();
+            //for (int i = 0; i < radialMenus.Length; i++)
+            //{
+            //    bool menuOpen = buttonArgs.Item1 == i && buttonArgs.Item2;
+            //    radialMenus[i].SetActive(menuOpen);
+            //}
+            onRadialButtonPressed = null;
+        }
+        #endregion
+    }
 }

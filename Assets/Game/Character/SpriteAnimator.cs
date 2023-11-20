@@ -18,6 +18,7 @@ public class SpriteAnimation
 public class SpriteAnimator : MonoBehaviour
 {
     public string playOnStartAnimName;
+    public string playOnEnableAnimName;
     public float animationSpeed;
     public List<SpriteAnimation> animations;
     SpriteAnimation currentAnimation;
@@ -37,6 +38,18 @@ public class SpriteAnimator : MonoBehaviour
         if(playOnStartAnimName != null && playOnStartAnimName.Length > 0) 
         { 
             PlayAnimation(playOnStartAnimName);
+        }
+    }
+    private void OnEnable()
+    {
+        if(spriteRenderer == null)
+            spriteRenderer = GetComponent<SpriteRenderer>();
+        if(image == null)
+            image = GetComponent<Image>();
+
+        if (playOnEnableAnimName != null && playOnEnableAnimName.Length > 0)
+        {
+            PlayOnce(playOnEnableAnimName);
         }
     }
     public void CreateAndPlayAnimation(SpriteAnimation animation)
