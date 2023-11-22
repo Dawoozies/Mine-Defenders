@@ -14,7 +14,10 @@ public class DefenderListElement : MonoBehaviour
     Defender defender;
     Bar[] bars;
     public SpriteAnimator portraitAnimator;
+    public ObjectAnimator tabAnimator;
+    public SpriteAnimator tabBorderSpriteAnimator;
     Image portraitImage;
+    bool dead;
     private void Start()
     {
         rectTransform = GetComponent<RectTransform>();
@@ -46,6 +49,8 @@ public class DefenderListElement : MonoBehaviour
             mainAnimator.onAnimationComplete += item.StopAnimation;
         }
         mainAnimator.onAnimationComplete += () => {
+            if(defender.health == 0)
+                return;
             barLayoutAnimator.PlayAnimation("ShowBars");
         };
         barLayoutAnimator.onAnimationComplete += () =>
@@ -99,5 +104,25 @@ public class DefenderListElement : MonoBehaviour
     {
         this.defender = defender;
 
+    }
+    private void Update()
+    {
+        if (defender == null) return;
+        if(defender.health == 0 && !dead)
+        {
+            tabAnimator.PlayAnimation("Dead");
+            tabBorderSpriteAnimator.PlayAnimation("Dead");
+            deathIndicator.SetActive(true);
+            barLayoutAnimator.PlayAnimation("HideBars");
+            dead = true;
+        }
+        if(defender.health > 0 && dead)
+        {
+            tabAnimator.PlayAnimation("Alive");
+            tabBorderSpriteAnimator.PlayAnimation("Alive");
+            deathIndicator.SetActive(false);
+            barLayoutAnimator.PlayAnimation("ShowBars");
+            dead = false;
+        }
     }
 }

@@ -82,6 +82,10 @@ public class CommandMenu : MonoBehaviour
         listBaseAnimator.CreateAndPlayAnimation(openAnimation);
         chainSpriteAnimator.PlayAnimation("ChainMoveLeft");
         listBaseAnimator.onAnimationComplete += chainSpriteAnimator.StopAnimation;
+        for (int i = 0; i < defenderCount; i++)
+        {
+            defenderListElements[i].SetElementDefender(defendersActive[i]);
+        }
         listBaseAnimator.onAnimationComplete += () => 
         {
             defenderListElementsParent.GetWorldCorners(defenderListCorners);
@@ -91,11 +95,6 @@ public class CommandMenu : MonoBehaviour
             }
         };
         #endregion
-
-        for (int i = 0; i < defenderCount; i++)
-        {
-            defenderListElements[i].SetElementDefender(defendersActive[i]);
-        }
     }
     private void OnDisable()
     {
