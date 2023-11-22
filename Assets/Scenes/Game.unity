@@ -802,6 +802,70 @@ MonoBehaviour:
   enemyBases:
   - {fileID: 11400000, guid: 7669a4ecb54d566448f522dcfd762461, type: 2}
   - {fileID: 11400000, guid: 8f01d4a2d45483d4d800a0bd9a0af402, type: 2}
+  defenderBases:
+  - {fileID: 11400000, guid: 32425412f2048a640a0ce948fe3f1337, type: 2}
+  - {fileID: 11400000, guid: 7e4c315174905b34289e3fba706cd65f, type: 2}
+  testDefenders:
+  - defenderName: Archer
+    defenderKey: 0
+    maxHealth: 20
+    health: 15
+    maxExp: 100
+    exp: 10
+    defaultSprites:
+    - {fileID: 347608431, guid: 101dd67895840b94a9a228a2b7e74bd2, type: 3}
+    - {fileID: -252073051, guid: b8d6cec06b155e449865e165f84205b1, type: 3}
+    attackBases: []
+  - defenderName: Archer
+    defenderKey: 1
+    maxHealth: 10
+    health: 10
+    maxExp: 100
+    exp: 20
+    defaultSprites:
+    - {fileID: 347608431, guid: 101dd67895840b94a9a228a2b7e74bd2, type: 3}
+    - {fileID: -252073051, guid: b8d6cec06b155e449865e165f84205b1, type: 3}
+    attackBases: []
+  - defenderName: Archer
+    defenderKey: 2
+    maxHealth: 10
+    health: 2
+    maxExp: 100
+    exp: 0
+    defaultSprites:
+    - {fileID: 347608431, guid: 101dd67895840b94a9a228a2b7e74bd2, type: 3}
+    - {fileID: -252073051, guid: b8d6cec06b155e449865e165f84205b1, type: 3}
+    attackBases: []
+  - defenderName: Swordsman
+    defenderKey: 3
+    maxHealth: 20
+    health: 17
+    maxExp: 100
+    exp: 50
+    defaultSprites:
+    - {fileID: 347608431, guid: 101dd67895840b94a9a228a2b7e74bd2, type: 3}
+    - {fileID: -252073051, guid: b8d6cec06b155e449865e165f84205b1, type: 3}
+    attackBases: []
+  - defenderName: Swordsman
+    defenderKey: 4
+    maxHealth: 20
+    health: 5
+    maxExp: 100
+    exp: 4
+    defaultSprites:
+    - {fileID: 347608431, guid: 101dd67895840b94a9a228a2b7e74bd2, type: 3}
+    - {fileID: -252073051, guid: b8d6cec06b155e449865e165f84205b1, type: 3}
+    attackBases: []
+  - defenderName: Swordsman
+    defenderKey: 5
+    maxHealth: 30
+    health: 15
+    maxExp: 100
+    exp: 90
+    defaultSprites:
+    - {fileID: 347608431, guid: 101dd67895840b94a9a228a2b7e74bd2, type: 3}
+    - {fileID: -252073051, guid: b8d6cec06b155e449865e165f84205b1, type: 3}
+    attackBases: []
 --- !u!1 &226689017
 GameObject:
   m_ObjectHideFlags: 0
@@ -813,6 +877,7 @@ GameObject:
   - component: {fileID: 226689020}
   - component: {fileID: 226689019}
   - component: {fileID: 226689018}
+  - component: {fileID: 226689022}
   m_Layer: 0
   m_Name: EventSystem
   m_TagString: Untagged
@@ -865,14 +930,13 @@ MonoBehaviour:
   m_FirstSelected: {fileID: 0}
   m_sendNavigationEvents: 1
   m_DragThreshold: 10
---- !u!4 &226689020
-Transform:
+--- !u!224 &226689020
+RectTransform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 226689017}
-  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -880,6 +944,34 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!223 &226689022
+Canvas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 226689017}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_RenderMode: 2
+  m_Camera: {fileID: 0}
+  m_PlaneDistance: 100
+  m_PixelPerfect: 0
+  m_ReceivesEvents: 1
+  m_OverrideSorting: 0
+  m_OverridePixelPerfect: 0
+  m_SortingBucketNormalizedSize: 0
+  m_VertexColorAlwaysGammaSpace: 0
+  m_AdditionalShaderChannelsFlag: 0
+  m_UpdateRectTransformForStandalone: 0
+  m_SortingLayerID: 0
+  m_SortingOrder: 0
+  m_TargetDisplay: 0
 --- !u!1 &245437727
 GameObject:
   m_ObjectHideFlags: 0
@@ -3850,6 +3942,9 @@ MonoBehaviour:
   playerLastCellPos: {x: 0, y: 0, z: 0}
   player: {fileID: 0}
   pitSpawnTime: 2
+  raycaster: {fileID: 1402697308}
+  eventSystem: {fileID: 226689019}
+  defenders: []
   computePaths: 0
   moveAlongPaths: 0
 --- !u!1 &774018938
@@ -4065,8 +4160,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -183.42, y: 48.695}
-  m_SizeDelta: {x: 366.84375, y: 97.39041}
+  m_AnchoredPosition: {x: -183.42, y: 50}
+  m_SizeDelta: {x: 366.84375, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &838336801
 MonoBehaviour:
@@ -4997,8 +5092,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -183.40002, y: 48.700012}
-  m_SizeDelta: {x: 366.84375, y: 97.39041}
+  m_AnchoredPosition: {x: -183.42, y: 50}
+  m_SizeDelta: {x: 366.84375, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1125641763
 MonoBehaviour:
@@ -5073,8 +5168,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -183.42, y: 48.695}
-  m_SizeDelta: {x: 366.84375, y: 97.39041}
+  m_AnchoredPosition: {x: -183.42, y: 50}
+  m_SizeDelta: {x: 366.84375, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1142199101
 MonoBehaviour:
@@ -5354,7 +5449,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   listElementPrefab: {fileID: 5372973456485594858, guid: e4c4713c8c3b59f4187f2beac0f6a704, type: 3}
-  defenderCount: 6
   defenderListBaseRect: {fileID: 2118330601}
   menuNameWindow: {fileID: 2013910972}
   defenderListElementsParent: {fileID: 1021625952}

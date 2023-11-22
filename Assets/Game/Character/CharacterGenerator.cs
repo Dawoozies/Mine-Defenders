@@ -7,6 +7,7 @@ public class CharacterGenerator : MonoBehaviour
     public GameObject enemyPrefab;
     public GameObject enemyBasePrefab;
     public EnemyBase[] enemyBases;
+    public DefenderBase[] defenderBases;
     public Player CreatePlayer(Vector3Int cellToSpawnAt)
     {
         Player player = Instantiate(playerPrefab, GameManager.ins.CellToWorld(cellToSpawnAt), Quaternion.identity, transform).GetComponent<Player>();
@@ -19,5 +20,13 @@ public class CharacterGenerator : MonoBehaviour
         Enemy createdEnemy = Instantiate(enemyBasePrefab, GameManager.ins.CellToWorld(cellToSpawnAt), Quaternion.identity, transform).GetComponent<Enemy>();
         createdEnemy.Initialise(enemyBases[Random.Range(0, enemyBases.Length)]);
         return createdEnemy;
+    }
+
+    public List<Defender> testDefenders;
+    public void SaveTestDefenders()
+    {
+        if (testDefenders == null || testDefenders.Count == 0)
+            return;
+        DefenderIO.SaveDefendersToJSON(testDefenders);
     }
 }

@@ -47,7 +47,7 @@ public class Enemy : MonoBehaviour, IAgent
         agentData.moveInterpolationType = enemyBase.moveInterpolationType;
         agentData.previousPoint = new Vector3Int(0, 0, -1);
         agentData.movesLeft = enemyBase.moveSpeed;
-        agentData.health = enemyBase.hearts * 4;
+        agentData.health = enemyBase.baseHealth;
     }
     void Update()
     {

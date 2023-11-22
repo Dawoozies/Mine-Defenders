@@ -4,7 +4,7 @@ using UnityEngine;
 [CreateAssetMenu]
 public class EnemyBase : ScriptableObject
 {
-    public int hearts;
+    public int baseHealth;
     public Color bloodColor;
     public float attackChargeTime;
     public int moveSpeed; //Tiles per movement update

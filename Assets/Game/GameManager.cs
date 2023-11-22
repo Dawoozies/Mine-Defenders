@@ -2,7 +2,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.Tilemaps;
+using UnityEngine.UI;
+
 public class GameManager : MonoBehaviour
 {
     public static GameManager ins;
@@ -32,189 +35,7 @@ public class GameManager : MonoBehaviour
     //public Transform player;
     public CharacterAgent playerAgent;
     public Vector3Int playerLastCellPos;
-    public class AgentController
-    {
-        public Player player;
-        public IAgent playerAgent;
-        public List<IAgent> enemies;
-        public void Player_PathCalculate(CellData cellData)
-        {
-            playerAgent.args.ResetCompletedFullPathEvent();
-            bool targetingStone = cellData.durability > 0;
-            if(targetingStone)
-            {
-                #region Set up pickaxe animation stuff
-                player.tool.toolTargetCellPos = cellData.cellPosition;
-                player.tool.toolTargetCellCenterWorldPos = cellData.cellCenterWorldPosition;
-                #endregion
-                List<Vector3Int> shortestPathToNeighbour =
-                    cellData.GetPathToClosestCardinalNeighbour(player);
-                #region Case : Where we are right next to the stone we targeted
-                if (Vector3Int.Distance(playerAgent.args.cellPos, cellData.cellPosition) == 1)
-                {
-                    player.StartMiningAnimation();
-                    //then we can just start mining
-                }
-                #endregion
-                if (shortestPathToNeighbour == null)
-                    return;
-                #region Case : Where we have to path to the stone
-                #region Set up playerFullPath
-                List<AgentPath> fullPath = new List<AgentPath>();
-                for (int i = shortestPathToNeighbour.Count - 1; i > 0; i--)
-                {
-                    var path = new AgentPath(
-                        shortestPathToNeighbour[i], 
-                        shortestPathToNeighbour[i - 1], 
-                        playerAgent.args.moveInterpolationType);
-                    fullPath.Add(path);
-                }
-                playerAgent.args.playerPath = fullPath;
-                playerAgent.args.playerPathIndex = 0;
-                #endregion
-                playerAgent.args.onPlayerCompletedFullPath += player.StartMiningAnimation;
-                #endregion
-            }
-            else
-            {
-                List<Vector3Int> points = Pathfinding.aStarNew(
-                    playerAgent, 
-                    playerAgent.args.cellPos, 
-                    cellData.cellPosition, 
-                    GameManager.ins.GetPlayerInaccessibleTilemaps(), 
-                    null
-                    );
 
-                if (points == null || points.Count == 0)
-                    return;
-                #region Set up playerFullPath
-                List<AgentPath> fullPath = new List<AgentPath>();
-                for (int i = points.Count - 1; i > 0; i--)
-                {
-                    var path = new AgentPath(
-                        points[i],
-                        points[i - 1],
-                        playerAgent.args.moveInterpolationType);
-                    fullPath.Add(path);
-                }
-                playerAgent.args.playerPath = fullPath;
-                playerAgent.args.playerPathIndex = 0;
-                #endregion
-            }
-        }
-        public void Enemies_PathCalculate()
-        {
-            if (enemies == null || enemies.Count == 0)
-                return;
-
-            #region CurrentPositions + Clear NextStep List
-            List<Vector3Int> agentCurrentPositionList = new List<Vector3Int>();
-            List<Vector3Int> agentNextStepList = new List<Vector3Int>();
-            foreach (IAgent agent in enemies)
-            {
-                agentCurrentPositionList.Add(agent.args.cellPos);
-                if(agent.args.path != null)
-                {
-                    agentNextStepList.Add(agent.args.path.end);
-                }
-            }
-            #endregion
-            for (int i = 0;  i < enemies.Count; i++)
-            {
-                IAgent agent = enemies[i];
-                //path to write to
-                if (agent.args.hasInstruction)
-                    continue;
-                if (agent.args.movesLeft <= 0)
-                    continue;
-                AgentPath path = new AgentPath(agent.args.cellPos, agent.args.cellPos, agent.args.moveInterpolationType);
-                agent.args.path = path;
-                List<Vector3Int> points = new List<Vector3Int>();
-                #region Calculate Neighbour Positions To Ignore
-                //Assume all neighbours are valid to start
-                List<Vector3Int> neighbourPositions = GameManager.ins.GetCardinalNeighbourPositions(agent.args.cellPos, false);
-                List<Vector3Int> invalidNeighbourPositions = new List<Vector3Int>();
-                foreach (Vector3Int neighbourPosition in neighbourPositions)
-                {
-                    bool neighbourPositionInvalid = false;
-                    foreach (Vector3Int item in agentCurrentPositionList)
-                    {
-                        if(neighbourPosition == item && item != agent.args.cellPos)
-                        {
-                            neighbourPositionInvalid = true;
-                        }
-                    }
-                    if (i != 0)
-                    {
-                        foreach (Vector3Int item in agentNextStepList)
-                        {
-                            if (neighbourPosition == item)
-                            {
-                                neighbourPositionInvalid = true;
-                            }
-                        }
-                    }
-                    if (agent.args.previousPoint.z != -1)
-                    {
-                        if (neighbourPosition == agent.args.previousPoint)
-                        {
-                            neighbourPositionInvalid = true;
-                            agent.args.previousPoint = new Vector3Int(0, 0, -1);
-                        }
-                    }
-                    if (neighbourPositionInvalid)
-                        invalidNeighbourPositions.Add(neighbourPosition);
-                }
-                #endregion
-                if (invalidNeighbourPositions.Count == 4)
-                {
-                    //Then this agent cannot move next update
-                    continue;
-                }
-                #region Call Pathfinding.aStartWithIgnore
-                points =
-                    Pathfinding.aStarWithIgnore(
-                        agent.args.cellPos,
-                        playerAgent.args.cellPos,
-                        GameManager.ins.GetEnemyInaccessibleTilemaps(),
-                        invalidNeighbourPositions
-                        );
-                #endregion
-                #region Setup Non Trivial End For Path
-                if (points != null && points.Count > 1)
-                {
-                    if (points[points.Count - 2] != playerAgent.args.cellPos)
-                    {
-                        agentNextStepList.Add(points[points.Count - 2]);
-                        path.end = points[points.Count - 2];
-                        if (!agent.args.hasInstruction)
-                            agent.args.hasInstruction = true;
-                        continue;
-                    }
-                }
-                #endregion
-            }
-        }
-        public void Agents_RefreshMovesLeft()
-        {
-            foreach (IAgent agent in enemies)
-            {
-                agent.args.RefreshMovesLeft();
-            }
-        }
-        public bool CheckAgentCanSpawnAtPosition(Vector3Int spawnPosition)
-        {
-            bool canSpawnHere = true;
-            foreach (IAgent agent in enemies)
-            {
-                if (agent.args.cellPos == spawnPosition)
-                {
-                    canSpawnHere = false;
-                }
-            }
-            return canSpawnHere;
-        }
-    }
     AgentController agentController;
     PlayerControls input;
     //Defender character
@@ -222,6 +43,15 @@ public class GameManager : MonoBehaviour
     public Player player;
     public float pitSpawnTime;
     float pitSpawnTimer;
+
+    #region Graphics Raycast
+    public GraphicRaycaster raycaster;
+    PointerEventData pointerEventData;
+    public EventSystem eventSystem;
+    #endregion
+    #region Defenders List
+    public List<Defender> defenders;
+    #endregion
     void Awake()
     {
         ins = this;
@@ -240,6 +70,18 @@ public class GameManager : MonoBehaviour
             Vector3 worldPosition = mainCamera.ScreenToWorldPoint(screenPosition);
             Vector3Int cellPosition = WorldToCell(worldPosition);
             Vector3 cellCenterWorldPosition = WorldToCellCenter(worldPosition);
+
+            #region Check if tap was on UI elements
+            pointerEventData = new PointerEventData(eventSystem);
+            pointerEventData.position = screenPosition;
+            List<RaycastResult> results = new List<RaycastResult>();
+            raycaster.Raycast(pointerEventData, results);
+            if(results.Count > 0)
+            {
+                return;
+            }
+            #endregion
+
             onTap?.Invoke((CellData)cellTable[cellPosition]);
         };
         input.Enable();
@@ -260,7 +102,7 @@ public class GameManager : MonoBehaviour
         //characterGenerator.CreateEnemy();
         occupiedTiles = new Hashtable();
         reservedTiles = new Hashtable();
-
+        #region AgentController Start
         allAgents = new List<IAgent>();
         agentController = new AgentController();
         agentController.player = characterGenerator.CreatePlayer(Vector3Int.zero);
@@ -269,7 +111,7 @@ public class GameManager : MonoBehaviour
         agentController.playerAgent.args.onPlayerNoMovesLeft += agentController.Agents_RefreshMovesLeft;
 
         onTap += agentController.Player_PathCalculate;
-
+        #region Construct Enemies
         agentController.enemies = new List<IAgent>()
         {
             characterGenerator.CreateEnemy(new Vector3Int(2,3,0)),
@@ -280,8 +122,15 @@ public class GameManager : MonoBehaviour
             characterGenerator.CreateEnemy(new Vector3Int(-1,2,0)),
             characterGenerator.CreateEnemy(new Vector3Int(-3,3,0)),
         };
+        #endregion
+
+
+        #endregion
+
+        characterGenerator.SaveTestDefenders();
+        defenders = DefenderIO.LoadDefendersFromJSON(characterGenerator.defenderBases);
     }
-    
+
     public delegate Vector3Int PlayerPositionBufferUpdated(); //Just updates cell position
     public static event PlayerPositionBufferUpdated OnPlayerPositionBufferUpdated;
 
@@ -809,4 +658,187 @@ public enum CellContents
     None = 0,
     Ore = 1,
     Stone = 2,
+}
+public class AgentController
+{
+    public Player player;
+    public IAgent playerAgent;
+    public List<IAgent> enemies;
+    public void Player_PathCalculate(CellData cellData)
+    {
+        playerAgent.args.ResetCompletedFullPathEvent();
+        bool targetingStone = cellData.durability > 0;
+        if (targetingStone)
+        {
+            #region Set up pickaxe animation stuff
+            player.tool.toolTargetCellPos = cellData.cellPosition;
+            player.tool.toolTargetCellCenterWorldPos = cellData.cellCenterWorldPosition;
+            #endregion
+            List<Vector3Int> shortestPathToNeighbour =
+                cellData.GetPathToClosestCardinalNeighbour(player);
+            #region Case : Where we are right next to the stone we targeted
+            if (Vector3Int.Distance(playerAgent.args.cellPos, cellData.cellPosition) == 1)
+            {
+                player.StartMiningAnimation();
+                //then we can just start mining
+            }
+            #endregion
+            if (shortestPathToNeighbour == null)
+                return;
+            #region Case : Where we have to path to the stone
+            #region Set up playerFullPath
+            List<AgentPath> fullPath = new List<AgentPath>();
+            for (int i = shortestPathToNeighbour.Count - 1; i > 0; i--)
+            {
+                var path = new AgentPath(
+                    shortestPathToNeighbour[i],
+                    shortestPathToNeighbour[i - 1],
+                    playerAgent.args.moveInterpolationType);
+                fullPath.Add(path);
+            }
+            playerAgent.args.playerPath = fullPath;
+            playerAgent.args.playerPathIndex = 0;
+            #endregion
+            playerAgent.args.onPlayerCompletedFullPath += player.StartMiningAnimation;
+            #endregion
+        }
+        else
+        {
+            List<Vector3Int> points = Pathfinding.aStarNew(
+                playerAgent,
+                playerAgent.args.cellPos,
+                cellData.cellPosition,
+                GameManager.ins.GetPlayerInaccessibleTilemaps(),
+                null
+                );
+
+            if (points == null || points.Count == 0)
+                return;
+            #region Set up playerFullPath
+            List<AgentPath> fullPath = new List<AgentPath>();
+            for (int i = points.Count - 1; i > 0; i--)
+            {
+                var path = new AgentPath(
+                    points[i],
+                    points[i - 1],
+                    playerAgent.args.moveInterpolationType);
+                fullPath.Add(path);
+            }
+            playerAgent.args.playerPath = fullPath;
+            playerAgent.args.playerPathIndex = 0;
+            #endregion
+        }
+    }
+    public void Enemies_PathCalculate()
+    {
+        if (enemies == null || enemies.Count == 0)
+            return;
+
+        #region CurrentPositions + Clear NextStep List
+        List<Vector3Int> agentCurrentPositionList = new List<Vector3Int>();
+        List<Vector3Int> agentNextStepList = new List<Vector3Int>();
+        foreach (IAgent agent in enemies)
+        {
+            agentCurrentPositionList.Add(agent.args.cellPos);
+            if (agent.args.path != null)
+            {
+                agentNextStepList.Add(agent.args.path.end);
+            }
+        }
+        #endregion
+        for (int i = 0; i < enemies.Count; i++)
+        {
+            IAgent agent = enemies[i];
+            //path to write to
+            if (agent.args.hasInstruction)
+                continue;
+            if (agent.args.movesLeft <= 0)
+                continue;
+            AgentPath path = new AgentPath(agent.args.cellPos, agent.args.cellPos, agent.args.moveInterpolationType);
+            agent.args.path = path;
+            List<Vector3Int> points = new List<Vector3Int>();
+            #region Calculate Neighbour Positions To Ignore
+            //Assume all neighbours are valid to start
+            List<Vector3Int> neighbourPositions = GameManager.ins.GetCardinalNeighbourPositions(agent.args.cellPos, false);
+            List<Vector3Int> invalidNeighbourPositions = new List<Vector3Int>();
+            foreach (Vector3Int neighbourPosition in neighbourPositions)
+            {
+                bool neighbourPositionInvalid = false;
+                foreach (Vector3Int item in agentCurrentPositionList)
+                {
+                    if (neighbourPosition == item && item != agent.args.cellPos)
+                    {
+                        neighbourPositionInvalid = true;
+                    }
+                }
+                if (i != 0)
+                {
+                    foreach (Vector3Int item in agentNextStepList)
+                    {
+                        if (neighbourPosition == item)
+                        {
+                            neighbourPositionInvalid = true;
+                        }
+                    }
+                }
+                if (agent.args.previousPoint.z != -1)
+                {
+                    if (neighbourPosition == agent.args.previousPoint)
+                    {
+                        neighbourPositionInvalid = true;
+                        agent.args.previousPoint = new Vector3Int(0, 0, -1);
+                    }
+                }
+                if (neighbourPositionInvalid)
+                    invalidNeighbourPositions.Add(neighbourPosition);
+            }
+            #endregion
+            if (invalidNeighbourPositions.Count == 4)
+            {
+                //Then this agent cannot move next update
+                continue;
+            }
+            #region Call Pathfinding.aStartWithIgnore
+            points =
+                Pathfinding.aStarWithIgnore(
+                    agent.args.cellPos,
+                    playerAgent.args.cellPos,
+                    GameManager.ins.GetEnemyInaccessibleTilemaps(),
+                    invalidNeighbourPositions
+                    );
+            #endregion
+            #region Setup Non Trivial End For Path
+            if (points != null && points.Count > 1)
+            {
+                if (points[points.Count - 2] != playerAgent.args.cellPos)
+                {
+                    agentNextStepList.Add(points[points.Count - 2]);
+                    path.end = points[points.Count - 2];
+                    if (!agent.args.hasInstruction)
+                        agent.args.hasInstruction = true;
+                    continue;
+                }
+            }
+            #endregion
+        }
+    }
+    public void Agents_RefreshMovesLeft()
+    {
+        foreach (IAgent agent in enemies)
+        {
+            agent.args.RefreshMovesLeft();
+        }
+    }
+    public bool CheckAgentCanSpawnAtPosition(Vector3Int spawnPosition)
+    {
+        bool canSpawnHere = true;
+        foreach (IAgent agent in enemies)
+        {
+            if (agent.args.cellPos == spawnPosition)
+            {
+                canSpawnHere = false;
+            }
+        }
+        return canSpawnHere;
+    }
 }

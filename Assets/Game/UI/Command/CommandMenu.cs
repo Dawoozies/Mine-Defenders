@@ -7,7 +7,6 @@ public class CommandMenu : MonoBehaviour
     public GameObject listElementPrefab;
     RectTransform listElementRectTransform;
 
-    public int defenderCount;
     float listWidth;
     public RectTransform defenderListBaseRect;
     ObjectAnimator listBaseAnimator;
@@ -18,57 +17,16 @@ public class CommandMenu : MonoBehaviour
     Vector2 listStartSize, listEndSize;
     Vector3[] defenderListCorners = new Vector3[4];
     //0 = bottom left 1 = top left 2 = top right 3 = bottom right
-    #region Defender List Element Definition
-    public class DefenderListElement
-    {
-        public RectTransform rectTransform;
-        public ObjectAnimator mainAnimator;
-        public ObjectAnimator[] objectAnimators;
-        public DefenderListElement(GameObject clonedObject)
-        {
-            rectTransform = clonedObject.GetComponent<RectTransform>();
-            mainAnimator = clonedObject.GetComponent<ObjectAnimator>();
-            objectAnimators = clonedObject.GetComponentsInChildren<ObjectAnimator>();
-        }
-        public void MoveListElementAlong(Vector3[] listCorners)
-        {
-            Vector3 listLeftMidpoint = (listCorners[0] + listCorners[1]) / 2;
-            Vector3 listRightMidpoint = (listCorners[2] + listCorners[3]) / 2;
-            ObjectAnimation moveAlong = new ObjectAnimation();
-            moveAlong.animName = "MoveAlong";
-            moveAlong.frames = 2;
-            moveAlong.useWorldPosition = true;
-            moveAlong.positions = new List<Vector3>()
-            {
-                listRightMidpoint,
-                listLeftMidpoint + (rectTransform.sizeDelta.x*(rectTransform.GetSiblingIndex()+0.5f))*Vector3.right
-            };
-            moveAlong.interpolationTypes = new List<InterpolationType>()
-            {   
-                InterpolationType.EaseInOutElastic,
-                InterpolationType.EaseInOutElastic
-            };
-            mainAnimator.CreateAndPlayAfterTime(moveAlong, 0.02f*rectTransform.GetSiblingIndex());
-            foreach (var item in objectAnimators)
-            {
-                item.PlayAnimation("Rotate");
-                mainAnimator.onAnimationComplete += item.StopAnimation;
-            }
-        }
-        public void Reset()
-        {
-            foreach (var item in objectAnimators)
-            {
-                item.StopAnimation();
-            }
-            mainAnimator.StopAnimation();
-            rectTransform.anchoredPosition = Vector3.zero;
-        }
-    }
-    #endregion
     List<DefenderListElement> defenderListElements = new List<DefenderListElement>();
+    List<Bar> bars = new List<Bar>();
     private void OnEnable()
     {
+        List<Defender> defendersActive = GameManager.ins.defenders;
+        if(defendersActive == null ||  defendersActive.Count == 0 )
+        {
+            return;
+        }
+        int defenderCount = defendersActive.Count;
         listElementRectTransform = listElementPrefab.GetComponent<RectTransform>();
         #region Set up defender list elements
         if(defenderListElements == null || defenderListElements.Count == 0)
@@ -77,7 +35,7 @@ public class CommandMenu : MonoBehaviour
             for (int i = 0; i < defenderCount; i++)
             {
                 GameObject clonedObject = Instantiate(listElementPrefab, defenderListElementsParent);
-                DefenderListElement defenderListElement = new DefenderListElement(clonedObject);
+                DefenderListElement defenderListElement = clonedObject.GetComponent<DefenderListElement>();
                 defenderListElements.Add(defenderListElement);
             }
         }
@@ -118,8 +76,8 @@ public class CommandMenu : MonoBehaviour
         };
         openAnimation.interpolationTypes = new List<InterpolationType>()
         { 
-            InterpolationType.EaseOutExp,
-            InterpolationType.EaseOutExp
+            InterpolationType.EaseOutElastic,
+            InterpolationType.EaseOutElastic
         };
         listBaseAnimator.CreateAndPlayAnimation(openAnimation);
         chainSpriteAnimator.PlayAnimation("ChainMoveLeft");
@@ -133,6 +91,11 @@ public class CommandMenu : MonoBehaviour
             }
         };
         #endregion
+
+        for (int i = 0; i < defenderCount; i++)
+        {
+            defenderListElements[i].SetElementDefender(defendersActive[i]);
+        }
     }
     private void OnDisable()
     {

@@ -627,7 +627,7 @@ TextureImporter:
         width: 7
         height: 7
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -635,6 +635,48 @@ TextureImporter:
       bones: []
       spriteID: 2aa4a9c8d1a3f9841bdbe287d63fb1eb
       internalID: -1255102417
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: gdp_icons_20
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 176
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: facd751572173f14fa1c05f5e52b4cdd
+      internalID: 267487169
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: gdp_icons_21
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 176
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: fe2ad0c1c7b0b524ebfee16305f59c06
+      internalID: -825231527
       vertices: []
       indices: 
       edges: []
@@ -663,6 +705,9 @@ TextureImporter:
       gdp_icons_18: -144589321
       gdp_icons_19: -1255102417
       gdp_icons_2: -782284774
+      gdp_icons_20: 267487169
+      gdp_icons_21: -825231527
+      gdp_icons_22: -223316037
       gdp_icons_3: 428404222
       gdp_icons_4: -768467676
       gdp_icons_5: -1061120308
