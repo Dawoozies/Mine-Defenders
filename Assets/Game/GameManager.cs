@@ -511,6 +511,11 @@ public class GameManager : MonoBehaviour
     {
         return agentController.playerAgent.args.worldPos;
     }
+    public void TryLootAtCell(Vector3Int cellPos, IAgent agent)
+    {
+        CellData cellData = GetCellDataAtPosition(cellPos);
+        cellData.TryLoot(agent);
+    }
 }
 public class CellData
 {
@@ -564,20 +569,39 @@ public class CellData
         List<Vector3Int> path = Pathfinding.aStarNew(agent, agent.args.cellPos, cellPosition, agent.args.notWalkable, agent.args.reservedTiles);
         return path;
     }
+
     public bool TryOccupation(IAgent agent)
     {
+        bool occupationSucceeded = false;
         if(occupyingAgent == null)
         {
             occupyingAgent = agent;
             GameManager.ins.Update_OccupiedTiles(this, agent);
-            return true;
+            occupationSucceeded = true;
         }
         else
         {
             if (reservingAgent == agent)
-                return true;
+                occupationSucceeded = true;
         }
-        return false;
+        return occupationSucceeded;
+    }
+    public void TryLoot(IAgent agent)
+    {
+        if(!agent.args.allowedToLoot.HasFlag(LootType.All))
+        {
+            if (agent.args.allowedToLoot.HasFlag(LootType.None))
+                return;
+            if (!agent.args.allowedToLoot.HasFlag(loot.type))
+                return;
+        }
+        if (loot != null)
+        {
+            //Debug.Log($"Agent {agent.args.type} trying to loot {loot.lootName}");
+            agent.args.PickupLoot(loot);
+            GameObject.Destroy(loot.instantiatedObject);
+            loot = null;
+        }
     }
     public void ReleaseOccupation(IAgent agent)
     {

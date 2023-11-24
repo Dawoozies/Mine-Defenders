@@ -40,7 +40,7 @@ public class Enemy : MonoBehaviour, IAgent
         }
 
         //Set up agent data
-        agentData = new AgentArgs(transform, AgentType.Enemy);
+        agentData = new AgentArgs(transform, AgentType.Enemy, this);
         agentData.moveSpeed = enemyBase.moveSpeed;
         agentData.notWalkable = GameManager.ins.GetEnemyInaccessibleTilemaps();
         agentData.reservedTiles = GameManager.ins.reservedTiles;
@@ -48,6 +48,7 @@ public class Enemy : MonoBehaviour, IAgent
         agentData.previousPoint = new Vector3Int(0, 0, -1);
         agentData.movesLeft = enemyBase.moveSpeed;
         agentData.health = enemyBase.baseHealth;
+        agentData.allowedToLoot = LootType.None;
     }
     void Update()
     {

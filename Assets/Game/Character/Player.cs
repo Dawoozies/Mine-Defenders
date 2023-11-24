@@ -17,6 +17,7 @@ public class Player : MonoBehaviour, IAgent
     AgentArgs agentData;
 
     Buffer<Vector3> agentPositionBuffer;
+    #region Tool Definition
     [Serializable]
     public class Tool
     {
@@ -32,15 +33,18 @@ public class Player : MonoBehaviour, IAgent
         public SpriteRenderer basePartRenderer;
     }
     public Tool tool;
+    #endregion
     private void Awake()
     {
         //Set up agentData
-        agentData = new AgentArgs(transform, AgentType.Player);
+        agentData = new AgentArgs(transform, AgentType.Player, this);
         agentData.moveSpeed = moveSpeed;
         agentData.notWalkable = GameManager.ins.GetPlayerInaccessibleTilemaps();
         agentData.reservedTiles = null;
         agentData.moveInterpolationType = moveInterpolationType;
         agentData.movesLeft = moveSpeed;
+        agentData.allowedToLoot = LootType.All;
+
         agentPositionBuffer = new Buffer<Vector3>(agentCellCenterPos, 0.125f);
         agentPositionBuffer.onWriteToBuffer += () => {
             GameManager.OnPlayerPositionBufferUpdated += () => { return agentCellPos; };

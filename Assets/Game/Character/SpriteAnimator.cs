@@ -90,6 +90,17 @@ public class SpriteAnimator : MonoBehaviour
             }
         }
     }
+    public void PlayAnimation(int animIndex)
+    {
+        if (animations == null || animations.Count == 0)
+            return;
+        if (animIndex >= animations.Count)
+            return;
+        currentAnimation = animations[animIndex];
+        currentIndex = 0;
+        targetIndex = 1;
+        currentAnimation.time = 0;
+    }
     bool playOnce;
     public void PlayOnce(string animName)
     {

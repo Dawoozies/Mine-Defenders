@@ -18,11 +18,13 @@ public class DefenderListElement : MonoBehaviour
     public SpriteAnimator tabBorderSpriteAnimator;
     Image portraitImage;
     bool dead;
+    DefenderTabButton defenderTabButton;
     private void Start()
     {
         rectTransform = GetComponent<RectTransform>();
         mainAnimator = GetComponent<ObjectAnimator>();
         barLayoutRectTransform = barLayoutAnimator.GetComponent<RectTransform>();
+        defenderTabButton = GetComponentInChildren<DefenderTabButton>();
     }
     public void MoveListElementAlong(Vector3[] listCorners)
     {
@@ -81,6 +83,18 @@ public class DefenderListElement : MonoBehaviour
             portraitAnimation.sprites = new List<Sprite>() { defender.defaultSprites[0], defender.defaultSprites[1] };
             portraitAnimation.spriteColors = new List<Color>() { Color.white, Color.white};
             portraitAnimator.CreateAndPlayAnimation(portraitAnimation);
+        };
+        defenderTabButton.onTabToggled += (bool menuActive) => {
+            if (dead)
+                return;
+            if(menuActive)
+            {
+                tabBorderSpriteAnimator.PlayAnimation("Selected");
+            }
+            if(!menuActive && tabBorderSpriteAnimator.GetCurrentAnimationName() == "Selected")
+            {
+                tabBorderSpriteAnimator.PlayAnimation("Alive");
+            }
         };
     }
     public void Reset()

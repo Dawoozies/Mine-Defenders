@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using System;
 public interface IAgent
 {
     public AgentArgs args { get; }
@@ -14,6 +15,7 @@ public enum AgentType
 }
 public class AgentArgs
 {
+    IAgent agent;
     public AgentType type;
     public Transform transform { get; set; }
     public int moveSpeed;
@@ -38,11 +40,25 @@ public class AgentArgs
     public event PlayerCompletedFullPath onPlayerCompletedFullPath;
 
     public int health;
-
-    public AgentArgs(Transform transform, AgentType type)
+    public LootType allowedToLoot;
+    public Dictionary<string, int> lootDictionary;
+    public AgentArgs(Transform transform, AgentType type, IAgent agent)
     {
         this.transform = transform;
         this.type = type;
+        this.agent = agent;
+        lootDictionary = new Dictionary<string, int>();
+    }
+    public void PickupLoot(CellLoot loot)
+    {
+        if(!lootDictionary.ContainsKey(loot.lootName))
+        {
+            lootDictionary.Add(loot.lootName, loot.amount);
+            Debug.LogWarning($"{type} picking up {loot.lootName}. Amount in backpack going from 0 to {lootDictionary[loot.lootName]}. Increase by {loot.amount}");
+            return;
+        }
+        Debug.LogWarning($"{type} picking up {loot.lootName}. Amount in backpack going from {lootDictionary[loot.lootName]} to {lootDictionary[loot.lootName]+loot.amount}. Increase by {loot.amount}");
+        lootDictionary[loot.lootName] = lootDictionary[loot.lootName] + loot.amount;
     }
     public void MoveAlongPath(float timeDelta)
     {
@@ -53,6 +69,7 @@ public class AgentArgs
             if (path.completed)
             {
                 //Debug.Log("path part completed");
+                GameManager.ins.TryLootAtCell(path.end, agent);
                 previousPoint = path.start;
                 if (hasInstruction)
                     hasInstruction = false;
@@ -79,6 +96,7 @@ public class AgentArgs
             }
             if (playerPath[playerPathIndex].completed)
             {
+                GameManager.ins.TryLootAtCell(playerPath[playerPathIndex].end, agent);
                 if (playerPathIndex + 1 <= playerPath.Count)
                 {
                     //Debug.Log($"player path at index {playerPathIndex} is complete and there is another");
@@ -114,6 +132,7 @@ public class AgentArgs
         return GameManager.ins.WorldToScreenPosition(transform.position + offset);
     }
 }
+#region No use
 public class AgentNavigator
 {
     public IAgent agent;
@@ -205,6 +224,7 @@ public class Segment
         return p;
     }
 }
+#endregion
 public class AgentPath
 {
     public Vector3Int start;

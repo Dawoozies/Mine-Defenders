@@ -16,6 +16,7 @@ public class Ore : ScriptableObject
     public int durability;
     public Vector2Int stepMinMax;
     public float baseRollChance;
+
     public bool BaseRoll()
     {
         return baseRollChance > UnityEngine.Random.Range(0f, 1f);
