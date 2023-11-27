@@ -6,7 +6,6 @@ using Random = UnityEngine.Random;
 
 public class Enemy : MonoBehaviour, IAgent
 {
-    NavigationOrder order;
     EnemyBase enemyBase;
     Vector3Int agentCellPos { get { return GameManager.ins.WorldToCell(transform.position); } }
     Vector3 agentCellCenterPos { get { return GameManager.ins.WorldToCellCenter(transform.position); } }
@@ -15,12 +14,6 @@ public class Enemy : MonoBehaviour, IAgent
 
     List<Attack> onCooldown = new();
     List<Attack> available = new();
-    [Serializable]
-    public class Graphics
-    {
-        public SpriteAnimator spriteAnimator;
-        public ObjectAnimator objectAnimator;
-    }
     public Graphics baseGraphics;
     float attackCharge;
     public void Initialise(EnemyBase enemyBase)

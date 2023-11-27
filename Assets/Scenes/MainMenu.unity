@@ -304,6 +304,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc25a3fd600d27e479de0e4e044997ac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playOnStartAnim: 
   animationSpeed: 0.5
   animations:
   - animName: EnterGame
@@ -311,6 +312,7 @@ MonoBehaviour:
     positions:
     - {x: 0, y: 0, z: -1.05}
     - {x: 0, y: 3, z: -1.05}
+    localScales: []
     eulerAngles: []
     rotations: []
     sizeDeltas: []
@@ -318,6 +320,7 @@ MonoBehaviour:
     interpolationTypes: 0700000007000000
     loop: 0
     time: 0
+    useWorldPosition: 0
 --- !u!1 &432218544
 GameObject:
   m_ObjectHideFlags: 0
@@ -573,6 +576,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc25a3fd600d27e479de0e4e044997ac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playOnStartAnim: 
   animationSpeed: 0.5
   animations:
   - animName: EnterGame
@@ -580,6 +584,7 @@ MonoBehaviour:
     positions:
     - {x: 0, y: -5.5, z: -10}
     - {x: 0, y: -5.5, z: -1.32}
+    localScales: []
     eulerAngles: []
     rotations: []
     sizeDeltas: []
@@ -587,6 +592,7 @@ MonoBehaviour:
     interpolationTypes: 0700000007000000
     loop: 0
     time: 0
+    useWorldPosition: 0
 --- !u!1 &793273480
 GameObject:
   m_ObjectHideFlags: 0
@@ -705,6 +711,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc25a3fd600d27e479de0e4e044997ac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playOnStartAnim: 
   animationSpeed: 0.1
   animations:
   - animName: Float
@@ -712,6 +719,7 @@ MonoBehaviour:
     positions:
     - {x: 0, y: -5.125, z: 0}
     - {x: 0, y: -4.875, z: 0}
+    localScales: []
     eulerAngles: []
     rotations: []
     sizeDeltas: []
@@ -719,6 +727,7 @@ MonoBehaviour:
     interpolationTypes: 0600000006000000
     loop: 1
     time: 0
+    useWorldPosition: 0
 --- !u!1 &1071155597
 GameObject:
   m_ObjectHideFlags: 0
@@ -837,9 +846,9 @@ RectTransform:
   - {fileID: 459403591}
   m_Father: {fileID: 793273481}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 1}
-  m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 350, y: 25}
+  m_AnchorMin: {x: 1, y: 1}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: -50, y: 25}
   m_SizeDelta: {x: 100, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1165158442
@@ -892,11 +901,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc25a3fd600d27e479de0e4e044997ac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playOnStartAnim: 
   animationSpeed: 0.35
   animations:
   - animName: GrappleTitle
     frames: 2
     positions: []
+    localScales: []
     eulerAngles: []
     rotations: []
     sizeDeltas:
@@ -908,9 +919,11 @@ MonoBehaviour:
     interpolationTypes: 0300000005000000
     loop: 0
     time: 0
+    useWorldPosition: 0
   - animName: PullTitleUp
     frames: 2
     positions: []
+    localScales: []
     eulerAngles: []
     rotations: []
     sizeDeltas:
@@ -922,9 +935,11 @@ MonoBehaviour:
     interpolationTypes: 0500000005000000
     loop: 0
     time: 0
+    useWorldPosition: 0
   - animName: Float
     frames: 2
     positions: []
+    localScales: []
     eulerAngles: []
     rotations: []
     sizeDeltas:
@@ -936,6 +951,7 @@ MonoBehaviour:
     interpolationTypes: 0700000007000000
     loop: 1
     time: 0
+    useWorldPosition: 0
 --- !u!1 &1262255642
 GameObject:
   m_ObjectHideFlags: 0
@@ -970,9 +986,9 @@ RectTransform:
   - {fileID: 432218545}
   m_Father: {fileID: 793273481}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 1}
-  m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: -350, y: 25}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 50, y: 25}
   m_SizeDelta: {x: 100, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1262255644
@@ -1025,11 +1041,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc25a3fd600d27e479de0e4e044997ac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playOnStartAnim: 
   animationSpeed: 0.35
   animations:
   - animName: GrappleTitle
     frames: 2
     positions: []
+    localScales: []
     eulerAngles: []
     rotations: []
     sizeDeltas:
@@ -1041,23 +1059,27 @@ MonoBehaviour:
     interpolationTypes: 0300000005000000
     loop: 0
     time: 0
+    useWorldPosition: 0
   - animName: PullTitleUp
     frames: 2
     positions: []
+    localScales: []
     eulerAngles: []
     rotations: []
     sizeDeltas:
     - {x: 100, y: 2265}
     - {x: 100, y: 267.822}
     anchoredPositions:
-    - {x: -350, y: -1082.5}
+    - {x: 50, y: -1082.5}
     - {x: -350, y: -83.91107}
     interpolationTypes: 0500000005000000
     loop: 0
     time: 0
+    useWorldPosition: 0
   - animName: Float
     frames: 2
     positions: []
+    localScales: []
     eulerAngles: []
     rotations: []
     sizeDeltas:
@@ -1069,6 +1091,7 @@ MonoBehaviour:
     interpolationTypes: 0700000007000000
     loop: 1
     time: 0
+    useWorldPosition: 0
 --- !u!1 &1295916023
 GameObject:
   m_ObjectHideFlags: 0

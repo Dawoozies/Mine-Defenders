@@ -42,6 +42,8 @@ public class AgentArgs
     public int health;
     public LootType allowedToLoot;
     public Dictionary<string, int> lootDictionary;
+
+
     public AgentArgs(Transform transform, AgentType type, IAgent agent)
     {
         this.transform = transform;
@@ -245,4 +247,10 @@ public class AgentPath
         t += timeDelta;
         return p;
     }
+}
+[Serializable]
+public class Graphics
+{
+    public SpriteAnimator spriteAnimator;
+    public ObjectAnimator objectAnimator;
 }

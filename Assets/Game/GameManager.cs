@@ -36,7 +36,7 @@ public class GameManager : MonoBehaviour
     public CharacterAgent playerAgent;
     public Vector3Int playerLastCellPos;
 
-    AgentController agentController;
+    public AgentController agentController;
     PlayerControls input;
     //Defender character
     //Enemy character
@@ -50,7 +50,8 @@ public class GameManager : MonoBehaviour
     public EventSystem eventSystem;
     #endregion
     #region Defenders List
-    public List<Defender> defenders;
+    public List<DefenderData> defendersLoaded;
+
     #endregion
     void Awake()
     {
@@ -123,12 +124,21 @@ public class GameManager : MonoBehaviour
             characterGenerator.CreateEnemy(new Vector3Int(-3,3,0)),
         };
         #endregion
-
-
         #endregion
 
         characterGenerator.SaveTestDefenders();
-        defenders = DefenderIO.LoadDefendersFromJSON(characterGenerator.defenderBases);
+        defendersLoaded = DefenderIO.LoadDefendersFromJSON(characterGenerator.defenderBases);
+        #region Construct Defenders
+        agentController.defenders = new List<Defender>()
+        {
+            characterGenerator.CreateDefender(defendersLoaded[0]),
+            characterGenerator.CreateDefender(defendersLoaded[1]),
+            characterGenerator.CreateDefender(defendersLoaded[2]),
+            characterGenerator.CreateDefender(defendersLoaded[3]),
+            characterGenerator.CreateDefender(defendersLoaded[4]),
+            characterGenerator.CreateDefender(defendersLoaded[5]),
+        };
+        #endregion
     }
 
     public delegate Vector3Int PlayerPositionBufferUpdated(); //Just updates cell position
@@ -516,6 +526,15 @@ public class GameManager : MonoBehaviour
         CellData cellData = GetCellDataAtPosition(cellPos);
         cellData.TryLoot(agent);
     }
+    public List<Defender> GetActiveDefenders()
+    {
+        return agentController.defenders;
+    }
+    public void Place_Defender(Vector3Int placementPos, Defender defenderToPlace)
+    {
+        defenderToPlace.gameObject.SetActive(true);
+        defenderToPlace.transform.position = CellToWorld(placementPos);
+    }
 }
 public class CellData
 {
@@ -688,6 +707,7 @@ public class AgentController
     public Player player;
     public IAgent playerAgent;
     public List<IAgent> enemies;
+    public List<Defender> defenders;
     public void Player_PathCalculate(CellData cellData)
     {
         playerAgent.args.ResetCompletedFullPathEvent();
@@ -765,6 +785,16 @@ public class AgentController
         {
             agentCurrentPositionList.Add(agent.args.cellPos);
             if (agent.args.path != null)
+            {
+                agentNextStepList.Add(agent.args.path.end);
+            }
+        }
+        foreach(IAgent agent in defenders)
+        {
+            if (!agent.args.transform.gameObject.activeSelf)
+                continue;
+            agentCurrentPositionList.Add(agent.args.cellPos);
+            if(agent.args.path != null)
             {
                 agentNextStepList.Add(agent.args.path.end);
             }
@@ -864,5 +894,26 @@ public class AgentController
             }
         }
         return canSpawnHere;
+    }
+    public List<IAgent> NearestPlayerOwnedAgentsToAgent(IAgent agent)
+    {
+        //We need to do nearest PATHABLE agent
+        //We shouldnt try to go to agents which we can't reach
+        //we should also every computation store a list of all non reachable targets so we can do less path finding
+        List<IAgent> potentialTargets = new List<IAgent>();
+        List<IAgent> allAgents = new List<IAgent>();
+        allAgents.Add(player);
+        allAgents.AddRange(defenders);
+        float smallestDistance = float.MaxValue;
+        foreach (IAgent otherAgent in allAgents)
+        {
+            float distance = Vector3.Distance(otherAgent.args.transform.position, agent.args.transform.position);
+            if (distance <= smallestDistance)
+            {
+                potentialTargets.Add(otherAgent);
+                smallestDistance = distance;
+            }
+        }
+        return potentialTargets;
     }
 }

@@ -137,6 +137,7 @@ MonoBehaviour:
     frames: 1
     positions:
     - {x: 0, y: 0, z: 0}
+    localScales: []
     eulerAngles: []
     rotations: []
     sizeDeltas: []
@@ -144,6 +145,7 @@ MonoBehaviour:
     interpolationTypes: 05000000
     loop: 1
     time: 0
+    useWorldPosition: 0
 --- !u!1 &8722293041731048080
 GameObject:
   m_ObjectHideFlags: 0
@@ -328,6 +330,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playOnStartAnimName: Idle
+  playOnEnableAnimName: 
   animationSpeed: 1
   animations:
   - animName: Idle
@@ -337,6 +340,7 @@ MonoBehaviour:
     - {fileID: 714867597, guid: b8d6cec06b155e449865e165f84205b1, type: 3}
     spriteOrders: 
     spriteColors: []
+    interpolationTypes: 
     time: 0
 --- !u!114 &4132456447406308882
 MonoBehaviour:
@@ -357,7 +361,7 @@ MonoBehaviour:
     toolTargetCellCenterWorldPos: {x: 0, y: 0, z: 0}
     baseDamage: 10
     equipmentBase: {fileID: 11400000, guid: 0793cface568e3c42b104243041bd978, type: 2}
-    materialBase: {fileID: 11400000, guid: 2a1109ce4ef9a894ea1671d6e07ea4e8, type: 2}
+    materialBase: {fileID: 11400000, guid: 3827fb033c952eb48bf333fb1c92733f, type: 2}
     objectAnimator: {fileID: 171828604510901107}
     materialPartRenderer: {fileID: 8012034306772226029}
     basePartRenderer: {fileID: 6119016743212397931}

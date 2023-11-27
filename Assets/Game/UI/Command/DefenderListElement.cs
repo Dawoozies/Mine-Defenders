@@ -19,12 +19,21 @@ public class DefenderListElement : MonoBehaviour
     Image portraitImage;
     bool dead;
     DefenderTabButton defenderTabButton;
+
+    ButtonLayout buttonLayout;
     private void Start()
     {
         rectTransform = GetComponent<RectTransform>();
         mainAnimator = GetComponent<ObjectAnimator>();
         barLayoutRectTransform = barLayoutAnimator.GetComponent<RectTransform>();
         defenderTabButton = GetComponentInChildren<DefenderTabButton>();
+        buttonLayout = GetComponentInChildren<ButtonLayout>();
+        buttonLayout.onLayoutPressed += (int buttonPressed) => { 
+            if(buttonPressed == 1)
+            {
+
+            }
+        };
     }
     public void MoveListElementAlong(Vector3[] listCorners)
     {
@@ -51,7 +60,7 @@ public class DefenderListElement : MonoBehaviour
             mainAnimator.onAnimationComplete += item.StopAnimation;
         }
         mainAnimator.onAnimationComplete += () => {
-            if(defender.health == 0)
+            if(defender.defenderData.health == 0)
                 return;
             barLayoutAnimator.PlayAnimation("ShowBars");
         };
@@ -64,15 +73,15 @@ public class DefenderListElement : MonoBehaviour
             {
                 if(bar.barType == BarType.Health)
                 {
-                    bar.maxValue = defender.maxHealth;
+                    bar.maxValue = defender.defenderData.maxHealth;
                     bar.minValue = 0;
-                    bar.ChangeValue(defender.health);
+                    bar.ChangeValue(defender.defenderData.health);
                 }
                 if(bar.barType == BarType.Exp)
                 {
-                    bar.maxValue = defender.maxExp;
+                    bar.maxValue = defender.defenderData.maxExp;
                     bar.minValue = 0;
-                    bar.ChangeValue(defender.exp);
+                    bar.ChangeValue(defender.defenderData.exp);
                 }
             }
         };
@@ -80,7 +89,7 @@ public class DefenderListElement : MonoBehaviour
             SpriteAnimation portraitAnimation = new SpriteAnimation();
             portraitAnimation.animName = "Default";
             portraitAnimation.frames = 2;
-            portraitAnimation.sprites = new List<Sprite>() { defender.defaultSprites[0], defender.defaultSprites[1] };
+            portraitAnimation.sprites = new List<Sprite>() { defender.defenderData.defaultSprites[0], defender.defenderData.defaultSprites[1] };
             portraitAnimation.spriteColors = new List<Color>() { Color.white, Color.white};
             portraitAnimator.CreateAndPlayAnimation(portraitAnimation);
         };
@@ -122,7 +131,7 @@ public class DefenderListElement : MonoBehaviour
     private void Update()
     {
         if (defender == null) return;
-        if(defender.health == 0 && !dead)
+        if(defender.defenderData.health == 0 && !dead)
         {
             tabAnimator.PlayAnimation("Dead");
             tabBorderSpriteAnimator.PlayAnimation("Dead");
@@ -130,7 +139,7 @@ public class DefenderListElement : MonoBehaviour
             barLayoutAnimator.PlayAnimation("HideBars");
             dead = true;
         }
-        if(defender.health > 0 && dead)
+        if(defender.defenderData.health > 0 && dead)
         {
             tabAnimator.PlayAnimation("Alive");
             tabBorderSpriteAnimator.PlayAnimation("Alive");

@@ -802,6 +802,7 @@ MonoBehaviour:
   enemyBases:
   - {fileID: 11400000, guid: 7669a4ecb54d566448f522dcfd762461, type: 2}
   - {fileID: 11400000, guid: 8f01d4a2d45483d4d800a0bd9a0af402, type: 2}
+  defenderPrefab: {fileID: 8754239654235546804, guid: 92e51e69b01e8514090cef6f8e9e42dd, type: 3}
   defenderBases:
   - {fileID: 11400000, guid: 32425412f2048a640a0ce948fe3f1337, type: 2}
   - {fileID: 11400000, guid: 7e4c315174905b34289e3fba706cd65f, type: 2}
@@ -816,6 +817,8 @@ MonoBehaviour:
     - {fileID: 347608431, guid: 101dd67895840b94a9a228a2b7e74bd2, type: 3}
     - {fileID: -252073051, guid: b8d6cec06b155e449865e165f84205b1, type: 3}
     attackBases: []
+    moveSpeed: 0
+    moveInterpolationType: 0
   - defenderName: Archer
     defenderKey: 1
     maxHealth: 10
@@ -826,6 +829,8 @@ MonoBehaviour:
     - {fileID: 347608431, guid: 101dd67895840b94a9a228a2b7e74bd2, type: 3}
     - {fileID: -252073051, guid: b8d6cec06b155e449865e165f84205b1, type: 3}
     attackBases: []
+    moveSpeed: 0
+    moveInterpolationType: 0
   - defenderName: Archer
     defenderKey: 2
     maxHealth: 10
@@ -836,6 +841,8 @@ MonoBehaviour:
     - {fileID: 347608431, guid: 101dd67895840b94a9a228a2b7e74bd2, type: 3}
     - {fileID: -252073051, guid: b8d6cec06b155e449865e165f84205b1, type: 3}
     attackBases: []
+    moveSpeed: 0
+    moveInterpolationType: 0
   - defenderName: Swordsman
     defenderKey: 3
     maxHealth: 20
@@ -846,6 +853,8 @@ MonoBehaviour:
     - {fileID: 347608431, guid: 101dd67895840b94a9a228a2b7e74bd2, type: 3}
     - {fileID: -252073051, guid: b8d6cec06b155e449865e165f84205b1, type: 3}
     attackBases: []
+    moveSpeed: 0
+    moveInterpolationType: 0
   - defenderName: Swordsman
     defenderKey: 4
     maxHealth: 20
@@ -856,6 +865,8 @@ MonoBehaviour:
     - {fileID: 347608431, guid: 101dd67895840b94a9a228a2b7e74bd2, type: 3}
     - {fileID: -252073051, guid: b8d6cec06b155e449865e165f84205b1, type: 3}
     attackBases: []
+    moveSpeed: 0
+    moveInterpolationType: 0
   - defenderName: Swordsman
     defenderKey: 5
     maxHealth: 30
@@ -866,6 +877,8 @@ MonoBehaviour:
     - {fileID: 347608431, guid: 101dd67895840b94a9a228a2b7e74bd2, type: 3}
     - {fileID: -252073051, guid: b8d6cec06b155e449865e165f84205b1, type: 3}
     attackBases: []
+    moveSpeed: 0
+    moveInterpolationType: 0
 --- !u!1 &226689017
 GameObject:
   m_ObjectHideFlags: 0
@@ -3944,7 +3957,7 @@ MonoBehaviour:
   pitSpawnTime: 2
   raycaster: {fileID: 1402697308}
   eventSystem: {fileID: 226689019}
-  defenders: []
+  defendersLoaded: []
   computePaths: 0
   moveAlongPaths: 0
 --- !u!1 &774018938

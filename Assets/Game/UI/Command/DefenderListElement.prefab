@@ -1042,6 +1042,7 @@ GameObject:
   - component: {fileID: 4511541712309391217}
   - component: {fileID: 2862497209723856662}
   - component: {fileID: 3927883990709849596}
+  - component: {fileID: 4207923191728030939}
   m_Layer: 0
   m_Name: DefenderCommands
   m_TagString: Untagged
@@ -1135,6 +1136,18 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &4207923191728030939
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5856291429243717079}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17d0d29c62b814b4aa2998f963684fb9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &6097225949563121981
 GameObject:
   m_ObjectHideFlags: 0

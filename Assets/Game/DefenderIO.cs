@@ -6,12 +6,12 @@ using UnityEngine;
 
 public static class DefenderIO
 {
-    public static List<Defender> LoadDefendersFromJSON(DefenderBase[] defenderBases)
+    public static List<DefenderData> LoadDefendersFromJSON(DefenderBase[] defenderBases)
     {
         if (defenderBases == null || defenderBases.Length == 0)
             return null;
         string persistentDataPath = Application.persistentDataPath;
-        List<Defender> defendersLoaded = new List<Defender>();
+        List<DefenderData> defendersLoaded = new List<DefenderData>();
         foreach (DefenderBase item in defenderBases)
         {
             string directory = Path.Combine(persistentDataPath, item.name);
@@ -21,14 +21,14 @@ public static class DefenderIO
             foreach (string fileEntry in fileEntries) {
                 string defenderJSON_string = File.ReadAllText(fileEntry);
                 DefenderJSON defenderJSON = new DefenderJSON(defenderJSON_string);
-                Defender defender = new Defender(defenderJSON, item);
+                DefenderData defender = new DefenderData(defenderJSON, item);
                 defendersLoaded.Add(defender);
             }
         }
 
         return defendersLoaded;
     }
-    public static void SaveDefendersToJSON(List<Defender> defenderList)
+    public static void SaveDefendersToJSON(List<DefenderData> defenderList)
     {
         if (defenderList == null || defenderList.Count == 0)
             return;
@@ -55,7 +55,7 @@ public class DefenderJSON
     public int defenderKey;
     public int maxHealth, health;
     public int maxExp, exp;
-    public DefenderJSON(Defender defender)
+    public DefenderJSON(DefenderData defender)
     {
         defenderBaseName = defender.defenderName;
         defenderKey = defender.defenderKey;
