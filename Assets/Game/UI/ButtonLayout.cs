@@ -7,10 +7,10 @@ public class ButtonLayout : MonoBehaviour
     PlayerControls input;
     List<RectTransform> commandRects;
     List<Vector3[]> rectCorners;
-    public delegate void LayoutPressed(int buttonPressed);
-    public event LayoutPressed onLayoutPressed;
+    IButtonLayout layoutHandler;
     private void OnEnable()
     {
+        layoutHandler = GetComponentInParent<IButtonLayout>();
         if(input == null)
         {
             #region Start set up
@@ -25,11 +25,9 @@ public class ButtonLayout : MonoBehaviour
             }
             #endregion
 
-            onLayoutPressed += (int buttonPressed) => { Debug.Log($"Button pressed {buttonPressed}"); };
             input = new PlayerControls();
             input.Player.Tap.performed += (input) => {
                 Vector2 hitPos = input.ReadValue<Vector2>();
-                int buttonPressed = -1;
                 for (int i = 0; i < commandRects.Count; i++)
                 {
                     commandRects[i].GetWorldCorners(rectCorners[i]);
@@ -38,11 +36,10 @@ public class ButtonLayout : MonoBehaviour
                     && (hitPos.y >= rectCorners[i][0].y && hitPos.y <= rectCorners[i][2].y);
                     if (hitButton)
                     {
-                        buttonPressed = i;
+                        layoutHandler.ButtonPressed(i);
                         break;
                     }
                 }
-                onLayoutPressed?.Invoke(buttonPressed);
             };
         }
         input.Enable();
@@ -51,4 +48,8 @@ public class ButtonLayout : MonoBehaviour
     {
         input.Disable();
     }
+}
+public interface IButtonLayout
+{
+    public void ButtonPressed(int buttonPressed);
 }

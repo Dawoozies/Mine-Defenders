@@ -895,8 +895,27 @@ public class AgentController
         }
         return canSpawnHere;
     }
-    public List<IAgent> NearestPlayerOwnedAgentsToAgent(IAgent agent)
+    public List<IAgent> GetPotentialTargets(IAgent agent, AgentTypeFlags agentTypeFlags)
     {
+        #region Get agents who are targetable
+        List<IAgent> targetableAgents = new List<IAgent>();
+        if (agentTypeFlags.HasFlag(AgentTypeFlags.Player))
+            targetableAgents.Add(playerAgent);
+        if (agentTypeFlags.HasFlag(AgentTypeFlags.Enemy))
+            targetableAgents.AddRange(enemies);
+        if (agentTypeFlags.HasFlag(AgentTypeFlags.Defender))
+            targetableAgents.AddRange(defenders);
+        if (targetableAgents == null || targetableAgents.Count == 0)
+            return null;
+        #endregion
+
+        List<IAgent> pathableTagets = new List<IAgent>();
+
+        foreach (IAgent targetableAgent in targetableAgents)
+        {
+
+        }
+
         //We need to do nearest PATHABLE agent
         //We shouldnt try to go to agents which we can't reach
         //we should also every computation store a list of all non reachable targets so we can do less path finding

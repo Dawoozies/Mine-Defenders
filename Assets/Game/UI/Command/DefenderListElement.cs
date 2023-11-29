@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-public class DefenderListElement : MonoBehaviour
+public class DefenderListElement : MonoBehaviour, IButtonLayout
 {
     [HideInInspector]
     public RectTransform rectTransform;
@@ -19,21 +19,12 @@ public class DefenderListElement : MonoBehaviour
     Image portraitImage;
     bool dead;
     DefenderTabButton defenderTabButton;
-
-    ButtonLayout buttonLayout;
     private void Start()
     {
         rectTransform = GetComponent<RectTransform>();
         mainAnimator = GetComponent<ObjectAnimator>();
         barLayoutRectTransform = barLayoutAnimator.GetComponent<RectTransform>();
         defenderTabButton = GetComponentInChildren<DefenderTabButton>();
-        buttonLayout = GetComponentInChildren<ButtonLayout>();
-        buttonLayout.onLayoutPressed += (int buttonPressed) => { 
-            if(buttonPressed == 1)
-            {
-
-            }
-        };
     }
     public void MoveListElementAlong(Vector3[] listCorners)
     {
@@ -126,7 +117,6 @@ public class DefenderListElement : MonoBehaviour
     public void SetElementDefender(Defender defender)
     {
         this.defender = defender;
-
     }
     private void Update()
     {
@@ -146,6 +136,13 @@ public class DefenderListElement : MonoBehaviour
             deathIndicator.SetActive(false);
             barLayoutAnimator.PlayAnimation("ShowBars");
             dead = false;
+        }
+    }
+    void IButtonLayout.ButtonPressed(int buttonPressed)
+    {
+        if (buttonPressed == 0)
+        {
+            GameManager.ins.Place_Defender(GameManager.ins.agentController.playerAgent.args.cellPos, defender);
         }
     }
 }

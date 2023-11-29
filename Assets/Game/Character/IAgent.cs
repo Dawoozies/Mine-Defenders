@@ -13,6 +13,13 @@ public enum AgentType
     Enemy = 1,
     Defender = 2,
 }
+[Flags]
+public enum AgentTypeFlags
+{
+    Player = 0,
+    Enemy = 1,
+    Defender = 2,
+}
 public class AgentArgs
 {
     IAgent agent;
