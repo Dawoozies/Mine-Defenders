@@ -22,7 +22,7 @@ public class CommandMenu : MonoBehaviour
     private void OnEnable()
     {
         //List<DefenderData> d = GameManager.ins.defendersLoaded;
-        List<Defender> activeDefenders = GameManager.ins.GetActiveDefenders();
+        List<Defender> defenders = GameManager.ins.GetDefenders();
         int defenderCount = GameManager.ins.agentController.defenders.Count;
         listElementRectTransform = listElementPrefab.GetComponent<RectTransform>();
         #region Set up defender list elements
@@ -81,7 +81,7 @@ public class CommandMenu : MonoBehaviour
         listBaseAnimator.onAnimationComplete += chainSpriteAnimator.StopAnimation;
         for (int i = 0; i < defenderCount; i++)
         {
-            defenderListElements[i].SetElementDefender(activeDefenders[i]);
+            defenderListElements[i].SetElementDefender(defenders[i]);
         }
         listBaseAnimator.onAnimationComplete += () => 
         {

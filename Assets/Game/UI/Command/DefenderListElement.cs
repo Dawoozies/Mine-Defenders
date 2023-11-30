@@ -142,7 +142,8 @@ public class DefenderListElement : MonoBehaviour, IButtonLayout
     {
         if (buttonPressed == 0)
         {
-            GameManager.ins.Place_Defender(((IAgent)GameManager.ins.agentController.player).args.cellPos, defender);
+            //GameManager.ins.Place_Defender(((IAgent)GameManager.ins.agentController.player).args.cellPos, defender);
+            GameManager.PlaceDefenderRequest += () => { return new GameManager.PlaceDefenderRequestArgs(defender, ((IAgent)GameManager.ins.agentController.player).args.cellPos); };
         }
     }
 }

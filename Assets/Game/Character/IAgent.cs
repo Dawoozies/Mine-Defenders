@@ -14,22 +14,15 @@ public enum AgentType
     Enemy = 1,
     Defender = 2,
 }
-[Flags]
-public enum AgentTypeFlags
-{
-    Player = 0,
-    Enemy = 1,
-    Defender = 2,
-}
 public class AgentArgs
 {
     IAgent agent;
     public AgentType type;
     public Transform transform { get; set; }
     public int moveSpeed;
-    public Vector3Int cellPos { get => GameManager.ins.WorldToCell(transform.position); }
-    public Vector3 worldPos { get => GameManager.ins.WorldToCellCenter(transform.position); }
-    public Vector3 screenPos { get => ScreenTrackingWithOffset(Vector3.zero); }
+    public Vector3Int cellPos => GameManager.ins.WorldToCell(transform.position);
+    public Vector3 worldPos => GameManager.ins.WorldToCellCenter(transform.position);
+    public Vector3 screenPos => ScreenTrackingWithOffset(Vector3.zero);
     public Tilemap[] notWalkable;
     public Hashtable reservedTiles;
     public InterpolationType moveInterpolationType;
@@ -50,6 +43,9 @@ public class AgentArgs
     public int health;
     public LootType allowedToLoot;
     public Dictionary<string, int> lootDictionary;
+
+    public IAgent target;
+    public List<IAgent> targetedBy;
     public AgentArgs(Transform transform, AgentType type, IAgent agent)
     {
         this.transform = transform;
@@ -141,99 +137,6 @@ public class AgentArgs
         return GameManager.ins.WorldToScreenPosition(transform.position + offset);
     }
 }
-#region No use
-public class AgentNavigator
-{
-    public IAgent agent;
-    public CellData occupiedCell;
-    public CellData reservedCell;
-    public CellData targetCell;
-    public List<Segment> segments;
-    public int activeSegment;
-    public AgentNavigator(IAgent agent)
-    {
-        this.agent = agent;
-        occupiedCell = GameManager.ins.GetCellDataAtPosition(agent.args.cellPos);
-        occupiedCell.TryOccupation(agent);
-        //PLEASE DEAR GOD DON'T LET THINGS SPAWN ON EACH OTHER
-    }
-    public void SetNewTarget(CellData targetCell)
-    {
-        this.targetCell = targetCell;
-        ComputePath();
-    }
-    public void ComputePath()
-    {
-        if(segments != null && segments.Count > 0)
-        {
-            //segments[activeSegment].start.ReleaseOccupation(agent);
-            segments[activeSegment].end.ReleaseReservation(agent);
-        }
-        List<Vector3Int> path = targetCell.GetPathToCell(agent);
-        segments = new List<Segment>();
-        for (int i = path.Count - 1; i > 0; i--)
-        {
-            var pathSegment = new Segment(path[i], path[i - 1], agent.args.moveInterpolationType);
-            segments.Add(pathSegment);
-        }
-        activeSegment = 0;
-        if(segments != null && segments.Count > 0)
-        {
-            segments[activeSegment].start.TryOccupation(agent);
-            segments[activeSegment].end.TryReservation(agent);
-        }
-        else
-        {
-            //compute path has resulted in null path
-            //we still have to occupy where we are
-            //GameManager.ins.GetCellDataAtPosition(agent.args.cellPos).TryOccupation(agent);
-        }
-    }
-    public void Navigate(float timeDelta)
-    {
-        if (targetCell == null)
-            return;
-        if (segments == null || segments.Count == 0)
-            return;
-        //Do all the event triggering stuff later
-        if(activeSegment >= segments.Count)
-        {
-            return;
-        }
-        bool occupationSucceeded = segments[activeSegment].start.TryOccupation(agent);
-        bool reservationSucceeded = segments[activeSegment].end.TryReservation(agent);
-        if(reservationSucceeded)
-        {
-            agent.args.transform.position = segments[activeSegment].TraverseSegment(timeDelta * agent.args.moveSpeed);
-        }
-        if (segments[activeSegment].completed)
-        {
-            segments[activeSegment].start.ReleaseOccupation(agent);
-            activeSegment++;
-        }
-    }
-}
-public class Segment
-{
-    public CellData start;
-    public CellData end;
-    public InterpolationType interpolationType;
-    public float t;
-    public bool completed { get { return t >= 1; } }
-    public Segment(Vector3Int start, Vector3Int end, InterpolationType interpolationType)
-    {
-        this.start = GameManager.ins.GetCellDataAtPosition(start);
-        this.end = GameManager.ins.GetCellDataAtPosition(end);
-        this.interpolationType = interpolationType;
-    }
-    public Vector3 TraverseSegment(float timeDelta)
-    {
-        var p = Interpolation.Interpolate(start.cellPosition, end.cellPosition, t, interpolationType);
-        t += timeDelta;
-        return p;
-    }
-}
-#endregion
 public class AgentPath
 {
     public Vector3Int start;

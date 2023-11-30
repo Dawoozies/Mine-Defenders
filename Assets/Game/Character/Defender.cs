@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-public class Defender : MonoBehaviour, IAgent, ITargeting
+public class Defender : MonoBehaviour, IAgent
 {
     [HideInInspector]
     public DefenderData defenderData;
@@ -12,9 +12,6 @@ public class Defender : MonoBehaviour, IAgent, ITargeting
     AgentArgs IAgent.args { get { return agentData; } }
     AgentArgs agentData;
     public Graphics baseGraphics;
-
-    TargetingArgs ITargeting.args { get { return targetingData; } }
-    TargetingArgs targetingData;
     public Vector3 worldPos => agentCellCenterPos;
     public Vector3Int cellPos => agentCellPos;
     public void Initialise(DefenderData defenderData)
@@ -35,23 +32,11 @@ public class Defender : MonoBehaviour, IAgent, ITargeting
         agentData.movesLeft = defenderData.moveSpeed;
         agentData.health = defenderData.health;
         agentData.allowedToLoot = LootType.None;
-
-        targetingData = new TargetingArgs();
-        targetingData.target = null;
-        targetingData.targetedBy = new List<ITargeting>();
+        agentData.target = null;
+        agentData.targetedBy = new List<IAgent>();
     }
-
     public Tilemap[] GetInaccessibleTilemaps()
     {
         return GameManager.ins.GetPlayerInaccessibleTilemaps();
-    }
-    public void UpdateTarget(List<ITargeting> potentialTargets)
-    {
-        if (potentialTargets == null || potentialTargets.Count == 0)
-            return;
-    }
-    void ITargeting.SetTarget(ITargeting newTarget)
-    {
-
     }
 }

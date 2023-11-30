@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using Material = ItemFactory.Material;
 
-public class Player : MonoBehaviour, IAgent, ITargeting
+public class Player : MonoBehaviour, IAgent
 {
     NavigationOrder order;
     public int moveSpeed;
@@ -36,9 +36,6 @@ public class Player : MonoBehaviour, IAgent, ITargeting
     public Tool tool;
     #endregion
 
-
-    TargetingArgs ITargeting.args { get { return targetingData; } }
-    TargetingArgs targetingData;
     public Vector3 worldPos => agentCellCenterPos;
     public Vector3Int cellPos => agentCellPos;
     private void Awake()
@@ -51,11 +48,8 @@ public class Player : MonoBehaviour, IAgent, ITargeting
         agentData.moveInterpolationType = moveInterpolationType;
         agentData.movesLeft = moveSpeed;
         agentData.allowedToLoot = LootType.All;
-
-        //Set up targetingData
-        targetingData = new TargetingArgs();
-        targetingData.target = null;
-        targetingData.targetedBy = new List<ITargeting>();
+        agentData.target = null;
+        agentData.targetedBy = new List<IAgent>();
 
         agentPositionBuffer = new Buffer<Vector3>(agentCellCenterPos, 0.125f);
         agentPositionBuffer.onWriteToBuffer += () => {
@@ -173,13 +167,5 @@ public class Player : MonoBehaviour, IAgent, ITargeting
     public Tilemap[] GetInaccessibleTilemaps()
     {
         return GameManager.ins.GetPlayerInaccessibleTilemaps();
-    }
-    public void UpdateTarget(List<ITargeting> potentialTargets)
-    {
-
-    }
-    void ITargeting.SetTarget(ITargeting newTarget)
-    {
-
     }
 }

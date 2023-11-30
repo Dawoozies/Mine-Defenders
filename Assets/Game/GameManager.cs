@@ -136,7 +136,13 @@ public class GameManager : MonoBehaviour
             characterGenerator.CreateDefender(defendersLoaded[4]),
             characterGenerator.CreateDefender(defendersLoaded[5]),
         };
+        agentController.activeDefenders = new List<Defender>();
         #endregion
+
+        foreach (IAgent agent in agentController.enemies)
+        {
+            agent.args.target = agentController.player;
+        }
     }
 
     public delegate Vector3Int PlayerPositionBufferUpdated(); //Just updates cell position
@@ -153,6 +159,19 @@ public class GameManager : MonoBehaviour
 
     public delegate void OnTap(CellData cellData);
     public static event OnTap onTap;
+
+    public delegate PlaceDefenderRequestArgs PlaceDefender();
+    public static event PlaceDefender PlaceDefenderRequest; 
+    public class PlaceDefenderRequestArgs
+    {
+        public Defender defenderToPlace;
+        public Vector3Int position;
+        public PlaceDefenderRequestArgs(Defender defenderToPlace, Vector3Int position)
+        {
+            this.defenderToPlace = defenderToPlace;
+            this.position = position;
+        }
+    }
 
     public bool isInLevelBounds(Vector3Int position) {
         if (position.x < levelGenerator.bottomLeftCorner.x || position.x > levelGenerator.topRightCorner.x)
@@ -216,18 +235,40 @@ public class GameManager : MonoBehaviour
     private void FixedUpdate()
     {
         ((IAgent)agentController.player).args.MoveAlongPath(Time.fixedDeltaTime);
-
-        if(agentController.enemies != null && agentController.enemies.Count > 0)
+        bool defenderPlaced = false;
+        if (PlaceDefenderRequest != null)
         {
-            List<ITargeting> potentialTargets = new List<ITargeting>();
-            potentialTargets.Add(agentController.player);
-            potentialTargets.AddRange(agentController.defenders);
+            foreach (Delegate item in PlaceDefenderRequest.GetInvocationList())
+            {
+                PlaceDefenderRequestArgs args = item.DynamicInvoke() as PlaceDefenderRequestArgs;
+                Defender defenderToPlace = args.defenderToPlace;
+                Vector3Int pos = args.position;
+                Debug.Log($"Placing defender {defenderToPlace.defenderData.defenderName}_{defenderToPlace.defenderData.defenderKey}");
+                defenderToPlace.gameObject.SetActive(true);
+                defenderToPlace.transform.position = CellToWorld(pos);
+                if (agentController.defenders.Contains(defenderToPlace))
+                {
+                    agentController.activeDefenders.Add(defenderToPlace);
+                    agentController.defenders.Remove(defenderToPlace);
+                }
+            }
+            PlaceDefenderRequest = null;
+            defenderPlaced = true;
+        }
+
+        if (agentController.enemies != null && agentController.enemies.Count > 0)
+        {
+            if(defenderPlaced)
+            {
+                Debug.Log("enemy retargeting should be done");
+            }
+
             foreach (Enemy enemy in agentController.enemies)
             {
                 //Debug.Log($"agent.args.hasInstruction = {agent.args.hasInstruction}");
                 //Debug.Log($"agent.args.movesLeft = {agent.args.movesLeft}");
                 //Debug.Log($"agent.args.path == null = {agent.args.path == null}");
-                ((ITargeting)enemy).UpdateTarget(potentialTargets);
+                //((ITargeting)enemy).UpdateTarget(potentialTargets);
                 if (((IAgent)enemy).args.hasInstruction)
                 {
                     ((IAgent)enemy).args.MoveAlongPath(Time.fixedDeltaTime);
@@ -302,7 +343,14 @@ public class GameManager : MonoBehaviour
         Color gizmoColor = Color.black;
         foreach (IAgent agent in agentController.enemies)
         {
-            if(!agent.args.hasInstruction)
+            if (agent.args.target != null)
+            {
+                gizmoColor = Color.red;
+                gizmoColor.a = 1f;
+                Gizmos.color = gizmoColor;
+                Gizmos.DrawLine(agent.args.worldPos, agent.args.target.args.worldPos);
+            }
+            if (!agent.args.hasInstruction)
             {
                 gizmoColor = Color.black;
                 gizmoColor.a = 0.5f;
@@ -336,6 +384,7 @@ public class GameManager : MonoBehaviour
                 Gizmos.color = gizmoColor;
                 Gizmos.DrawWireCube(agent.args.path.end, Vector3.one * 0.75f);
             }
+
         }
 
         if(((IAgent)agentController.player).args.playerPath != null && ((IAgent)agentController.player).args.playerPath.Count > 0)
@@ -349,17 +398,8 @@ public class GameManager : MonoBehaviour
                 Gizmos.DrawWireCube(path.end, Vector3.one * 0.35f);
             }
         }
-
-        foreach (ITargeting item in agentController.enemies)
-        {
-            if (item.args.target == null)
-                continue;
-            gizmoColor = Color.red;
-            gizmoColor.a = 1f;
-            Gizmos.color = gizmoColor;
-            Gizmos.DrawLine(item.worldPos, item.args.target.worldPos);
-        }
     }
+    #region Old Code
     public bool TryReserve(Vector3Int cellPos)
     {
         if(reservedTiles.ContainsKey(cellPos))
@@ -451,6 +491,7 @@ public class GameManager : MonoBehaviour
             neighbours.Add((CellData)givenHashtable[cell]);
         return neighbours;
     }
+    #endregion
     public void BreakStone(CellData cellData)
     {
         //Remove stone via level generator method
@@ -542,14 +583,9 @@ public class GameManager : MonoBehaviour
         CellData cellData = GetCellDataAtPosition(cellPos);
         cellData.TryLoot(agent);
     }
-    public List<Defender> GetActiveDefenders()
+    public List<Defender> GetDefenders()
     {
         return agentController.defenders;
-    }
-    public void Place_Defender(Vector3Int placementPos, Defender defenderToPlace)
-    {
-        defenderToPlace.gameObject.SetActive(true);
-        defenderToPlace.transform.position = CellToWorld(placementPos);
     }
 }
 public class CellData
@@ -723,6 +759,7 @@ public class AgentController
     public Player player;
     public List<Enemy> enemies;
     public List<Defender> defenders;
+    public List<Defender> activeDefenders;
     public void Player_PathCalculate(CellData cellData)
     {
         ((IAgent)player).args.ResetCompletedFullPathEvent();
@@ -820,11 +857,12 @@ public class AgentController
         {
             Enemy enemy = enemies[i];
             IAgent agent = enemy;
-            ITargeting targeting = enemy;
             //path to write to
             if (agent.args.hasInstruction)
                 continue;
             if (agent.args.movesLeft <= 0)
+                continue;
+            if (agent.args.target == null)
                 continue;
             AgentPath path = new AgentPath(agent.args.cellPos, agent.args.cellPos, agent.args.moveInterpolationType);
             agent.args.path = path;
@@ -874,7 +912,7 @@ public class AgentController
             points =
                 Pathfinding.aStarWithIgnore(
                     agent.args.cellPos,
-                    targeting.args.target.cellPos,
+                    agent.args.target.args.cellPos,
                     agent.GetInaccessibleTilemaps(),
                     invalidNeighbourPositions
                     );
@@ -882,7 +920,7 @@ public class AgentController
             #region Setup Non Trivial End For Path
             if (points != null && points.Count > 1)
             {
-                if (points[points.Count - 2] != targeting.args.target.cellPos)
+                if (points[points.Count - 2] != agent.args.target.args.cellPos)
                 {
                     agentNextStepList.Add(points[points.Count - 2]);
                     path.end = points[points.Count - 2];
