@@ -2,9 +2,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 using Random = UnityEngine.Random;
 
-public class Enemy : MonoBehaviour, IAgent
+public class Enemy : MonoBehaviour, IAgent, ITargeting
 {
     EnemyBase enemyBase;
     Vector3Int agentCellPos { get { return GameManager.ins.WorldToCell(transform.position); } }
@@ -16,6 +17,11 @@ public class Enemy : MonoBehaviour, IAgent
     List<Attack> available = new();
     public Graphics baseGraphics;
     float attackCharge;
+
+    TargetingArgs ITargeting.args { get { return targetingData; } }
+    TargetingArgs targetingData;
+    public Vector3 worldPos => agentCellCenterPos;
+    public Vector3Int cellPos => agentCellPos;
     public void Initialise(EnemyBase enemyBase)
     {
         this.enemyBase = enemyBase;
@@ -42,6 +48,11 @@ public class Enemy : MonoBehaviour, IAgent
         agentData.movesLeft = enemyBase.moveSpeed;
         agentData.health = enemyBase.baseHealth;
         agentData.allowedToLoot = LootType.None;
+
+        //Set up targeting data
+        targetingData = new TargetingArgs();
+        targetingData.target = null;
+        targetingData.targetedBy = new List<ITargeting>();
     }
     void Update()
     {
@@ -107,5 +118,38 @@ public class Enemy : MonoBehaviour, IAgent
             selectedAttack.attackBase.icon
             );
         baseGraphics.objectAnimator.onAnimationComplete += actionDisplay.ReturnToPool;
+    }
+
+    public Tilemap[] GetInaccessibleTilemaps()
+    {
+        return GameManager.ins.GetEnemyInaccessibleTilemaps();
+    }
+    public void UpdateTarget(List<ITargeting> potentialTargets)
+    {
+        if (potentialTargets == null || potentialTargets.Count == 0)
+            return;
+        #region If we get here only the player is a potential target
+        if(potentialTargets.Count == 1)
+        {
+            ((ITargeting)this).SetTarget(potentialTargets[0]);
+            return;
+        }
+        #endregion
+        //distribute targetings in 4s across all
+        foreach (ITargeting potentialTarget in potentialTargets)
+        {
+            if (potentialTarget.args.targetedBy != null && potentialTarget.args.targetedBy.Count >= 4)
+                continue;
+            ((ITargeting)this).SetTarget(potentialTarget);
+            Debug.Log("Got Here");
+            return;
+        }
+    }
+    void ITargeting.SetTarget(ITargeting newTarget)
+    {
+        if (targetingData.target != null)
+            targetingData.target.args.targetedBy.Remove(this);
+        newTarget.args.targetedBy.Add(this);
+        targetingData.target = newTarget;
     }
 }

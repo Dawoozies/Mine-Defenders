@@ -6,6 +6,7 @@ using System;
 public interface IAgent
 {
     public AgentArgs args { get; }
+    public Tilemap[] GetInaccessibleTilemaps();
 }
 public enum AgentType
 {
@@ -49,8 +50,6 @@ public class AgentArgs
     public int health;
     public LootType allowedToLoot;
     public Dictionary<string, int> lootDictionary;
-
-
     public AgentArgs(Transform transform, AgentType type, IAgent agent)
     {
         this.transform = transform;
@@ -75,6 +74,7 @@ public class AgentArgs
         {
             if (path == null || movesLeft <= 0)
                 return;
+            //Debug.Log($"Moving along path {path.start} -> {path.end}");
             if (path.completed)
             {
                 //Debug.Log("path part completed");

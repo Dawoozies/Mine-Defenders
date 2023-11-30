@@ -107,13 +107,11 @@ public class GameManager : MonoBehaviour
         allAgents = new List<IAgent>();
         agentController = new AgentController();
         agentController.player = characterGenerator.CreatePlayer(Vector3Int.zero);
-        agentController.playerAgent = agentController.player;
-
-        agentController.playerAgent.args.onPlayerNoMovesLeft += agentController.Agents_RefreshMovesLeft;
+        ((IAgent)agentController.player).args.onPlayerNoMovesLeft += agentController.Agents_RefreshMovesLeft;
 
         onTap += agentController.Player_PathCalculate;
         #region Construct Enemies
-        agentController.enemies = new List<IAgent>()
+        agentController.enemies = new List<Enemy>()
         {
             characterGenerator.CreateEnemy(new Vector3Int(2,3,0)),
             characterGenerator.CreateEnemy(new Vector3Int(0,2,0)),
@@ -217,18 +215,26 @@ public class GameManager : MonoBehaviour
     }
     private void FixedUpdate()
     {
-        agentController.playerAgent.args.MoveAlongPath(Time.fixedDeltaTime);
-        foreach (IAgent agent in agentController.enemies)
+        ((IAgent)agentController.player).args.MoveAlongPath(Time.fixedDeltaTime);
+
+        if(agentController.enemies != null && agentController.enemies.Count > 0)
         {
-            //Debug.Log($"agent.args.hasInstruction = {agent.args.hasInstruction}");
-            //Debug.Log($"agent.args.movesLeft = {agent.args.movesLeft}");
-            //Debug.Log($"agent.args.path == null = {agent.args.path == null}");
-            if (agent.args.hasInstruction)
+            List<ITargeting> potentialTargets = new List<ITargeting>();
+            potentialTargets.Add(agentController.player);
+            potentialTargets.AddRange(agentController.defenders);
+            foreach (Enemy enemy in agentController.enemies)
             {
-                agent.args.MoveAlongPath(Time.fixedDeltaTime);
+                //Debug.Log($"agent.args.hasInstruction = {agent.args.hasInstruction}");
+                //Debug.Log($"agent.args.movesLeft = {agent.args.movesLeft}");
+                //Debug.Log($"agent.args.path == null = {agent.args.path == null}");
+                ((ITargeting)enemy).UpdateTarget(potentialTargets);
+                if (((IAgent)enemy).args.hasInstruction)
+                {
+                    ((IAgent)enemy).args.MoveAlongPath(Time.fixedDeltaTime);
+                }
             }
+            agentController.Enemies_PathCalculate();
         }
-        agentController.Enemies_PathCalculate();
     }
     void CameraTrackAnimation(Vector3 targetPos)
     {
@@ -332,9 +338,9 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        if(agentController.playerAgent.args.playerPath != null && agentController.playerAgent.args.playerPath.Count > 0)
+        if(((IAgent)agentController.player).args.playerPath != null && ((IAgent)agentController.player).args.playerPath.Count > 0)
         {
-            foreach (AgentPath path in agentController.playerAgent.args.playerPath)
+            foreach (AgentPath path in ((IAgent)agentController.player).args.playerPath)
             {
                 gizmoColor = Color.magenta;
                 gizmoColor.a = 0.5f;
@@ -342,6 +348,16 @@ public class GameManager : MonoBehaviour
                 Gizmos.DrawWireCube(path.start, Vector3.one * 0.35f);
                 Gizmos.DrawWireCube(path.end, Vector3.one * 0.35f);
             }
+        }
+
+        foreach (ITargeting item in agentController.enemies)
+        {
+            if (item.args.target == null)
+                continue;
+            gizmoColor = Color.red;
+            gizmoColor.a = 1f;
+            Gizmos.color = gizmoColor;
+            Gizmos.DrawLine(item.worldPos, item.args.target.worldPos);
         }
     }
     public bool TryReserve(Vector3Int cellPos)
@@ -515,11 +531,11 @@ public class GameManager : MonoBehaviour
     }
     public float DistanceFromPlayer(IAgent agent)
     {
-        return Vector3.Distance(agent.args.cellPos, agentController.playerAgent.args.cellPos);
+        return Vector3.Distance(agent.args.cellPos, ((IAgent)agentController.player).args.cellPos);
     }
     public Vector3 GetPlayerWorldPosition()
     {
-        return agentController.playerAgent.args.worldPos;
+        return ((IAgent)agentController.player).args.worldPos;
     }
     public void TryLootAtCell(Vector3Int cellPos, IAgent agent)
     {
@@ -705,12 +721,11 @@ public enum CellContents
 public class AgentController
 {
     public Player player;
-    public IAgent playerAgent;
-    public List<IAgent> enemies;
+    public List<Enemy> enemies;
     public List<Defender> defenders;
     public void Player_PathCalculate(CellData cellData)
     {
-        playerAgent.args.ResetCompletedFullPathEvent();
+        ((IAgent)player).args.ResetCompletedFullPathEvent();
         bool targetingStone = cellData.durability > 0;
         if (targetingStone)
         {
@@ -721,7 +736,7 @@ public class AgentController
             List<Vector3Int> shortestPathToNeighbour =
                 cellData.GetPathToClosestCardinalNeighbour(player);
             #region Case : Where we are right next to the stone we targeted
-            if (Vector3Int.Distance(playerAgent.args.cellPos, cellData.cellPosition) == 1)
+            if (Vector3Int.Distance(((IAgent)player).args.cellPos, cellData.cellPosition) == 1)
             {
                 player.StartMiningAnimation();
                 //then we can just start mining
@@ -737,20 +752,20 @@ public class AgentController
                 var path = new AgentPath(
                     shortestPathToNeighbour[i],
                     shortestPathToNeighbour[i - 1],
-                    playerAgent.args.moveInterpolationType);
+                    ((IAgent)player).args.moveInterpolationType);
                 fullPath.Add(path);
             }
-            playerAgent.args.playerPath = fullPath;
-            playerAgent.args.playerPathIndex = 0;
+            ((IAgent)player).args.playerPath = fullPath;
+            ((IAgent)player).args.playerPathIndex = 0;
             #endregion
-            playerAgent.args.onPlayerCompletedFullPath += player.StartMiningAnimation;
+            ((IAgent)player).args.onPlayerCompletedFullPath += player.StartMiningAnimation;
             #endregion
         }
         else
         {
             List<Vector3Int> points = Pathfinding.aStarNew(
-                playerAgent,
-                playerAgent.args.cellPos,
+                ((IAgent)player),
+                ((IAgent)player).args.cellPos,
                 cellData.cellPosition,
                 GameManager.ins.GetPlayerInaccessibleTilemaps(),
                 null
@@ -765,11 +780,11 @@ public class AgentController
                 var path = new AgentPath(
                     points[i],
                     points[i - 1],
-                    playerAgent.args.moveInterpolationType);
+                    ((IAgent)player).args.moveInterpolationType);
                 fullPath.Add(path);
             }
-            playerAgent.args.playerPath = fullPath;
-            playerAgent.args.playerPathIndex = 0;
+            ((IAgent)player).args.playerPath = fullPath;
+            ((IAgent)player).args.playerPathIndex = 0;
             #endregion
         }
     }
@@ -800,9 +815,12 @@ public class AgentController
             }
         }
         #endregion
+
         for (int i = 0; i < enemies.Count; i++)
         {
-            IAgent agent = enemies[i];
+            Enemy enemy = enemies[i];
+            IAgent agent = enemy;
+            ITargeting targeting = enemy;
             //path to write to
             if (agent.args.hasInstruction)
                 continue;
@@ -856,15 +874,15 @@ public class AgentController
             points =
                 Pathfinding.aStarWithIgnore(
                     agent.args.cellPos,
-                    playerAgent.args.cellPos,
-                    GameManager.ins.GetEnemyInaccessibleTilemaps(),
+                    targeting.args.target.cellPos,
+                    agent.GetInaccessibleTilemaps(),
                     invalidNeighbourPositions
                     );
             #endregion
             #region Setup Non Trivial End For Path
             if (points != null && points.Count > 1)
             {
-                if (points[points.Count - 2] != playerAgent.args.cellPos)
+                if (points[points.Count - 2] != targeting.args.target.cellPos)
                 {
                     agentNextStepList.Add(points[points.Count - 2]);
                     path.end = points[points.Count - 2];
@@ -894,45 +912,5 @@ public class AgentController
             }
         }
         return canSpawnHere;
-    }
-    public List<IAgent> GetPotentialTargets(IAgent agent, AgentTypeFlags agentTypeFlags)
-    {
-        #region Get agents who are targetable
-        List<IAgent> targetableAgents = new List<IAgent>();
-        if (agentTypeFlags.HasFlag(AgentTypeFlags.Player))
-            targetableAgents.Add(playerAgent);
-        if (agentTypeFlags.HasFlag(AgentTypeFlags.Enemy))
-            targetableAgents.AddRange(enemies);
-        if (agentTypeFlags.HasFlag(AgentTypeFlags.Defender))
-            targetableAgents.AddRange(defenders);
-        if (targetableAgents == null || targetableAgents.Count == 0)
-            return null;
-        #endregion
-
-        List<IAgent> pathableTagets = new List<IAgent>();
-
-        foreach (IAgent targetableAgent in targetableAgents)
-        {
-
-        }
-
-        //We need to do nearest PATHABLE agent
-        //We shouldnt try to go to agents which we can't reach
-        //we should also every computation store a list of all non reachable targets so we can do less path finding
-        List<IAgent> potentialTargets = new List<IAgent>();
-        List<IAgent> allAgents = new List<IAgent>();
-        allAgents.Add(player);
-        allAgents.AddRange(defenders);
-        float smallestDistance = float.MaxValue;
-        foreach (IAgent otherAgent in allAgents)
-        {
-            float distance = Vector3.Distance(otherAgent.args.transform.position, agent.args.transform.position);
-            if (distance <= smallestDistance)
-            {
-                potentialTargets.Add(otherAgent);
-                smallestDistance = distance;
-            }
-        }
-        return potentialTargets;
     }
 }
