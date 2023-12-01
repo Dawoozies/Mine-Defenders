@@ -1,10 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
+using static UnityEngine.RuleTile.TilingRuleOutput;
 
 public class GameManager : MonoBehaviour
 {
@@ -260,7 +262,29 @@ public class GameManager : MonoBehaviour
         {
             if(defenderPlaced)
             {
-                Debug.Log("enemy retargeting should be done");
+                //Debug.Log("enemy retargeting should be done");
+                //Go through all the active defenders
+                for (int i = 0; i < agentController.activeDefenders.Count; i++)
+                {
+                    if (((IAgent)agentController.activeDefenders[i]).args.targetedBy.Count >= 4)
+                        continue; //Ignore the ones that are targeted by more than 4
+                    //Ignore the ones that are targeted by more than there are adjacent spaces
+                    foreach (Enemy enemy in agentController.enemies)
+                    {
+                        int freeSpaces = agentController.AvailableAdjacentSpaces(enemy, agentController.activeDefenders[i]);
+                        if (((IAgent)agentController.activeDefenders[i]).args.targetedBy.Count >= freeSpaces)
+                            break;
+                        if (((IAgent)enemy).args.target != null)
+                        {
+                            //Don't try to swap target if we have already targeted a defender
+                            if(agentController.activeDefenders.Contains(((IAgent)enemy).args.target))
+                                continue;
+                            ((IAgent)enemy).args.target.args.targetedBy.Remove(enemy);
+                        }
+                        ((IAgent)enemy).args.target = agentController.activeDefenders[i];
+                        ((IAgent)agentController.activeDefenders[i]).args.targetedBy.Add(enemy);
+                    }
+                }
             }
 
             foreach (Enemy enemy in agentController.enemies)
@@ -841,7 +865,7 @@ public class AgentController
                 agentNextStepList.Add(agent.args.path.end);
             }
         }
-        foreach(IAgent agent in defenders)
+        foreach(IAgent agent in activeDefenders)
         {
             if (!agent.args.transform.gameObject.activeSelf)
                 continue;
@@ -950,5 +974,58 @@ public class AgentController
             }
         }
         return canSpawnHere;
+    }
+    public int AvailableAdjacentSpaces(IAgent agent, IAgent targetAgent)
+    {
+        Tilemap[] inaccessibleTilemaps = agent.GetInaccessibleTilemaps();
+        #region Current + Next step list
+        List<Vector3Int> agentCurrentPositionList = new List<Vector3Int>();
+        List<Vector3Int> agentNextStepList = new List<Vector3Int>();
+        foreach (IAgent enemy in enemies)
+        {
+            if (enemy == agent)
+                continue;
+            agentCurrentPositionList.Add(enemy.args.cellPos);
+            if (enemy.args.path != null)
+            {
+                agentNextStepList.Add(enemy.args.path.end);
+            }
+        }
+        foreach (IAgent activeDefender in activeDefenders)
+        {
+            if (!activeDefender.args.transform.gameObject.activeSelf)
+                continue;
+            agentCurrentPositionList.Add(activeDefender.args.cellPos);
+            if (activeDefender.args.path != null)
+            {
+                agentNextStepList.Add(activeDefender.args.path.end);
+            }
+        }
+        #endregion
+        List<Vector3Int> neighbourPositions = GameManager.ins.GetCardinalNeighbourPositions(targetAgent.args.cellPos, false);
+        List<Vector3Int> invalidNeighbourPositions = new List<Vector3Int>();
+        foreach (Vector3Int neighbourPosition in neighbourPositions)
+        {
+            bool neighbourPositionInvalid = false;
+            if(agentCurrentPositionList.Contains(neighbourPosition))
+            {
+                neighbourPositionInvalid = true;
+            }
+            if(agentNextStepList.Contains(neighbourPosition))
+            {
+                neighbourPositionInvalid = true;
+            }
+            foreach (Tilemap item in inaccessibleTilemaps)
+            {
+                if (item.GetTile(neighbourPosition) != null)
+                {
+                    neighbourPositionInvalid = true;
+                }
+            }
+            if (neighbourPositionInvalid)
+                invalidNeighbourPositions.Add(neighbourPosition);
+        }
+        Debug.Log($"{agent.args.transform.name} check -> {targetAgent.args.transform.name} has {4 - invalidNeighbourPositions.Count} free spaces.");
+        return 4 - invalidNeighbourPositions.Count;
     }
 }
