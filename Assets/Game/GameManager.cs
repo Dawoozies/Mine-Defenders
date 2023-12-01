@@ -1,12 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
-using static UnityEngine.RuleTile.TilingRuleOutput;
 
 public class GameManager : MonoBehaviour
 {
@@ -277,7 +275,7 @@ public class GameManager : MonoBehaviour
                         if (((IAgent)enemy).args.target != null)
                         {
                             //Don't try to swap target if we have already targeted a defender
-                            if(agentController.activeDefenders.Contains(((IAgent)enemy).args.target))
+                            if(agentController.activeDefenders.Contains((Defender)((IAgent)enemy).args.target))
                                 continue;
                             ((IAgent)enemy).args.target.args.targetedBy.Remove(enemy);
                         }
