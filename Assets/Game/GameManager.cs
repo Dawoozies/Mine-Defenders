@@ -5,7 +5,6 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
-
 public class GameManager : MonoBehaviour
 {
     public static GameManager ins;
@@ -264,23 +263,24 @@ public class GameManager : MonoBehaviour
                 //Go through all the active defenders
                 for (int i = 0; i < agentController.activeDefenders.Count; i++)
                 {
-                    if (((IAgent)agentController.activeDefenders[i]).args.targetedBy.Count >= 4)
+                    IAgent defender = agentController.activeDefenders[i];
+                    if (defender.args.targetedBy.Count >= 4)
                         continue; //Ignore the ones that are targeted by more than 4
                     //Ignore the ones that are targeted by more than there are adjacent spaces
-                    foreach (Enemy enemy in agentController.enemies)
+                    foreach (IAgent enemy in agentController.enemies)
                     {
                         int freeSpaces = agentController.AvailableAdjacentSpaces(enemy, agentController.activeDefenders[i]);
-                        if (((IAgent)agentController.activeDefenders[i]).args.targetedBy.Count >= freeSpaces)
+                        if (defender.args.targetedBy.Count >= freeSpaces)
                             break;
-                        if (((IAgent)enemy).args.target != null)
+                        if (enemy.args.target != null)
                         {
                             //Don't try to swap target if we have already targeted a defender
-                            if(agentController.activeDefenders.Contains((Defender)((IAgent)enemy).args.target))
+                            if(agentController.activeDefenders.Contains(enemy.args.target as Defender))
                                 continue;
-                            ((IAgent)enemy).args.target.args.targetedBy.Remove(enemy);
+                            enemy.args.target.args.targetedBy.Remove(enemy);
                         }
-                        ((IAgent)enemy).args.target = agentController.activeDefenders[i];
-                        ((IAgent)agentController.activeDefenders[i]).args.targetedBy.Add(enemy);
+                        enemy.args.target = agentController.activeDefenders[i];
+                        defender.args.targetedBy.Add(enemy);
                     }
                 }
             }
