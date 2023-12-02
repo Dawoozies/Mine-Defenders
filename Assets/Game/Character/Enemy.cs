@@ -51,7 +51,8 @@ public class Enemy : MonoBehaviour, IAgent
     void Update()
     {
         attackCharge += Time.deltaTime;
-        bool canAttack = GameManager.ins.DistanceFromPlayer(this) <= 1 && available.Count > 0;
+        //bool canAttack = GameManager.ins.DistanceFromPlayer(this) <= 1 && available.Count > 0;
+        bool canAttack = available.Count > 0 && Vector3Int.Distance(cellPos, agentData.target.args.cellPos) <= 1;
         if(attackCharge >= enemyBase.attackChargeTime && canAttack)
         {
             StartAttackAnimation();
@@ -90,11 +91,12 @@ public class Enemy : MonoBehaviour, IAgent
         ObjectAnimation attackAnimation = new ObjectAnimation();
         attackAnimation.animName = "Attack";
         attackAnimation.frames = 3;
-        Vector3 dirToPlayer = Vector3.Normalize(GameManager.ins.GetPlayerWorldPosition() - agentCellCenterPos);
+        //Vector3 dirToPlayer = Vector3.Normalize(GameManager.ins.GetPlayerWorldPosition() - agentCellCenterPos);
+        Vector3 dirToTarget = Vector3.Normalize(agentData.target.args.worldPos - agentCellCenterPos);
         attackAnimation.positions = new List<Vector3>
         {
             Vector3.zero,
-            dirToPlayer*0.5f,
+            dirToTarget*0.5f,
             Vector3.zero,
         };
         attackAnimation.interpolationTypes = new List<InterpolationType>

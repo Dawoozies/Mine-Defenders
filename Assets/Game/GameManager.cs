@@ -208,10 +208,6 @@ public class GameManager : MonoBehaviour
             pitSpawnTimer += Time.deltaTime;
             if(pitSpawnTimer > pitSpawnTime)
             {
-                //foreach (Vector3Int pitCenter in uncoveredPitCenters.Keys)
-                //{
-                //    characterGenerator.CreateEnemy(pitCenter);
-                //}
                 foreach (Vector3Int item in uncoveredPitCenters.Keys)
                 {
                     //Debug.Log($"Spawn enemies at {item}");
@@ -225,11 +221,6 @@ public class GameManager : MonoBehaviour
             }
         }
         return;
-        //if(WorldToCell(player.position) != playerLastCellPos)
-        //{
-        //    playerLastCellPos = WorldToCell(player.position);
-        //    PlayerPositionUpdatedEvent?.Invoke(playerLastCellPos, player.position);
-        //}
     }
     private void FixedUpdate()
     {
