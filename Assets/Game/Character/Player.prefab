@@ -354,7 +354,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 99319f0812309fa4f9fba79e1454657e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 4
+  moveSpeed: 8
   moveInterpolationType: 6
   tool:
     toolTargetCellPos: {x: 0, y: 0, z: 0}

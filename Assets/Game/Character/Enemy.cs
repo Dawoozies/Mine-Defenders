@@ -52,6 +52,8 @@ public class Enemy : MonoBehaviour, IAgent
     {
         attackCharge += Time.deltaTime;
         //bool canAttack = GameManager.ins.DistanceFromPlayer(this) <= 1 && available.Count > 0;
+        if (agentData.target == null)
+            return;
         bool canAttack = available.Count > 0 && Vector3Int.Distance(cellPos, agentData.target.args.cellPos) <= 1;
         if(attackCharge >= enemyBase.attackChargeTime && canAttack)
         {
@@ -114,10 +116,33 @@ public class Enemy : MonoBehaviour, IAgent
             selectedAttack.attackBase.icon
             );
         baseGraphics.objectAnimator.onAnimationComplete += actionDisplay.ReturnToPool;
+        baseGraphics.objectAnimator.onAnimationComplete += () => {
+            if (agentData.target == null)
+                return;
+            agentData.target.DamageAgent(selectedAttack);
+        };
     }
-
     public Tilemap[] GetInaccessibleTilemaps()
     {
         return GameManager.ins.GetEnemyInaccessibleTilemaps();
+    }
+    public void DamageAgent(Attack attack)
+    {
+    }
+    public bool HasValidTarget()
+    {
+        if (agentData.target == null)
+            return false;
+        if (agentData.target.args.type == AgentType.Player)
+            return false;
+        if (agentData.target.args.isDead)
+        {
+            return false;
+        }
+        return true;
+    }
+    public void Retarget()
+    {
+        agentData.target = GameManager.ins.GetNewTarget_Enemy(this);
     }
 }

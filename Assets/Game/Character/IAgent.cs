@@ -3,10 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using System;
+using Unity.Notifications.iOS;
+
 public interface IAgent
 {
     public AgentArgs args { get; }
     public Tilemap[] GetInaccessibleTilemaps();
+    public void DamageAgent(Attack attackUsed);
+    public bool HasValidTarget();
+    public void Retarget();
 }
 public enum AgentType
 {
@@ -46,12 +51,28 @@ public class AgentArgs
 
     public IAgent target;
     public List<IAgent> targetedBy;
+    public bool isDead;
     public AgentArgs(Transform transform, AgentType type, IAgent agent)
     {
         this.transform = transform;
         this.type = type;
         this.agent = agent;
         lootDictionary = new Dictionary<string, int>();
+    }
+    public void AgentDeath()
+    {
+        if(!isDead)
+        {
+            isDead = true;
+            if (targetedBy == null || targetedBy.Count == 0)
+                return;
+            while (targetedBy.Count > 0)
+            {
+                targetedBy[0].args.target = null;
+                targetedBy[0].Retarget();
+                targetedBy.RemoveAt(0);
+            }
+        }
     }
     public void PickupLoot(CellLoot loot)
     {

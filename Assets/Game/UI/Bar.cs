@@ -17,9 +17,12 @@ public class Bar : MonoBehaviour
     public InterpolationType interpolationType;
     float t;
     float normalizedValueTarget;
+    float lastNormalizedValueTarget;
     #endregion
     public void ChangeValue(int newValue)
     {
+        if (value == newValue)
+            return;
         t = 0;
         value = newValue;
         if(maxValue == minValue)
@@ -27,7 +30,9 @@ public class Bar : MonoBehaviour
             normalizedValueTarget = 0;
             return;
         }
+        lastNormalizedValueTarget = normalizedValueTarget;
         normalizedValueTarget = (float)Mathf.Abs(value - minValue) / Mathf.Abs(maxValue - minValue);
+        Debug.Log($"last value = {lastNormalizedValueTarget} current value = {normalizedValueTarget}");
     }
     private void Update()
     {
@@ -40,7 +45,7 @@ public class Bar : MonoBehaviour
         t += Time.deltaTime*interpolationSpeed;
         if(maxValue != minValue)
         {
-            normalizedValue = Interpolation.Interpolate(0, normalizedValueTarget, t, interpolationType);
+            normalizedValue = Interpolation.Interpolate(lastNormalizedValueTarget, normalizedValueTarget, t, interpolationType);
         }
         float size = Mathf.Lerp(0, Mathf.Abs(worldCorners[0].x - worldCorners[3].x), normalizedValue);
         //fill.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size);

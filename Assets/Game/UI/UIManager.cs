@@ -81,7 +81,7 @@ public class UIManager : MonoBehaviour
         {
             foreach (var item in onRadialButtonPressed.GetInvocationList())
             {
-                (int, bool) buttonArgs = ((int, bool))item.DynamicInvoke();
+                (int, bool) buttonArgs = ((int, bool))item?.DynamicInvoke();
                 radialMenus[buttonArgs.Item1].SetActive(buttonArgs.Item2);
             }
             //(int, bool) buttonArgs = onRadialButtonPressed.Invoke();

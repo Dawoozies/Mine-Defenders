@@ -8,8 +8,6 @@ public class CharacterAgent : MonoBehaviour
 
     public bool isEnemy;
 
-    public delegate void NewMovementOrderHandler(string newOrderName);
-    public event NewMovementOrderHandler NewMovementOrderEvent;
     public delegate void MovementCompleteHandler(string completedOrderName);
     public event MovementCompleteHandler MovementCompleteEvent;
     public delegate void MovementInterruptedHandler(string interruptedOrderName, string replacingOrderName);
@@ -24,8 +22,6 @@ public class CharacterAgent : MonoBehaviour
 
         if(moveOrders.First != null)
             MovementInterruptedEvent?.Invoke(moveOrders.First.Value.orderName, orderName);
-
-        
 
         MoveOrder lastOrder = moveOrders.First != null ? moveOrders.First.Value : null;
 

@@ -19,6 +19,7 @@ public class DefenderListElement : MonoBehaviour, IButtonLayout
     Image portraitImage;
     bool dead;
     DefenderTabButton defenderTabButton;
+    bool barsDisplayed;
     private void Start()
     {
         rectTransform = GetComponent<RectTransform>();
@@ -51,7 +52,7 @@ public class DefenderListElement : MonoBehaviour, IButtonLayout
             mainAnimator.onAnimationComplete += item.StopAnimation;
         }
         mainAnimator.onAnimationComplete += () => {
-            if(defender.defenderData.health == 0)
+            if (defender.defenderData.health == 0)
                 return;
             barLayoutAnimator.PlayAnimation("ShowBars");
         };
@@ -62,36 +63,37 @@ public class DefenderListElement : MonoBehaviour, IButtonLayout
                 return;
             foreach (Bar bar in bars)
             {
-                if(bar.barType == BarType.Health)
+                if (bar.barType == BarType.Health)
                 {
                     bar.maxValue = defender.defenderData.maxHealth;
                     bar.minValue = 0;
                     bar.ChangeValue(defender.defenderData.health);
                 }
-                if(bar.barType == BarType.Exp)
+                if (bar.barType == BarType.Exp)
                 {
                     bar.maxValue = defender.defenderData.maxExp;
                     bar.minValue = 0;
                     bar.ChangeValue(defender.defenderData.exp);
                 }
             }
+            barsDisplayed = true;
         };
         mainAnimator.onAnimationComplete += () => {
             SpriteAnimation portraitAnimation = new SpriteAnimation();
             portraitAnimation.animName = "Default";
             portraitAnimation.frames = 2;
             portraitAnimation.sprites = new List<Sprite>() { defender.defenderData.defaultSprites[0], defender.defenderData.defaultSprites[1] };
-            portraitAnimation.spriteColors = new List<Color>() { Color.white, Color.white};
+            portraitAnimation.spriteColors = new List<Color>() { Color.white, Color.white };
             portraitAnimator.CreateAndPlayAnimation(portraitAnimation);
         };
         defenderTabButton.onTabToggled += (bool menuActive) => {
             if (dead)
                 return;
-            if(menuActive)
+            if (menuActive)
             {
                 tabBorderSpriteAnimator.PlayAnimation("Selected");
             }
-            if(!menuActive && tabBorderSpriteAnimator.GetCurrentAnimationName() == "Selected")
+            if (!menuActive && tabBorderSpriteAnimator.GetCurrentAnimationName() == "Selected")
             {
                 tabBorderSpriteAnimator.PlayAnimation("Alive");
             }
@@ -110,7 +112,7 @@ public class DefenderListElement : MonoBehaviour, IButtonLayout
         barLayoutRectTransform.anchoredPosition = new Vector2(-50, 12.5f);
         barLayoutRectTransform.sizeDelta = new Vector2(0, 125f);
 
-        if(portraitImage == null)
+        if (portraitImage == null)
             portraitImage = portraitAnimator.GetComponent<Image>();
         portraitImage.color = Color.clear;
     }
@@ -121,7 +123,7 @@ public class DefenderListElement : MonoBehaviour, IButtonLayout
     private void Update()
     {
         if (defender == null) return;
-        if(defender.defenderData.health == 0 && !dead)
+        if (defender.defenderData.health == 0 && !dead)
         {
             tabAnimator.PlayAnimation("Dead");
             tabBorderSpriteAnimator.PlayAnimation("Dead");
@@ -129,13 +131,23 @@ public class DefenderListElement : MonoBehaviour, IButtonLayout
             barLayoutAnimator.PlayAnimation("HideBars");
             dead = true;
         }
-        if(defender.defenderData.health > 0 && dead)
+        if (defender.defenderData.health > 0 && dead)
         {
             tabAnimator.PlayAnimation("Alive");
             tabBorderSpriteAnimator.PlayAnimation("Alive");
             deathIndicator.SetActive(false);
             barLayoutAnimator.PlayAnimation("ShowBars");
             dead = false;
+        }
+        if(barsDisplayed)
+        {
+            foreach (Bar bar in bars)
+            {
+                if (bar.barType == BarType.Health)
+                    bar.ChangeValue(defender.defenderData.health);
+                if (bar.barType == BarType.Exp)
+                    bar.ChangeValue(defender.defenderData.exp);
+            }
         }
     }
     void IButtonLayout.ButtonPressed(int buttonPressed)
@@ -145,5 +157,9 @@ public class DefenderListElement : MonoBehaviour, IButtonLayout
             //GameManager.ins.Place_Defender(((IAgent)GameManager.ins.agentController.player).args.cellPos, defender);
             GameManager.PlaceDefenderRequest += () => { return new GameManager.PlaceDefenderRequestArgs(defender, ((IAgent)GameManager.ins.agentController.player).args.cellPos); };
         }
+    }
+    void OnDisable()
+    {
+        barsDisplayed = false;
     }
 }

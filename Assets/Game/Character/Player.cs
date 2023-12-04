@@ -168,4 +168,23 @@ public class Player : MonoBehaviour, IAgent
     {
         return GameManager.ins.GetPlayerInaccessibleTilemaps();
     }
+    public void DamageAgent(Attack attack)
+    {
+
+    }
+    public bool HasValidTarget()
+    {
+        if (agentData.target == null)
+            return false;
+        if (agentData.target.args.isDead)
+        {
+            agentData.target = null;
+            return false;
+        }
+        return true;
+    }
+    public void Retarget()
+    {
+
+    }
 }

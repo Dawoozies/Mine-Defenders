@@ -117,6 +117,23 @@ public class ObjectAnimator : MonoBehaviour
         animations.Add(animation);
         PlayAnimation(animation.animName);
     }
+    public void CreateAnimation(ObjectAnimation animation)
+    {
+        if(animations == null || animations.Count == 0)
+        {
+            animations = new List<ObjectAnimation> { animation };
+            return;
+        }
+        for (int i = 0; i < animations.Count; i++)
+        {
+            if (animations[i].animName == animation.animName)
+            {
+                animations[i] = animation;
+                return;
+            }
+        }
+        animations.Add(animation);
+    }
     public void PlayAnimation(string animName)
     {
         foreach (var animation in animations)
