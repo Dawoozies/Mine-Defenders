@@ -515,7 +515,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playOnStartAnim: 
-  animationSpeed: 2
+  animationSpeed: 8
   animations:
   - animName: ShowBars
     frames: 2

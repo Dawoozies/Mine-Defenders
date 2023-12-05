@@ -3,14 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using System;
-using Unity.Notifications.iOS;
 
 public interface IAgent
 {
     public AgentArgs args { get; }
     public Tilemap[] GetInaccessibleTilemaps();
-    public void DamageAgent(Attack attackUsed);
-    public bool HasValidTarget();
     public void Retarget();
 }
 public enum AgentType
@@ -46,12 +43,17 @@ public class AgentArgs
     public event PlayerCompletedFullPath onPlayerCompletedFullPath;
 
     public int health;
+    public int exp;
     public LootType allowedToLoot;
     public Dictionary<string, int> lootDictionary;
 
     public IAgent target;
     public List<IAgent> targetedBy;
     public bool isDead;
+    public bool isActive;
+
+    public delegate void OnDeath();
+    public event OnDeath onDeath;
     public AgentArgs(Transform transform, AgentType type, IAgent agent)
     {
         this.transform = transform;
@@ -64,6 +66,11 @@ public class AgentArgs
         if(!isDead)
         {
             isDead = true;
+            if(target != null)
+            {
+                target.args.targetedBy.Remove(agent);
+                target = null;
+            }
             if (targetedBy == null || targetedBy.Count == 0)
                 return;
             while (targetedBy.Count > 0)
@@ -71,6 +78,39 @@ public class AgentArgs
                 targetedBy[0].args.target = null;
                 targetedBy[0].Retarget();
                 targetedBy.RemoveAt(0);
+            }
+            onDeath?.Invoke();
+        }
+    }
+    public void AttackAgent(IAgent attackingAgent, Attack attackUsed)
+    {
+        if(health > 0)
+        {
+            health -= attackUsed.attackBase.damage;
+            if (health <= 0)
+            {
+                health = 0;
+                AgentDeath();
+                return;
+            }
+            if (target == null)
+            {
+                target = attackingAgent;
+                attackingAgent.args.targetedBy.Add(agent);
+            }
+            else
+            {
+                if(target != attackingAgent)
+                {
+                    float currentTargetDistance = Vector3Int.Distance(cellPos, target.args.cellPos);
+                    float attackingAgentDistance = Vector3Int.Distance(cellPos, attackingAgent.args.cellPos);
+                    if(attackingAgentDistance < currentTargetDistance)
+                    {
+                        target.args.targetedBy.Remove(agent);
+                        target = attackingAgent;
+                        attackingAgent.args.targetedBy.Add(agent);
+                    }
+                }
             }
         }
     }
@@ -87,7 +127,7 @@ public class AgentArgs
     }
     public void MoveAlongPath(float timeDelta)
     {
-        if(type == AgentType.Enemy)
+        if(type == AgentType.Enemy || type == AgentType.Defender)
         {
             if (path == null || movesLeft <= 0)
                 return;

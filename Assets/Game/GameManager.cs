@@ -5,6 +5,8 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
+using UnityEngine.UIElements;
+
 public class GameManager : MonoBehaviour
 {
     public static GameManager ins;
@@ -135,7 +137,6 @@ public class GameManager : MonoBehaviour
             characterGenerator.CreateDefender(defendersLoaded[4]),
             characterGenerator.CreateDefender(defendersLoaded[5]),
         };
-        agentController.activeDefenders = new List<Defender>();
         #endregion
 
         foreach (IAgent agent in agentController.enemies)
@@ -222,42 +223,9 @@ public class GameManager : MonoBehaviour
         }
         return;
     }
-    public IAgent GetNewTarget_Enemy(Enemy enemy)
-    {
-        if (((IAgent)enemy).args.target != null)
-        {
-            //Don't try to swap target if we have already targeted a defender
-            if (agentController.activeDefenders.Contains(((IAgent)enemy).args.target as Defender))
-                return ((IAgent)enemy).args.target;
-            ((IAgent)enemy).args.target.args.targetedBy.Remove(enemy);
-        }
-        for (int i = 0; i < agentController.activeDefenders.Count; i++)
-        {
-            IAgent defender = agentController.activeDefenders[i];
-            if (defender.args.isDead)
-                continue;
-            if (defender.args.targetedBy.Count >= 4)
-                continue;
-            if (!agentController.CanPathToTarget(enemy, defender))
-                continue;
-            int freeSpaces = agentController.AvailableAdjacentSpaces(enemy, defender);
-            if (defender.args.targetedBy.Count >= freeSpaces)
-                continue;
-
-            defender.args.targetedBy.Add(enemy);
-            return defender;
-        }
-        IAgent player = agentController.player;
-        if (!player.args.isDead && agentController.CanPathToTarget(enemy, player))
-        {
-            return player;
-        }
-        return null;
-    }
     private void FixedUpdate()
     {
         ((IAgent)agentController.player).args.MoveAlongPath(Time.fixedDeltaTime);
-        bool defenderPlaced = false;
         if (PlaceDefenderRequest != null)
         {
             foreach (Delegate item in PlaceDefenderRequest.GetInvocationList())
@@ -268,67 +236,45 @@ public class GameManager : MonoBehaviour
                 Debug.Log($"Placing defender {defenderToPlace.defenderData.defenderName}_{defenderToPlace.defenderData.defenderKey}");
                 defenderToPlace.gameObject.SetActive(true);
                 defenderToPlace.transform.position = CellToWorld(pos);
-                if(!agentController.activeDefenders.Contains(defenderToPlace))
-                {
-                    agentController.activeDefenders.Add(defenderToPlace);
-                }
-                //if (agentController.defenders.Contains(defenderToPlace))
-                //{
-                //    agentController.activeDefenders.Add(defenderToPlace);
-                //    agentController.defenders.Remove(defenderToPlace);
-                //}
+                ((IAgent)defenderToPlace).args.isActive = true;
             }
             PlaceDefenderRequest = null;
-            defenderPlaced = true;
+            if (agentController.defenders != null)
+            {
+                foreach (IAgent defender in agentController.defenders)
+                {
+                    defender.Retarget();
+                }
+            }
+            if (agentController.enemies != null)
+            {
+                foreach (IAgent enemy in agentController.enemies)
+                {
+                    enemy.Retarget();
+                }
+            }
         }
-
-        if (agentController.enemies != null && agentController.enemies.Count > 0)
+        if (agentController.defenders != null)
         {
-            if(defenderPlaced)
+            foreach (IAgent defender in agentController.defenders)
             {
-                //Debug.Log("enemy retargeting should be done");
-                //Go through all the active defenders
-                for (int i = 0; i < agentController.activeDefenders.Count; i++)
+                if (defender.args.hasInstruction)
                 {
-                    IAgent defender = agentController.activeDefenders[i];
-                    if (defender.args.targetedBy.Count >= 4)
-                        continue; //Ignore the ones that are targeted by more than 4
-                    //Ignore the ones that are targeted by more than there are adjacent spaces
-                    if (defender.args.isDead)
-                        continue;
-                    foreach (IAgent enemy in agentController.enemies)
-                    {
-                        if (!agentController.CanPathToTarget(enemy, defender))
-                            continue;
-                        int freeSpaces = agentController.AvailableAdjacentSpaces(enemy, agentController.activeDefenders[i]);
-                        if (defender.args.targetedBy.Count >= freeSpaces)
-                            break;
-                        if (enemy.args.target != null)
-                        {
-                            //Don't try to swap target if we have already targeted a defender
-                            if(agentController.activeDefenders.Contains(enemy.args.target as Defender))
-                                continue;
-                            enemy.args.target.args.targetedBy.Remove(enemy);
-                        }
-                        enemy.args.target = agentController.activeDefenders[i];
-                        defender.args.targetedBy.Add(enemy);
-                    }
+                    defender.args.MoveAlongPath(Time.fixedDeltaTime);
                 }
             }
-
-            foreach (Enemy enemy in agentController.enemies)
-            {
-                //Debug.Log($"agent.args.hasInstruction = {agent.args.hasInstruction}");
-                //Debug.Log($"agent.args.movesLeft = {agent.args.movesLeft}");
-                //Debug.Log($"agent.args.path == null = {agent.args.path == null}");
-                //((ITargeting)enemy).UpdateTarget(potentialTargets);
-                if (((IAgent)enemy).args.hasInstruction)
-                {
-                    ((IAgent)enemy).args.MoveAlongPath(Time.fixedDeltaTime);
-                }
-            }
-            agentController.Enemies_PathCalculate();
         }
+        if (agentController.enemies != null)
+        {
+            foreach (IAgent enemy in agentController.enemies)
+            {
+                if (enemy.args.hasInstruction)
+                {
+                    enemy.args.MoveAlongPath(Time.fixedDeltaTime);
+                }
+            }
+        }
+        agentController.NonPlayerAgents_PathCalculate();
     }
     void CameraTrackAnimation(Vector3 targetPos)
     {
@@ -449,6 +395,17 @@ public class GameManager : MonoBehaviour
                 Gizmos.color = gizmoColor;
                 Gizmos.DrawWireCube(path.start, Vector3.one * 0.35f);
                 Gizmos.DrawWireCube(path.end, Vector3.one * 0.35f);
+            }
+        }
+
+        foreach (IAgent agent in agentController.defenders)
+        {
+            if (agent.args.target != null)
+            {
+                gizmoColor = Color.blue;
+                gizmoColor.a = 1f;
+                Gizmos.color = gizmoColor;
+                Gizmos.DrawLine(agent.args.worldPos, agent.args.target.args.worldPos);
             }
         }
     }
@@ -640,6 +597,10 @@ public class GameManager : MonoBehaviour
     {
         return agentController.defenders;
     }
+    public List<Enemy> GetEnemies()
+    {
+        return agentController.enemies;
+    }
 }
 public class CellData
 {
@@ -812,7 +773,8 @@ public class AgentController
     public Player player;
     public List<Enemy> enemies;
     public List<Defender> defenders;
-    public List<Defender> activeDefenders;
+    List<Vector3Int> currentPositionsList = new List<Vector3Int>();
+    List<Vector3Int> nextStepList = new List<Vector3Int>();
     public void Player_PathCalculate(CellData cellData)
     {
         ((IAgent)player).args.ResetCompletedFullPathEvent();
@@ -878,117 +840,250 @@ public class AgentController
             #endregion
         }
     }
-    public void Enemies_PathCalculate()
-    {
-        if (enemies == null || enemies.Count == 0)
-            return;
+    //public void Enemies_PathCalculate()
+    //{
+    //    if (enemies == null || enemies.Count == 0)
+    //        return;
 
-        #region CurrentPositions + Clear NextStep List
-        List<Vector3Int> agentCurrentPositionList = new List<Vector3Int>();
-        List<Vector3Int> agentNextStepList = new List<Vector3Int>();
-        foreach (IAgent agent in enemies)
+    //    #region CurrentPositions + Clear NextStep List
+    //    List<Vector3Int> agentCurrentPositionList = new List<Vector3Int>();
+    //    List<Vector3Int> agentNextStepList = new List<Vector3Int>();
+    //    foreach (IAgent agent in enemies)
+    //    {
+    //        agentCurrentPositionList.Add(agent.args.cellPos);
+    //        if (agent.args.path != null)
+    //        {
+    //            agentNextStepList.Add(agent.args.path.end);
+    //        }
+    //    }
+    //    foreach(IAgent agent in defenders)
+    //    {
+    //        if (!agent.args.transform.gameObject.activeSelf)
+    //            continue;
+    //        if (agent.args.isDead)
+    //            continue;
+    //        if (!agent.args.isActive)
+    //            continue;
+    //        agentCurrentPositionList.Add(agent.args.cellPos);
+    //        if(agent.args.path != null)
+    //        {
+    //            agentNextStepList.Add(agent.args.path.end);
+    //        }
+    //    }
+    //    #endregion
+
+    //    for (int i = 0; i < enemies.Count; i++)
+    //    {
+    //        Enemy enemy = enemies[i];
+    //        IAgent agent = enemy;
+    //        //path to write to
+    //        if (agent.args.hasInstruction)
+    //            continue;
+    //        if (agent.args.movesLeft <= 0)
+    //            continue;
+    //        if (agent.args.target == null)
+    //            continue;
+    //        AgentPath path = new AgentPath(agent.args.cellPos, agent.args.cellPos, agent.args.moveInterpolationType);
+    //        agent.args.path = path;
+    //        List<Vector3Int> points = new List<Vector3Int>();
+    //        #region Calculate Neighbour Positions To Ignore
+    //        //Assume all neighbours are valid to start
+    //        List<Vector3Int> neighbourPositions = GameManager.ins.GetCardinalNeighbourPositions(agent.args.cellPos, false);
+    //        List<Vector3Int> invalidNeighbourPositions = new List<Vector3Int>();
+    //        foreach (Vector3Int neighbourPosition in neighbourPositions)
+    //        {
+    //            bool neighbourPositionInvalid = false;
+    //            foreach (Vector3Int item in agentCurrentPositionList)
+    //            {
+    //                if (neighbourPosition == item && item != agent.args.cellPos)
+    //                {
+    //                    neighbourPositionInvalid = true;
+    //                }
+    //            }
+    //            if (i != 0)
+    //            {
+    //                foreach (Vector3Int item in agentNextStepList)
+    //                {
+    //                    if (neighbourPosition == item)
+    //                    {
+    //                        neighbourPositionInvalid = true;
+    //                    }
+    //                }
+    //            }
+    //            if (agent.args.previousPoint.z != -1)
+    //            {
+    //                if (neighbourPosition == agent.args.previousPoint)
+    //                {
+    //                    neighbourPositionInvalid = true;
+    //                    agent.args.previousPoint = new Vector3Int(0, 0, -1);
+    //                }
+    //            }
+    //            if (neighbourPositionInvalid)
+    //                invalidNeighbourPositions.Add(neighbourPosition);
+    //        }
+    //        #endregion
+    //        if (invalidNeighbourPositions.Count == 4)
+    //        {
+    //            //Then this agent cannot move next update
+    //            continue;
+    //        }
+    //        #region Call Pathfinding.aStartWithIgnore
+    //        points =
+    //            Pathfinding.aStarWithIgnore(
+    //                agent.args.cellPos,
+    //                agent.args.target.args.cellPos,
+    //                agent.GetInaccessibleTilemaps(),
+    //                invalidNeighbourPositions
+    //                );
+    //        #endregion
+    //        #region Setup Non Trivial End For Path
+    //        if (points != null && points.Count > 1)
+    //        {
+    //            if (points[points.Count - 2] != agent.args.target.args.cellPos)
+    //            {
+    //                agentNextStepList.Add(points[points.Count - 2]);
+    //                path.end = points[points.Count - 2];
+    //                if (!agent.args.hasInstruction)
+    //                    agent.args.hasInstruction = true;
+    //                continue;
+    //            }
+    //        }
+    //        #endregion
+    //    }
+    //}
+    public void NonPlayerAgents_PathCalculate()
+    {
+        #region Current positions + next step list
+        currentPositionsList = new List<Vector3Int>();
+        nextStepList = new List<Vector3Int>();
+        if(enemies != null)
         {
-            agentCurrentPositionList.Add(agent.args.cellPos);
-            if (agent.args.path != null)
+            foreach(IAgent agent in enemies)
             {
-                agentNextStepList.Add(agent.args.path.end);
+                if (agent.args.isDead)
+                    continue;
+                if (!agent.args.isActive)
+                    continue;
+                currentPositionsList.Add(agent.args.cellPos);
+                if (agent.args.path != null)
+                    nextStepList.Add(agent.args.path.end);
             }
         }
-        foreach(IAgent agent in activeDefenders)
+        if(defenders != null)
         {
-            if (!agent.args.transform.gameObject.activeSelf)
-                continue;
-            if (agent.args.isDead)
-                continue;
-            agentCurrentPositionList.Add(agent.args.cellPos);
-            if(agent.args.path != null)
+            foreach (IAgent agent in defenders)
             {
-                agentNextStepList.Add(agent.args.path.end);
+                if (agent.args.isDead)
+                    continue;
+                if (!agent.args.isActive)
+                    continue;
+                currentPositionsList.Add(agent.args.cellPos );
+                if (agent.args.path != null)
+                    nextStepList.Add(agent.args.path.end);
             }
         }
         #endregion
-
-        for (int i = 0; i < enemies.Count; i++)
+        int agentIndex = 0;
+        if(defenders != null)
         {
-            Enemy enemy = enemies[i];
-            IAgent agent = enemy;
-            //path to write to
-            if (agent.args.hasInstruction)
-                continue;
-            if (agent.args.movesLeft <= 0)
-                continue;
-            if (agent.args.target == null)
-                continue;
-            AgentPath path = new AgentPath(agent.args.cellPos, agent.args.cellPos, agent.args.moveInterpolationType);
-            agent.args.path = path;
-            List<Vector3Int> points = new List<Vector3Int>();
-            #region Calculate Neighbour Positions To Ignore
-            //Assume all neighbours are valid to start
-            List<Vector3Int> neighbourPositions = GameManager.ins.GetCardinalNeighbourPositions(agent.args.cellPos, false);
-            List<Vector3Int> invalidNeighbourPositions = new List<Vector3Int>();
-            foreach (Vector3Int neighbourPosition in neighbourPositions)
+            foreach (IAgent agent in defenders)
             {
-                bool neighbourPositionInvalid = false;
-                foreach (Vector3Int item in agentCurrentPositionList)
-                {
-                    if (neighbourPosition == item && item != agent.args.cellPos)
-                    {
-                        neighbourPositionInvalid = true;
-                    }
-                }
-                if (i != 0)
-                {
-                    foreach (Vector3Int item in agentNextStepList)
-                    {
-                        if (neighbourPosition == item)
-                        {
-                            neighbourPositionInvalid = true;
-                        }
-                    }
-                }
-                if (agent.args.previousPoint.z != -1)
-                {
-                    if (neighbourPosition == agent.args.previousPoint)
-                    {
-                        neighbourPositionInvalid = true;
-                        agent.args.previousPoint = new Vector3Int(0, 0, -1);
-                    }
-                }
-                if (neighbourPositionInvalid)
-                    invalidNeighbourPositions.Add(neighbourPosition);
-            }
-            #endregion
-            if (invalidNeighbourPositions.Count == 4)
-            {
-                //Then this agent cannot move next update
-                continue;
-            }
-            #region Call Pathfinding.aStartWithIgnore
-            points =
-                Pathfinding.aStarWithIgnore(
-                    agent.args.cellPos,
-                    agent.args.target.args.cellPos,
-                    agent.GetInaccessibleTilemaps(),
-                    invalidNeighbourPositions
-                    );
-            #endregion
-            #region Setup Non Trivial End For Path
-            if (points != null && points.Count > 1)
-            {
-                if (points[points.Count - 2] != agent.args.target.args.cellPos)
-                {
-                    agentNextStepList.Add(points[points.Count - 2]);
-                    path.end = points[points.Count - 2];
-                    if (!agent.args.hasInstruction)
-                        agent.args.hasInstruction = true;
+                if (agent.args.isDead)
                     continue;
-                }
+                if (!agent.args.isActive)
+                    continue;
+                bool result = NonPlayerAgent_TryGeneratePath(agent, agentIndex);
+                //Debug.Log($"defender. Index = {agentIndex} Result = {result}");
+                if (!result)
+                    continue;
+                agentIndex++;
             }
-            #endregion
         }
+        if(enemies != null)
+        {
+            foreach (IAgent agent in enemies)
+            {
+                if (agent.args.isDead)
+                    continue;
+                if (!agent.args.isActive)
+                    continue;
+                bool result = NonPlayerAgent_TryGeneratePath(agent, agentIndex);
+                //Debug.Log($"enemy. Index = {agentIndex} Result = {result}");
+                if (!result)
+                    continue;
+                agentIndex++;
+            }
+        }
+    }
+    bool NonPlayerAgent_TryGeneratePath(IAgent agent, int agentIndex)
+    {
+        if (agent.args.hasInstruction)
+            return false;
+        if (agent.args.movesLeft <= 0)
+            return false;
+        if (agent.args.target == null)
+            return false;
+        AgentPath path = new AgentPath(agent.args.cellPos, agent.args.cellPos, agent.args.moveInterpolationType);
+        agent.args.path = path;
+
+        List<Vector3Int> invalidPositions = InvalidNeighbourPositions(agent, agentIndex);
+        if (invalidPositions.Count == 4)
+        {
+            return false;
+        }
+
+        List<Vector3Int> points = new List<Vector3Int>();
+        points = Pathfinding.aStarWithIgnore(
+                agent.args.cellPos,
+                agent.args.target.args.cellPos,
+                agent.GetInaccessibleTilemaps(),
+                invalidPositions
+            );
+
+        if(points != null && points.Count > 1)
+        {
+            if (points[points.Count - 2] != agent.args.target.args.cellPos)
+            {
+                nextStepList.Add(points[points.Count - 2]);
+                path.end = points[points.Count - 2];
+                if(!agent.args.hasInstruction)
+                    agent.args.hasInstruction = true;
+                return true;
+            }
+        }
+        return false;
+    }
+    List<Vector3Int> InvalidNeighbourPositions(IAgent agent, int agentIndex)
+    {
+        List<Vector3Int> neighbourPositions = GameManager.ins.GetCardinalNeighbourPositions(agent.args.cellPos, false);
+        List<Vector3Int> invalidPositions = new List<Vector3Int>();
+        foreach (Vector3Int neighbourPos in neighbourPositions)
+        {
+            if(currentPositionsList.Contains(neighbourPos))
+            {
+                invalidPositions.Add(neighbourPos);
+                continue;
+            }
+            if(agentIndex != 0 && nextStepList.Contains(neighbourPos))
+            {
+                invalidPositions.Add(neighbourPos);
+                continue;
+            }
+            if(agent.args.previousPoint.z != -1 && neighbourPos == agent.args.previousPoint)
+            {
+                invalidPositions.Add(neighbourPos);
+                continue;
+            }
+        }
+        return invalidPositions;
     }
     public void Agents_RefreshMovesLeft()
     {
+        foreach (IAgent agent in defenders)
+        {
+            agent.args.RefreshMovesLeft();
+            agent.Retarget();
+        }
         foreach (IAgent agent in enemies)
         {
             agent.args.RefreshMovesLeft();
@@ -1023,11 +1118,13 @@ public class AgentController
                 agentNextStepList.Add(enemy.args.path.end);
             }
         }
-        foreach (IAgent activeDefender in activeDefenders)
+        foreach (IAgent activeDefender in defenders)
         {
             if (!activeDefender.args.transform.gameObject.activeSelf)
                 continue;
             if (activeDefender.args.isDead)
+                continue;
+            if (!activeDefender.args.isActive)
                 continue;
             agentCurrentPositionList.Add(activeDefender.args.cellPos);
             if (activeDefender.args.path != null)
@@ -1074,13 +1171,15 @@ public class AgentController
             if (item.args.path != null)
                 ignoreList.Add(item.args.path.end);
         }
-        foreach (IAgent item in activeDefenders)
+        foreach (IAgent item in defenders)
         {
             if (item == targetAgent)
                 continue;
             if (!item.args.transform.gameObject.activeSelf)
                 continue;
             if (item.args.isDead)
+                continue;
+            if (!item.args.isActive)
                 continue;
             ignoreList.Add(item.args.cellPos);
             if (item.args.path != null)

@@ -12,6 +12,7 @@ public class DefenderListElement : MonoBehaviour, IButtonLayout
     public ObjectAnimator barLayoutAnimator;
     RectTransform barLayoutRectTransform;
     Defender defender;
+    AgentArgs defenderArgs;
     Bar[] bars;
     public SpriteAnimator portraitAnimator;
     public ObjectAnimator tabAnimator;
@@ -52,7 +53,7 @@ public class DefenderListElement : MonoBehaviour, IButtonLayout
             mainAnimator.onAnimationComplete += item.StopAnimation;
         }
         mainAnimator.onAnimationComplete += () => {
-            if (defender.defenderData.health == 0)
+            if (defenderArgs.health == 0)
                 return;
             barLayoutAnimator.PlayAnimation("ShowBars");
         };
@@ -67,13 +68,13 @@ public class DefenderListElement : MonoBehaviour, IButtonLayout
                 {
                     bar.maxValue = defender.defenderData.maxHealth;
                     bar.minValue = 0;
-                    bar.ChangeValue(defender.defenderData.health);
+                    bar.ChangeValue(defenderArgs.health);
                 }
                 if (bar.barType == BarType.Exp)
                 {
                     bar.maxValue = defender.defenderData.maxExp;
                     bar.minValue = 0;
-                    bar.ChangeValue(defender.defenderData.exp);
+                    bar.ChangeValue(defenderArgs.exp);
                 }
             }
             barsDisplayed = true;
@@ -119,11 +120,12 @@ public class DefenderListElement : MonoBehaviour, IButtonLayout
     public void SetElementDefender(Defender defender)
     {
         this.defender = defender;
+        defenderArgs = ((IAgent)defender).args;
     }
     private void Update()
     {
         if (defender == null) return;
-        if (defender.defenderData.health == 0 && !dead)
+        if (defenderArgs.health == 0 && !dead)
         {
             tabAnimator.PlayAnimation("Dead");
             tabBorderSpriteAnimator.PlayAnimation("Dead");
@@ -131,7 +133,7 @@ public class DefenderListElement : MonoBehaviour, IButtonLayout
             barLayoutAnimator.PlayAnimation("HideBars");
             dead = true;
         }
-        if (defender.defenderData.health > 0 && dead)
+        if (defenderArgs.health > 0 && dead)
         {
             tabAnimator.PlayAnimation("Alive");
             tabBorderSpriteAnimator.PlayAnimation("Alive");
@@ -144,9 +146,9 @@ public class DefenderListElement : MonoBehaviour, IButtonLayout
             foreach (Bar bar in bars)
             {
                 if (bar.barType == BarType.Health)
-                    bar.ChangeValue(defender.defenderData.health);
+                    bar.ChangeValue(defenderArgs.health);
                 if (bar.barType == BarType.Exp)
-                    bar.ChangeValue(defender.defenderData.exp);
+                    bar.ChangeValue(defenderArgs.exp);
             }
         }
     }

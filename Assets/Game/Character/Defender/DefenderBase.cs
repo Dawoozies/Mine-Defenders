@@ -6,10 +6,11 @@ using UnityEngine;
 public class DefenderBase : ScriptableObject
 {
     public int baseHealth;
-    public Sprite[] defaultSprites;
-    public AttackBase[] attackBases;
+    public float attackChargeTime;
     public int moveSpeed;
     public InterpolationType moveInterpolationType;
+    public Sprite[] defaultSprites;
+    public AttackBase[] attackBases;
 }
 [Serializable]
 public class DefenderData
@@ -18,10 +19,11 @@ public class DefenderData
     public int defenderKey;
     public int maxHealth, health;
     public int maxExp, exp;
-    public Sprite[] defaultSprites;
-    public AttackBase[] attackBases;
+    public float attackChargeTime;
     public int moveSpeed;
     public InterpolationType moveInterpolationType;
+    public Sprite[] defaultSprites;
+    public AttackBase[] attackBases;
     public DefenderData(DefenderJSON defenderJSON, DefenderBase defenderBase)
     {
         defenderName = defenderJSON.defenderBaseName;
@@ -34,5 +36,6 @@ public class DefenderData
         attackBases = defenderBase.attackBases;
         moveSpeed = defenderBase.moveSpeed;
         moveInterpolationType = defenderBase.moveInterpolationType;
+        attackChargeTime = defenderBase.attackChargeTime;
     }
 }
