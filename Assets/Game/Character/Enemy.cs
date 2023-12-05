@@ -29,6 +29,7 @@ public class Enemy : MonoBehaviour, IAgent
         aliveSpriteAnimation.frames = 2;
         aliveSpriteAnimation.sprites = new List<Sprite> { enemyBase.defaultSprites[0], enemyBase.defaultSprites[1] };
         aliveSpriteAnimation.spriteColors = new List<Color> { Color.white, Color.white };
+        aliveSpriteAnimation.spriteOrders = new List<int> { 4,4};
         baseGraphics.spriteAnimator.CreateAndPlayAnimation(aliveSpriteAnimation);
         ObjectAnimation aliveObjectAnimation = new ObjectAnimation();
         aliveObjectAnimation.animName = "Alive";
@@ -49,6 +50,7 @@ public class Enemy : MonoBehaviour, IAgent
         deadSpriteAnimation.frames = 2;
         deadSpriteAnimation.sprites = new List<Sprite> { enemyBase.defaultSprites[0], enemyBase.defaultSprites[0] };
         deadSpriteAnimation.spriteColors = new List<Color> { Color.white * 0.5f, Color.white * 0.5f };
+        deadSpriteAnimation.spriteOrders = new List<int> { 3, 3 };
         baseGraphics.spriteAnimator.CreateAnimation(deadSpriteAnimation);
         ObjectAnimation deadObjectAnimation = new ObjectAnimation();
         deadObjectAnimation.animName = "Dead";
@@ -77,7 +79,7 @@ public class Enemy : MonoBehaviour, IAgent
         agentData.reservedTiles = GameManager.ins.reservedTiles;
         agentData.moveInterpolationType = enemyBase.moveInterpolationType;
         agentData.previousPoint = new Vector3Int(0, 0, -1);
-        agentData.movesLeft = enemyBase.moveSpeed;
+        agentData.movesLeft = 0;
         agentData.health = enemyBase.baseHealth;
         agentData.allowedToLoot = LootType.None;
         agentData.target = null;

@@ -810,75 +810,81 @@ MonoBehaviour:
   - defenderName: Archer
     defenderKey: 0
     maxHealth: 20
-    health: 15
+    health: 20
     maxExp: 100
     exp: 10
+    attackChargeTime: 0
+    moveSpeed: 0
+    moveInterpolationType: 0
     defaultSprites:
     - {fileID: 347608431, guid: 101dd67895840b94a9a228a2b7e74bd2, type: 3}
     - {fileID: -252073051, guid: b8d6cec06b155e449865e165f84205b1, type: 3}
     attackBases: []
-    moveSpeed: 0
-    moveInterpolationType: 0
   - defenderName: Archer
     defenderKey: 1
-    maxHealth: 10
-    health: 10
+    maxHealth: 20
+    health: 20
     maxExp: 100
     exp: 20
+    attackChargeTime: 0
+    moveSpeed: 0
+    moveInterpolationType: 0
     defaultSprites:
     - {fileID: 347608431, guid: 101dd67895840b94a9a228a2b7e74bd2, type: 3}
     - {fileID: -252073051, guid: b8d6cec06b155e449865e165f84205b1, type: 3}
     attackBases: []
-    moveSpeed: 0
-    moveInterpolationType: 0
   - defenderName: Archer
     defenderKey: 2
-    maxHealth: 10
-    health: 2
+    maxHealth: 20
+    health: 20
     maxExp: 100
     exp: 0
+    attackChargeTime: 0
+    moveSpeed: 0
+    moveInterpolationType: 0
     defaultSprites:
     - {fileID: 347608431, guid: 101dd67895840b94a9a228a2b7e74bd2, type: 3}
     - {fileID: -252073051, guid: b8d6cec06b155e449865e165f84205b1, type: 3}
     attackBases: []
-    moveSpeed: 0
-    moveInterpolationType: 0
   - defenderName: Swordsman
     defenderKey: 3
     maxHealth: 20
-    health: 17
+    health: 20
     maxExp: 100
     exp: 50
+    attackChargeTime: 0
+    moveSpeed: 0
+    moveInterpolationType: 0
     defaultSprites:
     - {fileID: 347608431, guid: 101dd67895840b94a9a228a2b7e74bd2, type: 3}
     - {fileID: -252073051, guid: b8d6cec06b155e449865e165f84205b1, type: 3}
     attackBases: []
-    moveSpeed: 0
-    moveInterpolationType: 0
   - defenderName: Swordsman
     defenderKey: 4
     maxHealth: 20
-    health: 5
+    health: 20
     maxExp: 100
     exp: 4
+    attackChargeTime: 0
+    moveSpeed: 0
+    moveInterpolationType: 0
     defaultSprites:
     - {fileID: 347608431, guid: 101dd67895840b94a9a228a2b7e74bd2, type: 3}
     - {fileID: -252073051, guid: b8d6cec06b155e449865e165f84205b1, type: 3}
     attackBases: []
-    moveSpeed: 0
-    moveInterpolationType: 0
   - defenderName: Swordsman
     defenderKey: 5
-    maxHealth: 30
-    health: 15
+    maxHealth: 20
+    health: 20
     maxExp: 100
     exp: 90
+    attackChargeTime: 0
+    moveSpeed: 0
+    moveInterpolationType: 0
     defaultSprites:
     - {fileID: 347608431, guid: 101dd67895840b94a9a228a2b7e74bd2, type: 3}
     - {fileID: -252073051, guid: b8d6cec06b155e449865e165f84205b1, type: 3}
     attackBases: []
-    moveSpeed: 0
-    moveInterpolationType: 0
 --- !u!1 &226689017
 GameObject:
   m_ObjectHideFlags: 0

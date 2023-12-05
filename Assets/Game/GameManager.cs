@@ -138,11 +138,6 @@ public class GameManager : MonoBehaviour
             characterGenerator.CreateDefender(defendersLoaded[5]),
         };
         #endregion
-
-        foreach (IAgent agent in agentController.enemies)
-        {
-            agent.Retarget();
-        }
     }
 
     public delegate Vector3Int PlayerPositionBufferUpdated(); //Just updates cell position
@@ -996,6 +991,7 @@ public class AgentController
                 //Debug.Log($"defender. Index = {agentIndex} Result = {result}");
                 if (!result)
                     continue;
+                nextStepList.Add(agent.args.path.end);
                 agentIndex++;
             }
         }
@@ -1011,6 +1007,7 @@ public class AgentController
                 //Debug.Log($"enemy. Index = {agentIndex} Result = {result}");
                 if (!result)
                     continue;
+                nextStepList.Add(agent.args.path.end);
                 agentIndex++;
             }
         }
@@ -1044,7 +1041,6 @@ public class AgentController
         {
             if (points[points.Count - 2] != agent.args.target.args.cellPos)
             {
-                nextStepList.Add(points[points.Count - 2]);
                 path.end = points[points.Count - 2];
                 if(!agent.args.hasInstruction)
                     agent.args.hasInstruction = true;
@@ -1101,99 +1097,5 @@ public class AgentController
             }
         }
         return canSpawnHere;
-    }
-    public int AvailableAdjacentSpaces(IAgent agent, IAgent targetAgent)
-    {
-        Tilemap[] inaccessibleTilemaps = agent.GetInaccessibleTilemaps();
-        #region Current + Next step list
-        List<Vector3Int> agentCurrentPositionList = new List<Vector3Int>();
-        List<Vector3Int> agentNextStepList = new List<Vector3Int>();
-        foreach (IAgent enemy in enemies)
-        {
-            if (enemy == agent)
-                continue;
-            agentCurrentPositionList.Add(enemy.args.cellPos);
-            if (enemy.args.path != null)
-            {
-                agentNextStepList.Add(enemy.args.path.end);
-            }
-        }
-        foreach (IAgent activeDefender in defenders)
-        {
-            if (!activeDefender.args.transform.gameObject.activeSelf)
-                continue;
-            if (activeDefender.args.isDead)
-                continue;
-            if (!activeDefender.args.isActive)
-                continue;
-            agentCurrentPositionList.Add(activeDefender.args.cellPos);
-            if (activeDefender.args.path != null)
-            {
-                agentNextStepList.Add(activeDefender.args.path.end);
-            }
-        }
-        #endregion
-        List<Vector3Int> neighbourPositions = GameManager.ins.GetCardinalNeighbourPositions(targetAgent.args.cellPos, false);
-        List<Vector3Int> invalidNeighbourPositions = new List<Vector3Int>();
-        foreach (Vector3Int neighbourPosition in neighbourPositions)
-        {
-            bool neighbourPositionInvalid = false;
-            if(agentCurrentPositionList.Contains(neighbourPosition))
-            {
-                neighbourPositionInvalid = true;
-            }
-            if(agentNextStepList.Contains(neighbourPosition))
-            {
-                neighbourPositionInvalid = true;
-            }
-            foreach (Tilemap item in inaccessibleTilemaps)
-            {
-                if (item.GetTile(neighbourPosition) != null)
-                {
-                    neighbourPositionInvalid = true;
-                }
-            }
-            if (neighbourPositionInvalid)
-                invalidNeighbourPositions.Add(neighbourPosition);
-        }
-        //Debug.Log($"{agent.args.transform.name} check -> {targetAgent.args.transform.name} has {4 - invalidNeighbourPositions.Count} free spaces.");
-        return 4 - invalidNeighbourPositions.Count;
-    }
-    public bool CanPathToTarget(IAgent agent, IAgent targetAgent)
-    {
-        Tilemap[] inaccessibleTilemaps = agent.GetInaccessibleTilemaps();
-        List<Vector3Int> ignoreList = new List<Vector3Int>();
-        foreach (IAgent item in enemies)
-        {
-            if (item == agent)
-                continue;
-            ignoreList.Add(item.args.cellPos);
-            if (item.args.path != null)
-                ignoreList.Add(item.args.path.end);
-        }
-        foreach (IAgent item in defenders)
-        {
-            if (item == targetAgent)
-                continue;
-            if (!item.args.transform.gameObject.activeSelf)
-                continue;
-            if (item.args.isDead)
-                continue;
-            if (!item.args.isActive)
-                continue;
-            ignoreList.Add(item.args.cellPos);
-            if (item.args.path != null)
-                ignoreList.Add(item.args.path.end);
-        }
-        List<Vector3Int> points = new List<Vector3Int>();
-        points = Pathfinding.aStarWithIgnore(
-            agent.args.cellPos,
-            targetAgent.args.cellPos,
-            inaccessibleTilemaps,
-            ignoreList
-        );
-        if (points == null || points.Count == 0)
-            return false;
-        return true;
     }
 }
