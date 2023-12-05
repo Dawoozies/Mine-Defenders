@@ -16,7 +16,7 @@ public class ButtonLayout : MonoBehaviour
             #region Start set up
             commandRects = new List<RectTransform>();
             rectCorners = new List<Vector3[]>();
-            Debug.Log($"transform child count {transform.childCount}");
+            //Debug.Log($"transform child count {transform.childCount}");
             for (int i = 0; i < transform.childCount; i++)
             {
                 commandRects.Add(transform.GetChild(i).GetComponent<RectTransform>());

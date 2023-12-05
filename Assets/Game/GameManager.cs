@@ -5,8 +5,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
-using UnityEngine.UIElements;
-
+using Random = UnityEngine.Random;
 public class GameManager : MonoBehaviour
 {
     public static GameManager ins;
@@ -228,7 +227,7 @@ public class GameManager : MonoBehaviour
                 PlaceDefenderRequestArgs args = item.DynamicInvoke() as PlaceDefenderRequestArgs;
                 Defender defenderToPlace = args.defenderToPlace;
                 Vector3Int pos = args.position;
-                Debug.Log($"Placing defender {defenderToPlace.defenderData.defenderName}_{defenderToPlace.defenderData.defenderKey}");
+                //Debug.Log($"Placing defender {defenderToPlace.defenderData.defenderName}_{defenderToPlace.defenderData.defenderKey}");
                 defenderToPlace.gameObject.SetActive(true);
                 defenderToPlace.transform.position = CellToWorld(pos);
                 ((IAgent)defenderToPlace).args.isActive = true;
@@ -1097,5 +1096,44 @@ public class AgentController
             }
         }
         return canSpawnHere;
+    }
+    public List<IAgent> GetAgentsAdjacentToPosition(Vector3Int cellPos, List<AgentType> agentTypes, bool includeSelf)
+    {
+        List<IAgent> foundAgents = new List<IAgent>();
+        List<Vector3Int> neighbourPositions = GameManager.ins.GetCardinalNeighbourPositions(cellPos, includeSelf);
+        if(agentTypes.Contains(AgentType.Player))
+        {
+            if (neighbourPositions.Contains(player.cellPos))
+                foundAgents.Add(player);
+        }
+        if(agentTypes.Contains(AgentType.Enemy))
+        {
+            foreach (IAgent enemy in enemies)
+            {
+                if (neighbourPositions.Contains(enemy.args.cellPos))
+                    foundAgents.Add(enemy);
+            }
+        }
+        if(agentTypes.Contains(AgentType.Defender))
+        {
+            foreach (IAgent defender in defenders)
+            {
+                if (neighbourPositions.Contains(defender.args.cellPos))
+                    foundAgents.Add(defender);
+            }
+        }
+        return foundAgents;
+    }
+    public IAgent AdjacencyTarget(IAgent agent, IAgent currentTarget, List<AgentType> agentTypes)
+    {
+        List<IAgent> adjacentAgents = GetAgentsAdjacentToPosition(agent.args.cellPos, agentTypes, false);
+        if (adjacentAgents.Count == 0)
+            return null;
+
+        if (adjacentAgents.Contains(currentTarget))
+            return currentTarget;
+
+        int randomIndex = Random.Range(0, adjacentAgents.Count);
+        return adjacentAgents[randomIndex];
     }
 }

@@ -155,7 +155,7 @@ public class AgentArgs
                 return;
             if (playerPathIndex >= playerPath.Count)
             {
-                Debug.Log("player path is complete");
+                //Debug.Log("player path is complete");
                 onPlayerCompletedFullPath?.Invoke();
                 playerPath = null;
                 return;
@@ -196,6 +196,14 @@ public class AgentArgs
     public Vector3 ScreenTrackingWithOffset(Vector3 offset)
     {
         return GameManager.ins.WorldToScreenPosition(transform.position + offset);
+    }
+    public void SetTarget(IAgent newTarget)
+    {
+        if(target != null)
+            target.args.targetedBy.Remove(agent);
+
+        target = newTarget;
+        newTarget.args.targetedBy.Add(agent);
     }
 }
 public class AgentPath

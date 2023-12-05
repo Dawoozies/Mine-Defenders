@@ -20,6 +20,7 @@ public class Enemy : MonoBehaviour, IAgent
     public Vector3 worldPos => agentCellCenterPos;
     public Vector3Int cellPos => agentCellPos;
     UI_Action_Display actionDisplay;
+    List<AgentType> targetTypes = new List<AgentType> { AgentType.Defender };
     public void Initialise(EnemyBase enemyBase)
     {
         this.enemyBase = enemyBase;
@@ -200,8 +201,7 @@ public class Enemy : MonoBehaviour, IAgent
                 continue;
             if (defender.args.targetedBy.Count >= 4)
                 continue;
-            defender.args.targetedBy.Add(this);
-            agentData.target = defender;
+            agentData.SetTarget(defender);
             return;
         }
     }

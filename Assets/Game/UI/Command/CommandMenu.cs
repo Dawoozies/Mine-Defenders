@@ -82,7 +82,7 @@ public class CommandMenu : MonoBehaviour
         for (int i = 0; i < defenderCount; i++)
         {
             defenderListElements[i].SetElementDefender(defenders[i]);
-            Debug.Log($"Defender = {i}");
+            //Debug.Log($"Defender = {i}");
         }
         listBaseAnimator.onAnimationComplete += () => 
         {

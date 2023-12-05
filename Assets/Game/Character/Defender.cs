@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
-
+using Random = UnityEngine.Random;
 public class Defender : MonoBehaviour, IAgent
 {
     [HideInInspector]
@@ -18,6 +18,7 @@ public class Defender : MonoBehaviour, IAgent
     public Vector3 worldPos => agentCellCenterPos;
     public Vector3Int cellPos => agentCellPos;
     UI_Action_Display actionDisplay;
+    List<AgentType> targetTypes = new List<AgentType> { AgentType.Enemy };
     public void Initialise(DefenderData defenderData)
     {
         this.defenderData = defenderData;
@@ -93,7 +94,6 @@ public class Defender : MonoBehaviour, IAgent
     }
     void Update()
     {
-        
         if (agentData.isDead)
             return;
         if (!agentData.isActive)
@@ -185,6 +185,7 @@ public class Defender : MonoBehaviour, IAgent
             return;
         if (agentData.target != null)
             return;
+        Debug.Log("Retargeting");
         List<Enemy> enemies = GameManager.ins.GetEnemies();
         foreach (IAgent enemy in enemies)
         {
@@ -194,8 +195,7 @@ public class Defender : MonoBehaviour, IAgent
                 continue;
             if (enemy.args.targetedBy.Count >= 4)
                 continue;
-            enemy.args.targetedBy.Add(this);
-            agentData.target = enemy;
+            agentData.SetTarget(enemy);
             return;
         }
     }

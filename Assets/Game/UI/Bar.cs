@@ -32,7 +32,7 @@ public class Bar : MonoBehaviour
         }
         lastNormalizedValueTarget = normalizedValueTarget;
         normalizedValueTarget = (float)Mathf.Abs(value - minValue) / Mathf.Abs(maxValue - minValue);
-        Debug.Log($"last value = {lastNormalizedValueTarget} current value = {normalizedValueTarget}");
+        //Debug.Log($"last value = {lastNormalizedValueTarget} current value = {normalizedValueTarget}");
     }
     private void Update()
     {
