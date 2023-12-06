@@ -21,12 +21,11 @@ public class AgentArgs
     IAgent agent;
     public AgentType type;
     public Transform transform { get; set; }
-    public int moveSpeed;
+    public int movementPerTurn;
     public Vector3Int cellPos => GameManager.ins.WorldToCell(transform.position);
     public Vector3 worldPos => GameManager.ins.WorldToCellCenter(transform.position);
     public Vector3 screenPos => ScreenTrackingWithOffset(Vector3.zero);
-    public Tilemap[] notWalkable;
-    public Hashtable reservedTiles;
+    public float moveInterpolationSpeed;
     public InterpolationType moveInterpolationType;
     public AgentPath path;
     public Vector3Int previousPoint;
@@ -142,14 +141,14 @@ public class AgentArgs
                 movesLeft--;
                 return;
             }
-            transform.position = path.Traverse(timeDelta * moveSpeed);
+            transform.position = path.Traverse(timeDelta * moveInterpolationSpeed);
         }
         if(type == AgentType.Player)
         {
             if(movesLeft <= 0)
             {
                 onPlayerNoMovesLeft?.Invoke();
-                movesLeft = moveSpeed;
+                movesLeft = movementPerTurn;
             }
             if (playerPath == null || playerPath.Count == 0)
                 return;
@@ -181,13 +180,13 @@ public class AgentArgs
                     }
                 }
             }
-            transform.position = playerPath[playerPathIndex].Traverse(timeDelta * moveSpeed);
+            transform.position = playerPath[playerPathIndex].Traverse(timeDelta * moveInterpolationSpeed);
         }
     }
     public void RefreshMovesLeft()
     {
         Debug.Log($"Refreshing movesLeft for {transform.name}");
-        movesLeft = moveSpeed;
+        movesLeft = movementPerTurn;
     }
     public void ResetCompletedFullPathEvent()
     {

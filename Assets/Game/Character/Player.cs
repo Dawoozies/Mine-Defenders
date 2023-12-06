@@ -8,8 +8,8 @@ using Material = ItemFactory.Material;
 
 public class Player : MonoBehaviour, IAgent
 {
-    NavigationOrder order;
-    public int moveSpeed;
+    public int movementPerTurn;
+    public float moveInterpolationSpeed;
     public InterpolationType moveInterpolationType;
     Vector3Int agentCellPos { get { return GameManager.ins.WorldToCell(transform.position); } }
     Vector3 agentCellCenterPos { get { return GameManager.ins.WorldToCellCenter(transform.position); } }
@@ -42,11 +42,10 @@ public class Player : MonoBehaviour, IAgent
     {
         //Set up agentData
         agentData = new AgentArgs(transform, AgentType.Player, this);
-        agentData.moveSpeed = moveSpeed;
-        agentData.notWalkable = GameManager.ins.GetPlayerInaccessibleTilemaps();
-        agentData.reservedTiles = null;
+        agentData.movementPerTurn = movementPerTurn;
+        agentData.moveInterpolationSpeed = moveInterpolationSpeed;
         agentData.moveInterpolationType = moveInterpolationType;
-        agentData.movesLeft = moveSpeed;
+        agentData.movesLeft = movementPerTurn;
         agentData.allowedToLoot = LootType.All;
         agentData.target = null;
         agentData.targetedBy = new List<IAgent>();
@@ -85,31 +84,6 @@ public class Player : MonoBehaviour, IAgent
                 tool.materialPartRenderer.color = Color.clear;
             }
         };
-    }
-    public void SetMiningOrder(CellData cellData)
-    {
-        tool.toolTargetCellPos = cellData.cellPosition;
-        tool.toolTargetCellCenterWorldPos = cellData.cellCenterWorldPosition;
-        List<Vector3Int> shortestPathToNeighbour
-            = cellData.GetPathToClosestCardinalNeighbour(this);
-        //If we are right next to what we want to mine then just start mining animation
-        if(Vector3Int.Distance(agentCellPos, cellData.cellPosition) == 1)
-        {
-            StartMiningAnimation();
-        }
-        //Else we must use the code below
-        if (shortestPathToNeighbour == null)
-            return;
-        order = new NavigationOrder(
-            this,
-            "MoveToMiningTarget",
-            shortestPathToNeighbour,
-            GameManager.ins.GetPlayerInaccessibleTilemaps(),
-            false,
-            0, //No cutoff since we are already pathing to an adjacent point
-            moveInterpolationType
-            );
-        order.onNavigationComplete += StartMiningAnimation;
     }
     public void StartMiningAnimation()
     {

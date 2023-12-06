@@ -75,9 +75,8 @@ public class Enemy : MonoBehaviour, IAgent
 
         //Set up agent data
         agentData = new AgentArgs(transform, AgentType.Enemy, this);
-        agentData.moveSpeed = enemyBase.moveSpeed;
-        agentData.notWalkable = GameManager.ins.GetEnemyInaccessibleTilemaps();
-        agentData.reservedTiles = GameManager.ins.reservedTiles;
+        agentData.movementPerTurn = enemyBase.movementPerTurn;
+        agentData.moveInterpolationSpeed = enemyBase.moveInterpolationSpeed;
         agentData.moveInterpolationType = enemyBase.moveInterpolationType;
         agentData.previousPoint = new Vector3Int(0, 0, -1);
         agentData.movesLeft = 0;

@@ -7,7 +7,8 @@ public class EnemyBase : ScriptableObject
     public int baseHealth;
     public Color bloodColor;
     public float attackChargeTime;
-    public int moveSpeed; //Tiles per movement update
+    public int movementPerTurn;
+    public float moveInterpolationSpeed;
     public InterpolationType moveInterpolationType;
     public Sprite[] defaultSprites;
     public AttackBase[] attackBases;

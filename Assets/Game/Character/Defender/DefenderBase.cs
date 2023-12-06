@@ -7,7 +7,8 @@ public class DefenderBase : ScriptableObject
 {
     public int baseHealth;
     public float attackChargeTime;
-    public int moveSpeed;
+    public int movementPerTurn;
+    public float moveInterpolationSpeed;
     public InterpolationType moveInterpolationType;
     public Sprite[] defaultSprites;
     public AttackBase[] attackBases;
@@ -20,7 +21,8 @@ public class DefenderData
     public int maxHealth, health;
     public int maxExp, exp;
     public float attackChargeTime;
-    public int moveSpeed;
+    public int movementPerTurn;
+    public float moveInterpolationSpeed;
     public InterpolationType moveInterpolationType;
     public Sprite[] defaultSprites;
     public AttackBase[] attackBases;
@@ -34,7 +36,8 @@ public class DefenderData
         exp = defenderJSON.exp;
         defaultSprites = defenderBase.defaultSprites;
         attackBases = defenderBase.attackBases;
-        moveSpeed = defenderBase.moveSpeed;
+        movementPerTurn = defenderBase.movementPerTurn;
+        moveInterpolationSpeed = defenderBase.moveInterpolationSpeed;
         moveInterpolationType = defenderBase.moveInterpolationType;
         attackChargeTime = defenderBase.attackChargeTime;
     }

@@ -70,9 +70,8 @@ public class Defender : MonoBehaviour, IAgent
             available.Add(attack);
         }
         agentData = new AgentArgs(transform, AgentType.Enemy, this);
-        agentData.moveSpeed = defenderData.moveSpeed;
-        agentData.notWalkable = GameManager.ins.GetEnemyInaccessibleTilemaps();
-        agentData.reservedTiles = GameManager.ins.reservedTiles;
+        agentData.movementPerTurn = defenderData.movementPerTurn;
+        agentData.moveInterpolationSpeed = defenderData.moveInterpolationSpeed;
         agentData.moveInterpolationType = defenderData.moveInterpolationType;
         agentData.previousPoint = new Vector3Int(0, 0, -1);
         agentData.movesLeft = 0;

@@ -33,7 +33,6 @@ public class GameManager : MonoBehaviour
 
     //Player character
     //public Transform player;
-    public CharacterAgent playerAgent;
     public Vector3Int playerLastCellPos;
 
     public AgentController agentController;
@@ -101,10 +100,7 @@ public class GameManager : MonoBehaviour
         //playerLastCellPos = WorldToCell(player.position);
         //playerAgent = player.GetComponent<CharacterAgent>();
         //characterGenerator.CreateEnemy();
-        occupiedTiles = new Hashtable();
-        reservedTiles = new Hashtable();
         #region AgentController Start
-        allAgents = new List<IAgent>();
         agentController = new AgentController();
         agentController.player = characterGenerator.CreatePlayer(Vector3Int.zero);
         ((IAgent)agentController.player).args.onPlayerNoMovesLeft += agentController.Agents_RefreshMovesLeft;
@@ -327,8 +323,6 @@ public class GameManager : MonoBehaviour
             gridInformation.GetPositionProperty(cellPos, "IsPit", 0) == 1
             && gridInformation.GetPositionProperty(cellPos, "IsUncoveredPit", 0) == 1;
     }
-    public Hashtable occupiedTiles;
-    public Hashtable reservedTiles;
     private void OnDrawGizmos()
     {
         if (!Application.isPlaying)
@@ -403,27 +397,8 @@ public class GameManager : MonoBehaviour
             }
         }
     }
-    #region Old Code
-    public bool TryReserve(Vector3Int cellPos)
-    {
-        if(reservedTiles.ContainsKey(cellPos))
-        {
-            return false;
-        }
-
-        reservedTiles.Add(cellPos, 1);
-        return true;
-    }
-    public void ReleaseReservation(Vector3Int cellPos)
-    {
-        if (reservedTiles.ContainsKey(cellPos))
-        {
-            reservedTiles.Remove(cellPos);
-        }
-    }
     public Hashtable cellTable;
     public Hashtable uncoveredPitCenters;
-    public List<IAgent> allAgents;
     public CellData GetCellDataAtPosition(Vector3Int cellPosition)
     {
         return (CellData)cellTable[cellPosition];
@@ -495,7 +470,6 @@ public class GameManager : MonoBehaviour
             neighbours.Add((CellData)givenHashtable[cell]);
         return neighbours;
     }
-    #endregion
     public void BreakStone(CellData cellData)
     {
         //Remove stone via level generator method
@@ -521,66 +495,9 @@ public class GameManager : MonoBehaviour
         if (cellData.ore != null)
             cellData.loot = lootManager.InstantiateLoot_Ore(cellData.cellCenterWorldPosition, cellData.ore);
     }
-    public void Update_OccupiedTiles(CellData cellData, IAgent agent)
-    {
-        bool priorValueExists = occupiedTiles.ContainsValue(agent);
-        if (priorValueExists)
-        {
-            foreach (Vector3Int item in occupiedTiles.Keys)
-            {
-                if (occupiedTiles[item] != null)
-                {
-                    if (occupiedTiles[item] == agent)
-                        occupiedTiles[item] = null;
-                    break;
-                }
-            }
-        }
-        Vector3Int key = cellData.cellPosition;
-        bool keyExists = occupiedTiles.ContainsKey(key);
-        if(keyExists)
-        {
-            occupiedTiles[key] = agent;
-        }
-        else
-        {
-            occupiedTiles.Add(key, agent);
-        }
-    }
-    public void Update_ReservedTiles(CellData cellData, IAgent agent)
-    {
-        //First we check if there is a reservation prior
-        bool priorValueExists = reservedTiles.ContainsValue(agent);
-        if(priorValueExists)
-        {
-            foreach (Vector3Int item in reservedTiles.Keys)
-            {
-                if (reservedTiles[item] != null)
-                {
-                    if (reservedTiles[item] == agent)
-                        reservedTiles[item] = null;
-                    break;
-                }
-            }
-        }
-        Vector3Int key = cellData.cellPosition;
-        bool keyExists = reservedTiles.ContainsKey(key);
-        if (keyExists)
-        {
-            reservedTiles[key] = agent;
-        }
-        else
-        {
-            reservedTiles.Add(key, agent);
-        }
-    }
     public float DistanceFromPlayer(IAgent agent)
     {
         return Vector3.Distance(agent.args.cellPos, ((IAgent)agentController.player).args.cellPos);
-    }
-    public Vector3 GetPlayerWorldPosition()
-    {
-        return ((IAgent)agentController.player).args.worldPos;
     }
     public void TryLootAtCell(Vector3Int cellPos, IAgent agent)
     {
@@ -608,8 +525,6 @@ public class CellData
     public bool isUncoveredPit;
     public bool isPitCenter;
     public CellLoot loot;
-    IAgent occupyingAgent;
-    IAgent reservingAgent;
     public List<CellData> GetAllNeighbours(bool includeSelf)
     {
         return GameManager.ins.GetAllNeighboursAroundCell(cellPosition, includeSelf);
@@ -625,7 +540,7 @@ public class CellData
         foreach (CellData neighbour in neighbours)
         {
             List<Vector3Int> path;
-            path = Pathfinding.aStarNew(agent, agent.args.cellPos, neighbour.cellPosition, agent.args.notWalkable, agent.args.reservedTiles);
+            path = Pathfinding.aStarWithIgnore(agent.args.cellPos, neighbour.cellPosition, agent.GetInaccessibleTilemaps(), null);
             if (path == null || path.Count == 0)
                 continue;
             if (shortestPath == null)
@@ -639,31 +554,10 @@ public class CellData
     {
         if(durability > 0)
         {
-            return GetPathToClosestCardinalNeighbour((IAgent)agent);
+            return GetPathToClosestCardinalNeighbour(agent);
         }
-        if(agent.args.type == AgentType.Enemy)
-        {
-
-        }
-        List<Vector3Int> path = Pathfinding.aStarNew(agent, agent.args.cellPos, cellPosition, agent.args.notWalkable, agent.args.reservedTiles);
+        List<Vector3Int> path = Pathfinding.aStarWithIgnore(agent.args.cellPos, cellPosition, agent.GetInaccessibleTilemaps(), null);
         return path;
-    }
-
-    public bool TryOccupation(IAgent agent)
-    {
-        bool occupationSucceeded = false;
-        if(occupyingAgent == null)
-        {
-            occupyingAgent = agent;
-            GameManager.ins.Update_OccupiedTiles(this, agent);
-            occupationSucceeded = true;
-        }
-        else
-        {
-            if (reservingAgent == agent)
-                occupationSucceeded = true;
-        }
-        return occupationSucceeded;
     }
     public void TryLoot(IAgent agent)
     {
@@ -681,64 +575,6 @@ public class CellData
             GameObject.Destroy(loot.instantiatedObject);
             loot = null;
         }
-    }
-    public void ReleaseOccupation(IAgent agent)
-    {
-        if (occupyingAgent == null)
-            return;
-        if(agent == occupyingAgent)
-        {
-            Debug.Log($"Successfully released occupation of {agent.args.type}");
-            occupyingAgent = null;
-            GameManager.ins.Update_OccupiedTiles(this, null);
-        }
-    }
-    public bool isOccupiedByOther(IAgent agent)
-    {
-        return occupyingAgent != null && occupyingAgent != agent;
-    }
-    public bool TryReservation(IAgent agent)
-    {
-        if (reservingAgent == null)
-        {
-            reservingAgent = agent;
-            GameManager.ins.Update_ReservedTiles(this, agent);
-            return true;
-        }
-        else
-        {
-            if (reservingAgent == agent)
-            {
-                GameManager.ins.Update_ReservedTiles(this, agent);
-                return true;
-            }
-                
-        }
-        return false;
-    }
-    public void ReleaseReservation(IAgent releasingAgent)
-    {
-        if (reservingAgent == null)
-            return;
-        if(releasingAgent == reservingAgent)
-        {
-            Debug.Log($"Successfully released occupation of {releasingAgent.args.type}");
-            reservingAgent = null;
-            GameManager.ins.Update_ReservedTiles(this, null);
-        }
-    }
-    public bool isReservedByOther(IAgent agent)
-    {
-        return reservingAgent != null && reservingAgent != agent;
-    }
-    public bool TurnReserveIntoOccupation(IAgent agent)
-    {
-        if (occupyingAgent != null && occupyingAgent != agent)
-            return false;
-
-        TryOccupation(agent);
-        reservingAgent = null;
-        return true;
     }
     public void CellInfoDebug()
     {
@@ -834,117 +670,6 @@ public class AgentController
             #endregion
         }
     }
-    //public void Enemies_PathCalculate()
-    //{
-    //    if (enemies == null || enemies.Count == 0)
-    //        return;
-
-    //    #region CurrentPositions + Clear NextStep List
-    //    List<Vector3Int> agentCurrentPositionList = new List<Vector3Int>();
-    //    List<Vector3Int> agentNextStepList = new List<Vector3Int>();
-    //    foreach (IAgent agent in enemies)
-    //    {
-    //        agentCurrentPositionList.Add(agent.args.cellPos);
-    //        if (agent.args.path != null)
-    //        {
-    //            agentNextStepList.Add(agent.args.path.end);
-    //        }
-    //    }
-    //    foreach(IAgent agent in defenders)
-    //    {
-    //        if (!agent.args.transform.gameObject.activeSelf)
-    //            continue;
-    //        if (agent.args.isDead)
-    //            continue;
-    //        if (!agent.args.isActive)
-    //            continue;
-    //        agentCurrentPositionList.Add(agent.args.cellPos);
-    //        if(agent.args.path != null)
-    //        {
-    //            agentNextStepList.Add(agent.args.path.end);
-    //        }
-    //    }
-    //    #endregion
-
-    //    for (int i = 0; i < enemies.Count; i++)
-    //    {
-    //        Enemy enemy = enemies[i];
-    //        IAgent agent = enemy;
-    //        //path to write to
-    //        if (agent.args.hasInstruction)
-    //            continue;
-    //        if (agent.args.movesLeft <= 0)
-    //            continue;
-    //        if (agent.args.target == null)
-    //            continue;
-    //        AgentPath path = new AgentPath(agent.args.cellPos, agent.args.cellPos, agent.args.moveInterpolationType);
-    //        agent.args.path = path;
-    //        List<Vector3Int> points = new List<Vector3Int>();
-    //        #region Calculate Neighbour Positions To Ignore
-    //        //Assume all neighbours are valid to start
-    //        List<Vector3Int> neighbourPositions = GameManager.ins.GetCardinalNeighbourPositions(agent.args.cellPos, false);
-    //        List<Vector3Int> invalidNeighbourPositions = new List<Vector3Int>();
-    //        foreach (Vector3Int neighbourPosition in neighbourPositions)
-    //        {
-    //            bool neighbourPositionInvalid = false;
-    //            foreach (Vector3Int item in agentCurrentPositionList)
-    //            {
-    //                if (neighbourPosition == item && item != agent.args.cellPos)
-    //                {
-    //                    neighbourPositionInvalid = true;
-    //                }
-    //            }
-    //            if (i != 0)
-    //            {
-    //                foreach (Vector3Int item in agentNextStepList)
-    //                {
-    //                    if (neighbourPosition == item)
-    //                    {
-    //                        neighbourPositionInvalid = true;
-    //                    }
-    //                }
-    //            }
-    //            if (agent.args.previousPoint.z != -1)
-    //            {
-    //                if (neighbourPosition == agent.args.previousPoint)
-    //                {
-    //                    neighbourPositionInvalid = true;
-    //                    agent.args.previousPoint = new Vector3Int(0, 0, -1);
-    //                }
-    //            }
-    //            if (neighbourPositionInvalid)
-    //                invalidNeighbourPositions.Add(neighbourPosition);
-    //        }
-    //        #endregion
-    //        if (invalidNeighbourPositions.Count == 4)
-    //        {
-    //            //Then this agent cannot move next update
-    //            continue;
-    //        }
-    //        #region Call Pathfinding.aStartWithIgnore
-    //        points =
-    //            Pathfinding.aStarWithIgnore(
-    //                agent.args.cellPos,
-    //                agent.args.target.args.cellPos,
-    //                agent.GetInaccessibleTilemaps(),
-    //                invalidNeighbourPositions
-    //                );
-    //        #endregion
-    //        #region Setup Non Trivial End For Path
-    //        if (points != null && points.Count > 1)
-    //        {
-    //            if (points[points.Count - 2] != agent.args.target.args.cellPos)
-    //            {
-    //                agentNextStepList.Add(points[points.Count - 2]);
-    //                path.end = points[points.Count - 2];
-    //                if (!agent.args.hasInstruction)
-    //                    agent.args.hasInstruction = true;
-    //                continue;
-    //            }
-    //        }
-    //        #endregion
-    //    }
-    //}
     public void NonPlayerAgents_PathCalculate()
     {
         #region Current positions + next step list
