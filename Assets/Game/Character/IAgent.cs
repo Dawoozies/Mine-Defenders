@@ -78,6 +78,12 @@ public class AgentArgs
                 targetedBy[0].Retarget();
                 targetedBy.RemoveAt(0);
             }
+            if (hasInstruction)
+            {
+                hasInstruction = false;
+                path = null;
+                previousPoint = new Vector3Int(0, 0, -1);
+            }
             onDeath?.Invoke();
         }
     }

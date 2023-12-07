@@ -814,7 +814,8 @@ MonoBehaviour:
     maxExp: 100
     exp: 10
     attackChargeTime: 0
-    moveSpeed: 0
+    movementPerTurn: 0
+    moveInterpolationSpeed: 0
     moveInterpolationType: 0
     defaultSprites:
     - {fileID: 347608431, guid: 101dd67895840b94a9a228a2b7e74bd2, type: 3}
@@ -827,7 +828,8 @@ MonoBehaviour:
     maxExp: 100
     exp: 20
     attackChargeTime: 0
-    moveSpeed: 0
+    movementPerTurn: 0
+    moveInterpolationSpeed: 0
     moveInterpolationType: 0
     defaultSprites:
     - {fileID: 347608431, guid: 101dd67895840b94a9a228a2b7e74bd2, type: 3}
@@ -840,7 +842,8 @@ MonoBehaviour:
     maxExp: 100
     exp: 0
     attackChargeTime: 0
-    moveSpeed: 0
+    movementPerTurn: 0
+    moveInterpolationSpeed: 0
     moveInterpolationType: 0
     defaultSprites:
     - {fileID: 347608431, guid: 101dd67895840b94a9a228a2b7e74bd2, type: 3}
@@ -853,7 +856,8 @@ MonoBehaviour:
     maxExp: 100
     exp: 50
     attackChargeTime: 0
-    moveSpeed: 0
+    movementPerTurn: 0
+    moveInterpolationSpeed: 0
     moveInterpolationType: 0
     defaultSprites:
     - {fileID: 347608431, guid: 101dd67895840b94a9a228a2b7e74bd2, type: 3}
@@ -866,7 +870,8 @@ MonoBehaviour:
     maxExp: 100
     exp: 4
     attackChargeTime: 0
-    moveSpeed: 0
+    movementPerTurn: 0
+    moveInterpolationSpeed: 0
     moveInterpolationType: 0
     defaultSprites:
     - {fileID: 347608431, guid: 101dd67895840b94a9a228a2b7e74bd2, type: 3}
@@ -879,7 +884,8 @@ MonoBehaviour:
     maxExp: 100
     exp: 90
     attackChargeTime: 0
-    moveSpeed: 0
+    movementPerTurn: 0
+    moveInterpolationSpeed: 0
     moveInterpolationType: 0
     defaultSprites:
     - {fileID: 347608431, guid: 101dd67895840b94a9a228a2b7e74bd2, type: 3}
@@ -3957,7 +3963,6 @@ MonoBehaviour:
   - {x: -1, y: 0, z: 0}
   - {x: 1, y: 0, z: 0}
   - {x: 0, y: -1, z: 0}
-  playerAgent: {fileID: 0}
   playerLastCellPos: {x: 0, y: 0, z: 0}
   player: {fileID: 0}
   pitSpawnTime: 2
@@ -3966,6 +3971,8 @@ MonoBehaviour:
   defendersLoaded: []
   computePaths: 0
   moveAlongPaths: 0
+  nextOrderTest: 0
+  orderUpdateSpeed: 0.5
 --- !u!1 &774018938
 GameObject:
   m_ObjectHideFlags: 0

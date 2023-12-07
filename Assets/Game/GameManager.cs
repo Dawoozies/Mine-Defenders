@@ -213,9 +213,12 @@ public class GameManager : MonoBehaviour
         }
         return;
     }
+    public bool nextOrderTest;
+    public float orderUpdateSpeed;
+    public bool refreshMovesManually;
+    List<IAgent> agentsToMove = new List<IAgent>();
     private void FixedUpdate()
     {
-        ((IAgent)agentController.player).args.MoveAlongPath(Time.fixedDeltaTime);
         if (PlaceDefenderRequest != null)
         {
             foreach (Delegate item in PlaceDefenderRequest.GetInvocationList())
@@ -244,6 +247,35 @@ public class GameManager : MonoBehaviour
                 }
             }
         }
+        ((IAgent)agentController.player).args.MoveAlongPath(Time.fixedDeltaTime);
+        if(refreshMovesManually)
+        {
+            agentController.Agents_RefreshMovesLeft();
+            refreshMovesManually = false;
+        }
+        if (nextOrderTest)
+        {
+            agentController.NonPlayerAgents_PathCalculate();
+            agentsToMove = new List<IAgent>();
+            agentsToMove.AddRange(agentController.defenders);
+            agentsToMove.AddRange(agentController.enemies);
+            nextOrderTest = false;
+        }
+        if(agentsToMove != null && agentsToMove.Count > 0)
+        {
+            if (agentsToMove[0].args.isDead || !agentsToMove[0].args.isActive)
+            {
+                agentsToMove.RemoveAt(0);
+                return;
+            }
+            agentsToMove[0].args.MoveAlongPath(Time.fixedDeltaTime* orderUpdateSpeed);
+            agentController.NonPlayerAgents_PathCalculate();
+            if (agentsToMove[0].args.movesLeft <= 0 && !agentsToMove[0].args.hasInstruction)
+                agentsToMove.RemoveAt(0);
+        }
+        if (!nextOrderTest)
+            return;
+        #region Agent movement
         if (agentController.defenders != null)
         {
             foreach (IAgent defender in agentController.defenders)
@@ -264,7 +296,8 @@ public class GameManager : MonoBehaviour
                 }
             }
         }
-        agentController.NonPlayerAgents_PathCalculate();
+        #endregion
+        
     }
     void CameraTrackAnimation(Vector3 targetPos)
     {
