@@ -217,6 +217,9 @@ public class GameManager : MonoBehaviour
     public float orderUpdateSpeed;
     public bool refreshMovesManually;
     List<IAgent> agentsToMove = new List<IAgent>();
+    public bool nextAgent;
+    IAgent currentMovingAgent;
+    public UI_Agent_Display agentDisplay;
     private void FixedUpdate()
     {
         if (PlaceDefenderRequest != null)
@@ -230,6 +233,8 @@ public class GameManager : MonoBehaviour
                 defenderToPlace.gameObject.SetActive(true);
                 defenderToPlace.transform.position = CellToWorld(pos);
                 ((IAgent)defenderToPlace).args.isActive = true;
+
+                //just as testing
             }
             PlaceDefenderRequest = null;
             if (agentController.defenders != null)
@@ -261,17 +266,23 @@ public class GameManager : MonoBehaviour
             agentsToMove.AddRange(agentController.enemies);
             nextOrderTest = false;
         }
+        if(nextAgent)
+        {
+            if(agentsToMove != null && agentsToMove.Count > 0)
+            {
+            }
+            nextAgent = false;
+        }
         if(agentsToMove != null && agentsToMove.Count > 0)
         {
-            if (agentsToMove[0].args.isDead || !agentsToMove[0].args.isActive)
+            if (agentsToMove[0].args.isDead || !agentsToMove[0].args.isActive || !agentsToMove[0].args.hasInstruction || agentsToMove[0].args.movesLeft <= 0)
             {
                 agentsToMove.RemoveAt(0);
                 return;
             }
             agentsToMove[0].args.MoveAlongPath(Time.fixedDeltaTime* orderUpdateSpeed);
             agentController.NonPlayerAgents_PathCalculate();
-            if (agentsToMove[0].args.movesLeft <= 0 && !agentsToMove[0].args.hasInstruction)
-                agentsToMove.RemoveAt(0);
+            agentDisplay.AssignAgent(agentsToMove[0]);
         }
         if (!nextOrderTest)
             return;
@@ -544,6 +555,10 @@ public class GameManager : MonoBehaviour
     public List<Enemy> GetEnemies()
     {
         return agentController.enemies;
+    }
+    public Vector2 GetScreenPosition(Vector3 position)
+    {
+        return mainCamera.WorldToScreenPoint(position);
     }
 }
 public class CellData

@@ -16,6 +16,7 @@ public class CharacterGenerator : MonoBehaviour
         Player player = Instantiate(playerPrefab, GameManager.ins.CellToWorld(cellToSpawnAt), Quaternion.identity, transform).GetComponent<Player>();
         IAgent playerAgent = player;
         playerAgent.args.health = 100;
+        playerAgent.args.type = AgentType.Player;
         return player;
     }
     public Enemy CreateEnemy(Vector3Int cellToSpawnAt)
@@ -23,6 +24,7 @@ public class CharacterGenerator : MonoBehaviour
         Enemy createdEnemy = Instantiate(enemyBasePrefab, GameManager.ins.CellToWorld(cellToSpawnAt), Quaternion.identity, transform).GetComponent<Enemy>();
         createdEnemy.Initialise(enemyBases[Random.Range(0, enemyBases.Length)]);
         ((IAgent)createdEnemy).args.isActive = true;
+        ((IAgent)createdEnemy).args.type = AgentType.Enemy;
         return createdEnemy;
     }
 
@@ -38,6 +40,7 @@ public class CharacterGenerator : MonoBehaviour
         Defender createdDefender = Instantiate(defenderPrefab, GameManager.ins.CellToWorld(Vector3Int.zero), Quaternion.identity, transform).GetComponent<Defender>();
         createdDefender.Initialise(defenderData);
         createdDefender.gameObject.SetActive(false);
+        ((IAgent)createdDefender).args.type = AgentType.Defender;
         return createdDefender;
     }
 }

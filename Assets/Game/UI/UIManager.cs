@@ -74,6 +74,10 @@ public class UIManager : MonoBehaviour
         return newActionDisplay;
     }
     #endregion
+    public void Generate_Agent_Display()
+    {
+
+    }
     private void Update()
     {
         #region RADIAL MENU UPDATE
