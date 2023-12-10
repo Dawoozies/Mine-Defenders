@@ -53,6 +53,8 @@ public class AgentArgs
 
     public delegate void OnDeath();
     public event OnDeath onDeath;
+
+    public List<Attack> attacks;
     public AgentArgs(Transform transform, AgentType type, IAgent agent)
     {
         this.transform = transform;
