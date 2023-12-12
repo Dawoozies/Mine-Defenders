@@ -162,7 +162,14 @@ public class GameManager : MonoBehaviour
             this.position = position;
         }
     }
-
+    public class UseAbilityRequestArgs
+    {
+        public IAbility ability;
+        public IAgent user;
+        public IAgent target;
+    }
+    public delegate UseAbilityRequestArgs UseAbilityRequest();
+    public static event UseAbilityRequest useAbilityRequest;
     public bool isInLevelBounds(Vector3Int position) {
         if (position.x < levelGenerator.bottomLeftCorner.x || position.x > levelGenerator.topRightCorner.x)
         {
@@ -220,8 +227,26 @@ public class GameManager : MonoBehaviour
     public bool nextAgent;
     IAgent currentMovingAgent;
     public UI_Agent_Display agentDisplay;
+
+    public List<UseAbilityRequestArgs> abilitiesRunning;
     private void FixedUpdate()
     {
+        //abilites running via request
+        //want to shift over most of the game to this request system
+        if(useAbilityRequest != null)
+        {
+            foreach (Delegate item in useAbilityRequest.GetInvocationList())
+            {
+                UseAbilityRequestArgs args = item.DynamicInvoke() as UseAbilityRequestArgs;
+                if (args == null)
+                    continue;
+                if (abilitiesRunning.Contains(args))
+                    continue;
+                abilitiesRunning.Add(args);
+            }
+            useAbilityRequest = null;
+        }
+
         if (PlaceDefenderRequest != null)
         {
             foreach (Delegate item in PlaceDefenderRequest.GetInvocationList())
