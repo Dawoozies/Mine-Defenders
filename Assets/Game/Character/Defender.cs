@@ -90,6 +90,14 @@ public class Defender : MonoBehaviour, IAgent
             baseGraphics.spriteAnimator.PlayAnimation("Dead");
             baseGraphics.objectAnimator.PlayAnimation("Dead");
         };
+
+        #region Inject attack data into IAgent 
+        agentData.attacks = new List<Attack>();
+        foreach (AttackBase attackBase in defenderData.attackBases)
+        {
+            agentData.attacks.Add(new Attack(attackBase));
+        }
+        #endregion
     }
     void Update()
     {
