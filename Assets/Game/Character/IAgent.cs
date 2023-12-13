@@ -9,6 +9,7 @@ public interface IAgent
     public AgentArgs args { get; }
     public Tilemap[] GetInaccessibleTilemaps();
     public void Retarget();
+    public float ComputeAttackHeuristic(IAgent potentialTarget);
 }
 public enum AgentType
 {
@@ -54,6 +55,7 @@ public class AgentArgs
     public delegate void OnDeath();
     public event OnDeath onDeath;
 
+    public int attackRange;
     public List<Attack> attacks;
     public AgentArgs(Transform transform, AgentType type, IAgent agent)
     {
@@ -74,12 +76,12 @@ public class AgentArgs
             }
             if (targetedBy == null || targetedBy.Count == 0)
                 return;
-            while (targetedBy.Count > 0)
+            foreach (IAgent attacker in targetedBy)
             {
-                targetedBy[0].args.target = null;
-                targetedBy[0].Retarget();
-                targetedBy.RemoveAt(0);
+                attacker.args.target = null;
+                attacker.Retarget();
             }
+            targetedBy.Clear();
             if (hasInstruction)
             {
                 hasInstruction = false;

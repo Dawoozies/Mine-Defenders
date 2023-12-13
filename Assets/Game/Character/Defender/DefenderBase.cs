@@ -6,6 +6,7 @@ using UnityEngine;
 public class DefenderBase : ScriptableObject
 {
     public int baseHealth;
+    public int attackRange;
     public float attackChargeTime;
     public int movementPerTurn;
     public float moveInterpolationSpeed;
@@ -20,6 +21,7 @@ public class DefenderData
     public int defenderKey;
     public int maxHealth, health;
     public int maxExp, exp;
+    public int attackRange;
     public float attackChargeTime;
     public int movementPerTurn;
     public float moveInterpolationSpeed;
@@ -39,6 +41,7 @@ public class DefenderData
         movementPerTurn = defenderBase.movementPerTurn;
         moveInterpolationSpeed = defenderBase.moveInterpolationSpeed;
         moveInterpolationType = defenderBase.moveInterpolationType;
+        attackRange = defenderBase.attackRange;
         attackChargeTime = defenderBase.attackChargeTime;
     }
 }

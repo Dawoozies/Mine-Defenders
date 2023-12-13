@@ -2,19 +2,31 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 [CreateAssetMenu]
-public class AttackBase : ScriptableObject
+public class AttackBase : ScriptableObject, IAttack
 {
     public Sprite icon;
+    public int minRange;
+    public int maxRange;
     public int damage;
-    public int energyCost;
     public float cooldown;
-    public float hitChance;
     public float interpolationSpeed;
     public InterpolationType interpolationType;
-    //{agentName} {logUseText} {targetAgentName}
-    public string logUseText;
-    public string logSucceedText;
-    public string logFailText;
+    public virtual float ComputeHeuristic(IAgent agent, IAgent potentialTarget)
+    {
+        float distanceToTarget = Vector3Int.Distance(agent.args.cellPos, potentialTarget.args.cellPos);
+        if (distanceToTarget < minRange)
+            return -1;
+        if (distanceToTarget > maxRange)
+            return -1;
+        float damagePerCooldown = damage / cooldown;
+        float rangeLength = maxRange - minRange;
+        float effectiveDamageArea = damagePerCooldown * rangeLength;
+        return effectiveDamageArea;
+    }
+}
+public interface IAttack
+{
+    public float ComputeHeuristic(IAgent agent, IAgent potentialTarget);
 }
 public class Attack
 {

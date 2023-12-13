@@ -162,14 +162,6 @@ public class GameManager : MonoBehaviour
             this.position = position;
         }
     }
-    public class UseAbilityRequestArgs
-    {
-        public IAbility ability;
-        public IAgent user;
-        public IAgent target;
-    }
-    public delegate UseAbilityRequestArgs UseAbilityRequest();
-    public static event UseAbilityRequest useAbilityRequest;
     public bool isInLevelBounds(Vector3Int position) {
         if (position.x < levelGenerator.bottomLeftCorner.x || position.x > levelGenerator.topRightCorner.x)
         {
@@ -181,19 +173,19 @@ public class GameManager : MonoBehaviour
         }
         return true;
     }
-    public bool computePaths;
-    public bool moveAlongPaths;
+    //public bool computePaths;
+    //public bool moveAlongPaths;
     void Update()
     {
         //This is where we should manage external "coupling"
-        if(OnPlayerPositionBufferUpdated != null)
+        if (OnPlayerPositionBufferUpdated != null)
         {
             Vector3Int playerCellPosition = OnPlayerPositionBufferUpdated.Invoke();
             Vector3 playerWorldPosition = CellToWorld(playerCellPosition);
             CameraTrackAnimation(playerWorldPosition);
             OnPlayerPositionBufferUpdated = null;
         }
-        if(OnPlayerOccupiedNewCell != null)
+        if (OnPlayerOccupiedNewCell != null)
         {
             CellData cellData = OnPlayerOccupiedNewCell.Invoke();
             PlayerOccupiedNewCellUpdatedEvent?.Invoke(cellData);
@@ -201,15 +193,15 @@ public class GameManager : MonoBehaviour
             OnPlayerOccupiedNewCell = null;
         }
         //Do pit spawning enemies
-        if(uncoveredPitCenters != null && uncoveredPitCenters.Keys.Count > 0)
+        if (uncoveredPitCenters != null && uncoveredPitCenters.Keys.Count > 0)
         {
             pitSpawnTimer += Time.deltaTime;
-            if(pitSpawnTimer > pitSpawnTime)
+            if (pitSpawnTimer > pitSpawnTime)
             {
                 foreach (Vector3Int item in uncoveredPitCenters.Keys)
                 {
                     //Debug.Log($"Spawn enemies at {item}");
-                    if(agentController.CheckAgentCanSpawnAtPosition(item))
+                    if (agentController.CheckAgentCanSpawnAtPosition(item))
                     {
                         Enemy newEnemy = characterGenerator.CreateEnemy(item);
                         agentController.enemies.Add(newEnemy);
@@ -220,33 +212,17 @@ public class GameManager : MonoBehaviour
         }
         return;
     }
-    public bool nextOrderTest;
-    public float orderUpdateSpeed;
-    public bool refreshMovesManually;
-    List<IAgent> agentsToMove = new List<IAgent>();
-    public bool nextAgent;
-    IAgent currentMovingAgent;
-    public UI_Agent_Display agentDisplay;
-
-    public List<UseAbilityRequestArgs> abilitiesRunning;
+    //public bool nextOrderTest;
+    //public float orderUpdateSpeed;
+    //public bool refreshMovesManually;
+    //List<IAgent> agentsToMove = new List<IAgent>();
+    //public bool nextAgent;
+    //IAgent currentMovingAgent;
+    //public UI_Agent_Display agentDisplay;
+    public float moveUpdateTime;
+    float moveUpdateTimer;
     private void FixedUpdate()
     {
-        //abilites running via request
-        //want to shift over most of the game to this request system
-        if(useAbilityRequest != null)
-        {
-            foreach (Delegate item in useAbilityRequest.GetInvocationList())
-            {
-                UseAbilityRequestArgs args = item.DynamicInvoke() as UseAbilityRequestArgs;
-                if (args == null)
-                    continue;
-                if (abilitiesRunning.Contains(args))
-                    continue;
-                abilitiesRunning.Add(args);
-            }
-            useAbilityRequest = null;
-        }
-
         if (PlaceDefenderRequest != null)
         {
             foreach (Delegate item in PlaceDefenderRequest.GetInvocationList())
@@ -278,39 +254,32 @@ public class GameManager : MonoBehaviour
             }
         }
         ((IAgent)agentController.player).args.MoveAlongPath(Time.fixedDeltaTime);
-        if(refreshMovesManually)
-        {
-            agentController.Agents_RefreshMovesLeft();
-            refreshMovesManually = false;
-        }
-        if (nextOrderTest)
-        {
-            agentController.NonPlayerAgents_PathCalculate();
-            agentsToMove = new List<IAgent>();
-            agentsToMove.AddRange(agentController.defenders);
-            agentsToMove.AddRange(agentController.enemies);
-            nextOrderTest = false;
-        }
-        if(nextAgent)
-        {
-            if(agentsToMove != null && agentsToMove.Count > 0)
-            {
-            }
-            nextAgent = false;
-        }
-        if(agentsToMove != null && agentsToMove.Count > 0)
-        {
-            if (agentsToMove[0].args.isDead || !agentsToMove[0].args.isActive || !agentsToMove[0].args.hasInstruction || agentsToMove[0].args.movesLeft <= 0)
-            {
-                agentsToMove.RemoveAt(0);
-                return;
-            }
-            agentsToMove[0].args.MoveAlongPath(Time.fixedDeltaTime* orderUpdateSpeed);
-            agentController.NonPlayerAgents_PathCalculate();
-            agentDisplay.AssignAgent(agentsToMove[0]);
-        }
-        if (!nextOrderTest)
-            return;
+        //if(refreshMovesManually)
+        //{
+        //    agentController.Agents_RefreshMovesLeft();
+        //    refreshMovesManually = false;
+        //}
+        //if (nextOrderTest)
+        //{
+        //    agentController.NonPlayerAgents_PathCalculate();
+        //    agentsToMove = new List<IAgent>();
+        //    agentsToMove.AddRange(agentController.defenders);
+        //    agentsToMove.AddRange(agentController.enemies);
+        //    nextOrderTest = false;
+        //}
+        //if(agentsToMove != null && agentsToMove.Count > 0)
+        //{
+        //    if (agentsToMove[0].args.isDead || !agentsToMove[0].args.isActive || !agentsToMove[0].args.hasInstruction || agentsToMove[0].args.movesLeft <= 0)
+        //    {
+        //        agentsToMove.RemoveAt(0);
+        //        return;
+        //    }
+        //    agentsToMove[0].args.MoveAlongPath(Time.fixedDeltaTime* orderUpdateSpeed);
+        //    agentController.NonPlayerAgents_PathCalculate();
+        //    agentDisplay.AssignAgent(agentsToMove[0]);
+        //}
+        //if (!nextOrderTest)
+        //    return;
         #region Agent movement
         if (agentController.defenders != null)
         {
@@ -333,7 +302,11 @@ public class GameManager : MonoBehaviour
             }
         }
         #endregion
-        
+        agentController.NonPlayerAgents_PathCalculate();
+        if(moveUpdateTimer > 0)
+        {
+
+        }
     }
     void CameraTrackAnimation(Vector3 targetPos)
     {

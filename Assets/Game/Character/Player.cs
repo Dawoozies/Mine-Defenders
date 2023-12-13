@@ -161,4 +161,27 @@ public class Player : MonoBehaviour, IAgent
     {
 
     }
+    public virtual float ComputeAttackHeuristic(IAgent potentialTarget)
+    {
+        //the default way of computing the heuristic will be
+        //how many attacks are in range for the target
+        //how much effective damage per second i.e. damage/cooldown
+        //effective damage = damage per second per range distance
+        float totalHeuristic = -1;
+        foreach (Attack attack in agentData.attacks)
+        {
+            float heuristic = attack.attackBase.ComputeHeuristic(this, potentialTarget);
+            if (heuristic < 0)
+                continue;
+            if (totalHeuristic < 0)
+            {
+                totalHeuristic = heuristic;
+            }
+            else
+            {
+                totalHeuristic += heuristic;
+            }
+        }
+        return totalHeuristic;
+    }
 }

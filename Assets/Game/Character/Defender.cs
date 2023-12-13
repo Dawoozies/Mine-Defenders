@@ -91,13 +91,12 @@ public class Defender : MonoBehaviour, IAgent
             baseGraphics.objectAnimator.PlayAnimation("Dead");
         };
 
-        #region Inject attack data into IAgent 
+        agentData.attackRange = defenderData.attackRange;
         agentData.attacks = new List<Attack>();
         foreach (AttackBase attackBase in defenderData.attackBases)
         {
             agentData.attacks.Add(new Attack(attackBase));
         }
-        #endregion
     }
     void Update()
     {
@@ -184,7 +183,7 @@ public class Defender : MonoBehaviour, IAgent
     {
         return GameManager.ins.GetPlayerInaccessibleTilemaps();
     }
-    public void Retarget()
+    public virtual void Retarget()
     {
         if (agentData.isDead)
             return;
@@ -192,18 +191,72 @@ public class Defender : MonoBehaviour, IAgent
             return;
         if (agentData.target != null)
             return;
-        Debug.Log("Retargeting");
         List<Enemy> enemies = GameManager.ins.GetEnemies();
+        List<IAgent> targetableEnemies = new List<IAgent>();
         foreach (IAgent enemy in enemies)
         {
             if (enemy.args.isDead)
                 continue;
             if (!enemy.args.isActive)
                 continue;
-            if (enemy.args.targetedBy.Count >= 4)
-                continue;
-            agentData.SetTarget(enemy);
-            return;
+            targetableEnemies.Add(enemy);
         }
+        if (targetableEnemies == null || targetableEnemies.Count == 0)
+            return;
+
+        Dictionary<IAgent, float> attackableEnemies = new Dictionary<IAgent, float>();
+        IAgent closestEnemy = null;
+        foreach (IAgent enemy in enemies)
+        {
+            if (enemy.args.isDead)
+                continue;
+            if (!enemy.args.isActive)
+                continue;
+
+            float totalHeuristic = ComputeAttackHeuristic(enemy);
+            if(totalHeuristic > 0)
+            {
+                attackableEnemies.Add(enemy, totalHeuristic);
+            }
+
+            float distanceToEnemy = Vector3Int.Distance(agentData.cellPos, enemy.args.cellPos);
+            if(closestEnemy == null)
+            {
+                closestEnemy = enemy;
+            }
+            else
+            {
+                if(distanceToEnemy < Vector3Int.Distance(agentData.cellPos, closestEnemy.args.cellPos))
+                {
+                    closestEnemy = enemy;
+                }
+            }
+        }
+
+        //IAgent closestEnemy = targetableEnemies[0];
+        agentData.SetTarget(closestEnemy);
+    }
+    public virtual float ComputeAttackHeuristic(IAgent potentialTarget)
+    {
+        //the default way of computing the heuristic will be
+        //how many attacks are in range for the target
+        //how much effective damage per second i.e. damage/cooldown
+        //effective damage = damage per second per range distance
+        float totalHeuristic = -1;
+        foreach (Attack attack in agentData.attacks)
+        {
+            float heuristic = attack.attackBase.ComputeHeuristic(this, potentialTarget);
+            if (heuristic < 0)
+                continue;
+            if(totalHeuristic < 0)
+            {
+                totalHeuristic = heuristic;
+            }
+            else
+            {
+                totalHeuristic += heuristic;
+            }
+        }
+        return totalHeuristic;
     }
 }

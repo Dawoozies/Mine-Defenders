@@ -94,6 +94,13 @@ public class Enemy : MonoBehaviour, IAgent
             baseGraphics.spriteAnimator.PlayAnimation("Dead");
             baseGraphics.objectAnimator.PlayAnimation("Dead");
         };
+
+        agentData.attackRange = 1;
+        agentData.attacks = new List<Attack>();
+        foreach (AttackBase attackBase in enemyBase.attackBases)
+        {
+            agentData.attacks.Add(new Attack(attackBase));
+        }
     }
     void Update()
     {
@@ -192,6 +199,7 @@ public class Enemy : MonoBehaviour, IAgent
         if (agentData.target != null)
             return;
         List<Defender> defenders = GameManager.ins.GetDefenders();
+        List<IAgent> targetableDefenders = new List<IAgent>();
         foreach (IAgent defender in defenders)
         {
             if (defender.args.isDead)
@@ -200,40 +208,42 @@ public class Enemy : MonoBehaviour, IAgent
                 continue;
             if (defender.args.targetedBy.Count >= 4)
                 continue;
-            agentData.SetTarget(defender);
-            return;
+            targetableDefenders.Add(defender);
         }
+        if (targetableDefenders == null || targetableDefenders.Count == 0)
+            return;
+        IAgent closestDefender = targetableDefenders[0];
+        foreach (IAgent defender in targetableDefenders)
+        {
+            if(Vector3Int.Distance(agentData.cellPos, defender.args.cellPos) < Vector3Int.Distance(agentData.cellPos, closestDefender.args.cellPos))
+            {
+                closestDefender = defender;
+                continue;
+            }
+        }
+        agentData.SetTarget(closestDefender);
     }
-    //public IAgent GetNewTarget_Enemy(Enemy enemy)
-    //{
-    //    if (((IAgent)enemy).args.target != null)
-    //    {
-    //        //Don't try to swap target if we have already targeted a defender
-    //        if (agentController.activeDefenders.Contains(((IAgent)enemy).args.target as Defender))
-    //            return ((IAgent)enemy).args.target;
-    //        ((IAgent)enemy).args.target.args.targetedBy.Remove(enemy);
-    //    }
-    //    for (int i = 0; i < agentController.activeDefenders.Count; i++)
-    //    {
-    //        IAgent defender = agentController.activeDefenders[i];
-    //        if (defender.args.isDead)
-    //            continue;
-    //        if (defender.args.targetedBy.Count >= 4)
-    //            continue;
-    //        if (!agentController.CanPathToTarget(enemy, defender))
-    //            continue;
-    //        int freeSpaces = agentController.AvailableAdjacentSpaces(enemy, defender);
-    //        if (defender.args.targetedBy.Count >= freeSpaces)
-    //            continue;
-
-    //        defender.args.targetedBy.Add(enemy);
-    //        return defender;
-    //    }
-    //    IAgent player = agentController.player;
-    //    if (!player.args.isDead && agentController.CanPathToTarget(enemy, player))
-    //    {
-    //        return player;
-    //    }
-    //    return null;
-    //}
+    public virtual float ComputeAttackHeuristic(IAgent potentialTarget)
+    {
+        //the default way of computing the heuristic will be
+        //how many attacks are in range for the target
+        //how much effective damage per second i.e. damage/cooldown
+        //effective damage = damage per second per range distance
+        float totalHeuristic = -1;
+        foreach (Attack attack in agentData.attacks)
+        {
+            float heuristic = attack.attackBase.ComputeHeuristic(this, potentialTarget);
+            if (heuristic < 0)
+                continue;
+            if (totalHeuristic < 0)
+            {
+                totalHeuristic = heuristic;
+            }
+            else
+            {
+                totalHeuristic += heuristic;
+            }
+        }
+        return totalHeuristic;
+    }
 }
