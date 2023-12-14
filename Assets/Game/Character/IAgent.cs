@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using System;
-
+//Contract for methods which control agent
 public interface IAgent
 {
     public AgentArgs args { get; }
     public Tilemap[] GetInaccessibleTilemaps();
     public void Retarget();
-    public float ComputeAttackHeuristic(IAgent potentialTarget);
 }
 public enum AgentType
 {

@@ -254,32 +254,6 @@ public class GameManager : MonoBehaviour
             }
         }
         ((IAgent)agentController.player).args.MoveAlongPath(Time.fixedDeltaTime);
-        //if(refreshMovesManually)
-        //{
-        //    agentController.Agents_RefreshMovesLeft();
-        //    refreshMovesManually = false;
-        //}
-        //if (nextOrderTest)
-        //{
-        //    agentController.NonPlayerAgents_PathCalculate();
-        //    agentsToMove = new List<IAgent>();
-        //    agentsToMove.AddRange(agentController.defenders);
-        //    agentsToMove.AddRange(agentController.enemies);
-        //    nextOrderTest = false;
-        //}
-        //if(agentsToMove != null && agentsToMove.Count > 0)
-        //{
-        //    if (agentsToMove[0].args.isDead || !agentsToMove[0].args.isActive || !agentsToMove[0].args.hasInstruction || agentsToMove[0].args.movesLeft <= 0)
-        //    {
-        //        agentsToMove.RemoveAt(0);
-        //        return;
-        //    }
-        //    agentsToMove[0].args.MoveAlongPath(Time.fixedDeltaTime* orderUpdateSpeed);
-        //    agentController.NonPlayerAgents_PathCalculate();
-        //    agentDisplay.AssignAgent(agentsToMove[0]);
-        //}
-        //if (!nextOrderTest)
-        //    return;
         #region Agent movement
         if (agentController.defenders != null)
         {
@@ -303,10 +277,6 @@ public class GameManager : MonoBehaviour
         }
         #endregion
         agentController.NonPlayerAgents_PathCalculate();
-        if(moveUpdateTimer > 0)
-        {
-
-        }
     }
     void CameraTrackAnimation(Vector3 targetPos)
     {
@@ -358,12 +328,6 @@ public class GameManager : MonoBehaviour
     {
         (Vector3Int, Vector3) pit = (pitCenter, CellToWorld(pitCenter));
         PitUncoveredEvent?.Invoke(pit);
-    }
-    public bool IsUncoveredPit(Vector3Int cellPos)
-    {
-        return 
-            gridInformation.GetPositionProperty(cellPos, "IsPit", 0) == 1
-            && gridInformation.GetPositionProperty(cellPos, "IsUncoveredPit", 0) == 1;
     }
     private void OnDrawGizmos()
     {
@@ -536,10 +500,6 @@ public class GameManager : MonoBehaviour
         //Dont spawn ore if its a pit uncovering
         if (cellData.ore != null)
             cellData.loot = lootManager.InstantiateLoot_Ore(cellData.cellCenterWorldPosition, cellData.ore);
-    }
-    public float DistanceFromPlayer(IAgent agent)
-    {
-        return Vector3.Distance(agent.args.cellPos, ((IAgent)agentController.player).args.cellPos);
     }
     public void TryLootAtCell(Vector3Int cellPos, IAgent agent)
     {

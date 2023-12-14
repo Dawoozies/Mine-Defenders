@@ -115,7 +115,7 @@ public class Enemy : MonoBehaviour, IAgent
         bool canAttack = available.Count > 0 && Vector3Int.Distance(cellPos, agentData.target.args.cellPos) <= 1;
         if(attackCharge >= enemyBase.attackChargeTime && canAttack)
         {
-            StartAttackAnimation();
+            //StartAttackAnimation();
             attackCharge = 0;
         }
         Cooldown();
@@ -145,47 +145,47 @@ public class Enemy : MonoBehaviour, IAgent
         available.RemoveAt(selectedIndex);
         return selectedAttack;
     }
-    void StartAttackAnimation()
-    {
-        Attack selectedAttack = GetAttack();
-        ObjectAnimation attackAnimation = new ObjectAnimation();
-        attackAnimation.animName = "Attack";
-        attackAnimation.frames = 3;
-        //Vector3 dirToPlayer = Vector3.Normalize(GameManager.ins.GetPlayerWorldPosition() - agentCellCenterPos);
-        Vector3 dirToTarget = Vector3.Normalize(agentData.target.args.worldPos - agentCellCenterPos);
-        attackAnimation.positions = new List<Vector3>
-        {
-            Vector3.zero,
-            dirToTarget*0.5f,
-            Vector3.zero,
-        };
-        attackAnimation.interpolationTypes = new List<InterpolationType>
-        {
-            selectedAttack.attackBase.interpolationType,
-            selectedAttack.attackBase.interpolationType,
-            selectedAttack.attackBase.interpolationType,
-        };
-        baseGraphics.objectAnimator.animationSpeed = selectedAttack.attackBase.interpolationSpeed;
-        baseGraphics.objectAnimator.CreateAndPlayAnimation(attackAnimation);
-        //do ui action display
-        actionDisplay = UIManager.ins.Get_Action_Display().TrackingRequest(
-            this, 
-            Vector3.zero,
-            selectedAttack.attackBase.icon
-            );
-        baseGraphics.objectAnimator.onAnimationComplete += () => {
-            if (actionDisplay != null)
-            {
-                actionDisplay.ReturnToPool();
-                actionDisplay = null;
-            }
-        };
-        baseGraphics.objectAnimator.onAnimationComplete += () => {
-            if (agentData.target == null)
-                return;
-            agentData.target.args.AttackAgent(this, selectedAttack);
-        };
-    }
+    //void StartAttackAnimation()
+    //{
+    //    Attack selectedAttack = GetAttack();
+    //    ObjectAnimation attackAnimation = new ObjectAnimation();
+    //    attackAnimation.animName = "Attack";
+    //    attackAnimation.frames = 3;
+    //    //Vector3 dirToPlayer = Vector3.Normalize(GameManager.ins.GetPlayerWorldPosition() - agentCellCenterPos);
+    //    Vector3 dirToTarget = Vector3.Normalize(agentData.target.args.worldPos - agentCellCenterPos);
+    //    attackAnimation.positions = new List<Vector3>
+    //    {
+    //        Vector3.zero,
+    //        dirToTarget*0.5f,
+    //        Vector3.zero,
+    //    };
+    //    attackAnimation.interpolationTypes = new List<InterpolationType>
+    //    {
+    //        selectedAttack.attackBase.interpolationType,
+    //        selectedAttack.attackBase.interpolationType,
+    //        selectedAttack.attackBase.interpolationType,
+    //    };
+    //    baseGraphics.objectAnimator.animationSpeed = selectedAttack.attackBase.interpolationSpeed;
+    //    baseGraphics.objectAnimator.CreateAndPlayAnimation(attackAnimation);
+    //    //do ui action display
+    //    actionDisplay = UIManager.ins.Get_Action_Display().TrackingRequest(
+    //        this, 
+    //        Vector3.zero,
+    //        selectedAttack.attackBase.icon
+    //        );
+    //    baseGraphics.objectAnimator.onAnimationComplete += () => {
+    //        if (actionDisplay != null)
+    //        {
+    //            actionDisplay.ReturnToPool();
+    //            actionDisplay = null;
+    //        }
+    //    };
+    //    baseGraphics.objectAnimator.onAnimationComplete += () => {
+    //        if (agentData.target == null)
+    //            return;
+    //        agentData.target.args.AttackAgent(this, selectedAttack);
+    //    };
+    //}
     public Tilemap[] GetInaccessibleTilemaps()
     {
         return GameManager.ins.GetEnemyInaccessibleTilemaps();
@@ -199,7 +199,7 @@ public class Enemy : MonoBehaviour, IAgent
         if (agentData.target != null)
             return;
         List<Defender> defenders = GameManager.ins.GetDefenders();
-        List<IAgent> targetableDefenders = new List<IAgent>();
+        List<IAgent> targetable = new List<IAgent>();
         foreach (IAgent defender in defenders)
         {
             if (defender.args.isDead)
@@ -208,12 +208,16 @@ public class Enemy : MonoBehaviour, IAgent
                 continue;
             if (defender.args.targetedBy.Count >= 4)
                 continue;
-            targetableDefenders.Add(defender);
+            targetable.Add(defender);
         }
-        if (targetableDefenders == null || targetableDefenders.Count == 0)
+        if (targetable == null || targetable.Count == 0)
+        {
+            //go for the player
+            agentData.SetTarget(GameManager.ins.agentController.player);
             return;
-        IAgent closestDefender = targetableDefenders[0];
-        foreach (IAgent defender in targetableDefenders)
+        }
+        IAgent closestDefender = targetable[0];
+        foreach (IAgent defender in targetable)
         {
             if(Vector3Int.Distance(agentData.cellPos, defender.args.cellPos) < Vector3Int.Distance(agentData.cellPos, closestDefender.args.cellPos))
             {
@@ -222,28 +226,5 @@ public class Enemy : MonoBehaviour, IAgent
             }
         }
         agentData.SetTarget(closestDefender);
-    }
-    public virtual float ComputeAttackHeuristic(IAgent potentialTarget)
-    {
-        //the default way of computing the heuristic will be
-        //how many attacks are in range for the target
-        //how much effective damage per second i.e. damage/cooldown
-        //effective damage = damage per second per range distance
-        float totalHeuristic = -1;
-        foreach (Attack attack in agentData.attacks)
-        {
-            float heuristic = attack.attackBase.ComputeHeuristic(this, potentialTarget);
-            if (heuristic < 0)
-                continue;
-            if (totalHeuristic < 0)
-            {
-                totalHeuristic = heuristic;
-            }
-            else
-            {
-                totalHeuristic += heuristic;
-            }
-        }
-        return totalHeuristic;
     }
 }

@@ -110,7 +110,7 @@ public class Defender : MonoBehaviour, IAgent
         bool canAttack = available.Count > 0 && Vector3Int.Distance(cellPos, agentData.target.args.cellPos) <= 1;
         if(attackCharge >= defenderData.attackChargeTime && canAttack)
         {
-            StartAttackAnimation();
+            //StartAttackAnimation();
             attackCharge = 0;
         }
         Cooldown();
@@ -136,49 +136,49 @@ public class Defender : MonoBehaviour, IAgent
         available.RemoveAt(selectedIndex);
         return selectedAttack;
     }
-    void StartAttackAnimation()
-    {
-        Attack selectedAttack = GetAttack();
-        ObjectAnimation attackAnimation = new ObjectAnimation();
-        attackAnimation.animName = "Attack";
-        attackAnimation.frames = 3;
-        Vector3 dirToTarget = Vector3.Normalize(agentData.target.args.worldPos - agentCellCenterPos);
-        attackAnimation.positions = new List<Vector3>
-        {
-            Vector3.zero,
-            dirToTarget*0.5f,
-            Vector3.zero,
-        };
-        attackAnimation.interpolationTypes = new List<InterpolationType>
-        {
-            selectedAttack.attackBase.interpolationType,
-            selectedAttack.attackBase.interpolationType,
-            selectedAttack.attackBase.interpolationType,
-        };
-        baseGraphics.objectAnimator.animationSpeed = selectedAttack.attackBase.interpolationSpeed;
-        baseGraphics.objectAnimator.CreateAndPlayAnimation(attackAnimation);
-        //do ui action display
-        if(actionDisplay == null)
-        {
-            actionDisplay = UIManager.ins.Get_Action_Display().TrackingRequest(
-                this,
-                Vector3.zero,
-                selectedAttack.attackBase.icon
-                );
-        }
-        baseGraphics.objectAnimator.onAnimationComplete += () => {
-            if (actionDisplay != null)
-            {
-                actionDisplay.ReturnToPool();
-                actionDisplay = null;
-            }
-        };
-        baseGraphics.objectAnimator.onAnimationComplete += () => {
-            if (agentData.target == null)
-                return;
-            agentData.target.args.AttackAgent(this, selectedAttack);
-        };
-    }
+    //void StartAttackAnimation()
+    //{
+    //    Attack selectedAttack = GetAttack();
+    //    ObjectAnimation attackAnimation = new ObjectAnimation();
+    //    attackAnimation.animName = "Attack";
+    //    attackAnimation.frames = 3;
+    //    Vector3 dirToTarget = Vector3.Normalize(agentData.target.args.worldPos - agentCellCenterPos);
+    //    attackAnimation.positions = new List<Vector3>
+    //    {
+    //        Vector3.zero,
+    //        dirToTarget*0.5f,
+    //        Vector3.zero,
+    //    };
+    //    attackAnimation.interpolationTypes = new List<InterpolationType>
+    //    {
+    //        selectedAttack.attackBase.interpolationType,
+    //        selectedAttack.attackBase.interpolationType,
+    //        selectedAttack.attackBase.interpolationType,
+    //    };
+    //    baseGraphics.objectAnimator.animationSpeed = selectedAttack.attackBase.interpolationSpeed;
+    //    baseGraphics.objectAnimator.CreateAndPlayAnimation(attackAnimation);
+    //    //do ui action display
+    //    if(actionDisplay == null)
+    //    {
+    //        actionDisplay = UIManager.ins.Get_Action_Display().TrackingRequest(
+    //            this,
+    //            Vector3.zero,
+    //            selectedAttack.attackBase.icon
+    //            );
+    //    }
+    //    baseGraphics.objectAnimator.onAnimationComplete += () => {
+    //        if (actionDisplay != null)
+    //        {
+    //            actionDisplay.ReturnToPool();
+    //            actionDisplay = null;
+    //        }
+    //    };
+    //    baseGraphics.objectAnimator.onAnimationComplete += () => {
+    //        if (agentData.target == null)
+    //            return;
+    //        agentData.target.args.AttackAgent(this, selectedAttack);
+    //    };
+    //}
     public Tilemap[] GetInaccessibleTilemaps()
     {
         return GameManager.ins.GetPlayerInaccessibleTilemaps();
@@ -192,71 +192,26 @@ public class Defender : MonoBehaviour, IAgent
         if (agentData.target != null)
             return;
         List<Enemy> enemies = GameManager.ins.GetEnemies();
-        List<IAgent> targetableEnemies = new List<IAgent>();
+        List<IAgent> targetable = new List<IAgent>();
         foreach (IAgent enemy in enemies)
         {
             if (enemy.args.isDead)
                 continue;
             if (!enemy.args.isActive)
                 continue;
-            targetableEnemies.Add(enemy);
+            targetable.Add(enemy);
         }
-        if (targetableEnemies == null || targetableEnemies.Count == 0)
+        if (targetable == null || targetable.Count == 0)
             return;
-
-        Dictionary<IAgent, float> attackableEnemies = new Dictionary<IAgent, float>();
-        IAgent closestEnemy = null;
-        foreach (IAgent enemy in enemies)
+        IAgent closestEnemy = targetable[0];
+        foreach (IAgent enemy in targetable)
         {
-            if (enemy.args.isDead)
-                continue;
-            if (!enemy.args.isActive)
-                continue;
-
-            float totalHeuristic = ComputeAttackHeuristic(enemy);
-            if(totalHeuristic > 0)
-            {
-                attackableEnemies.Add(enemy, totalHeuristic);
-            }
-
-            float distanceToEnemy = Vector3Int.Distance(agentData.cellPos, enemy.args.cellPos);
-            if(closestEnemy == null)
+            if (Vector3Int.Distance(agentData.cellPos, enemy.args.cellPos) < Vector3Int.Distance(agentData.cellPos, closestEnemy.args.cellPos))
             {
                 closestEnemy = enemy;
-            }
-            else
-            {
-                if(distanceToEnemy < Vector3Int.Distance(agentData.cellPos, closestEnemy.args.cellPos))
-                {
-                    closestEnemy = enemy;
-                }
-            }
-        }
-
-        //IAgent closestEnemy = targetableEnemies[0];
-        agentData.SetTarget(closestEnemy);
-    }
-    public virtual float ComputeAttackHeuristic(IAgent potentialTarget)
-    {
-        //the default way of computing the heuristic will be
-        //how many attacks are in range for the target
-        //how much effective damage per second i.e. damage/cooldown
-        //effective damage = damage per second per range distance
-        float totalHeuristic = -1;
-        foreach (Attack attack in agentData.attacks)
-        {
-            float heuristic = attack.attackBase.ComputeHeuristic(this, potentialTarget);
-            if (heuristic < 0)
                 continue;
-            if(totalHeuristic < 0)
-            {
-                totalHeuristic = heuristic;
-            }
-            else
-            {
-                totalHeuristic += heuristic;
             }
         }
-        return totalHeuristic;
+        agentData.SetTarget(closestEnemy);
     }
 }
