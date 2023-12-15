@@ -8,10 +8,10 @@ public class SpriteAnimation
 {
     public string animName;
     public int frames;
-    public List<Sprite> sprites;
-    public List<int> spriteOrders;
-    public List<Color> spriteColors;
-    public List<InterpolationType> interpolationTypes;
+    public List<Sprite> sprites = new();
+    public List<int> spriteOrders = new();
+    public List<Color> spriteColors = new();
+    public List<InterpolationType> interpolationTypes = new();
     [HideInInspector]
     public float time;
 }

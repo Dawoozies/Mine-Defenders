@@ -11,14 +11,16 @@ public class Defender : MonoBehaviour, IAgent
     Vector3 agentCellCenterPos => GameManager.ins.WorldToCellCenter(transform.position);
     AgentArgs IAgent.args { get { return agentData; } }
     AgentArgs agentData;
-    List<Attack> onCooldown = new();
-    List<Attack> available = new();
+    //List<Attack> onCooldown = new();
+    //List<Attack> available = new();
     float attackCharge;
     public Graphics baseGraphics;
     public Vector3 worldPos => agentCellCenterPos;
     public Vector3Int cellPos => agentCellPos;
     UI_Action_Display actionDisplay;
     List<AgentType> targetTypes = new List<AgentType> { AgentType.Enemy };
+
+    HeldWeapon heldWeapon;
     public void Initialise(DefenderData defenderData)
     {
         this.defenderData = defenderData;
@@ -64,11 +66,11 @@ public class Defender : MonoBehaviour, IAgent
         };
         baseGraphics.objectAnimator.CreateAnimation(deadObjectAnimation);
         #endregion
-        foreach (AttackBase attackBase in defenderData.attackBases)
-        {
-            Attack attack = new Attack(attackBase);
-            available.Add(attack);
-        }
+        //foreach (AttackBase attackBase in defenderData.attackBases)
+        //{
+        //    Attack attack = new Attack(attackBase);
+        //    available.Add(attack);
+        //}
         agentData = new AgentArgs(transform, AgentType.Enemy, this);
         agentData.movementPerTurn = defenderData.movementPerTurn;
         agentData.moveInterpolationSpeed = defenderData.moveInterpolationSpeed;
@@ -91,51 +93,74 @@ public class Defender : MonoBehaviour, IAgent
             baseGraphics.objectAnimator.PlayAnimation("Dead");
         };
 
-        agentData.attackRange = defenderData.attackRange;
-        agentData.attacks = new List<Attack>();
-        foreach (AttackBase attackBase in defenderData.attackBases)
+        //agentData.attackRange = defenderData.attackRange;
+        //agentData.attacks = new List<Attack>();
+        //foreach (AttackBase attackBase in defenderData.attackBases)
+        //{
+        //    agentData.attacks.Add(new Attack(attackBase));
+        //}
+        if(defenderData.heldWeaponPrefab != null)
         {
-            agentData.attacks.Add(new Attack(attackBase));
+            GameObject heldWeaponClone = Instantiate(defenderData.heldWeaponPrefab, transform);
+            heldWeapon = heldWeaponClone.GetComponent<HeldWeapon>();
         }
     }
     void Update()
     {
-        if (agentData.isDead)
-            return;
-        if (!agentData.isActive)
-            return;
-        attackCharge += Time.deltaTime;
-        if (agentData.target == null)
-            return;
-        bool canAttack = available.Count > 0 && Vector3Int.Distance(cellPos, agentData.target.args.cellPos) <= 1;
-        if(attackCharge >= defenderData.attackChargeTime && canAttack)
+        if (agentData.isDead) return;
+        if (!agentData.isActive) return;
+        if(agentData.target != null)
         {
-            //StartAttackAnimation();
-            attackCharge = 0;
+            if(heldWeapon != null)
+            {
+                (HeldWeaponState, bool) stateStatus = heldWeapon.StateStatus();
+                heldWeapon.dirToTarget = agentData.target.args.worldPos - transform.position;
+                if(stateStatus.Item1 == HeldWeaponState.Idle)
+                    heldWeapon.SetWeaponState(HeldWeaponState.ReadyingAttack, 1f);
+                if (stateStatus.Item1 == HeldWeaponState.ReadyingAttack && stateStatus.Item2)
+                    heldWeapon.SetWeaponState(HeldWeaponState.Attacking, 2f);
+                //heldWeapon.SetWeaponState(HeldWeaponState.ReadyingAttack);
+            }
         }
-        Cooldown();
     }
-    void Cooldown()
-    {
-        List<Attack> onCooldownNew = new List<Attack>();
-        foreach (Attack attack in onCooldown)
-        {
-            attack.CooldownUpdate(Time.deltaTime);
-            if (!attack.offCooldown)
-                onCooldownNew.Add(attack);
-            else
-                available.Add(attack);
-        }
-        onCooldown = onCooldownNew;
-    }
-    Attack GetAttack()
-    {
-        int selectedIndex = Random.Range(0, available.Count);
-        Attack selectedAttack = available[selectedIndex];
-        onCooldown.Add(available[selectedIndex]);
-        available.RemoveAt(selectedIndex);
-        return selectedAttack;
-    }
+    //void Update()
+    //{
+    //    if (agentData.isDead)
+    //        return;
+    //    if (!agentData.isActive)
+    //        return;
+    //    attackCharge += Time.deltaTime;
+    //    if (agentData.target == null)
+    //        return;
+    //    bool canAttack = available.Count > 0 && Vector3Int.Distance(cellPos, agentData.target.args.cellPos) <= 1;
+    //    if(attackCharge >= defenderData.attackChargeTime && canAttack)
+    //    {
+    //        //StartAttackAnimation();
+    //        attackCharge = 0;
+    //    }
+    //    Cooldown();
+    //}
+    //void Cooldown()
+    //{
+    //    List<Attack> onCooldownNew = new List<Attack>();
+    //    foreach (Attack attack in onCooldown)
+    //    {
+    //        attack.CooldownUpdate(Time.deltaTime);
+    //        if (!attack.offCooldown)
+    //            onCooldownNew.Add(attack);
+    //        else
+    //            available.Add(attack);
+    //    }
+    //    onCooldown = onCooldownNew;
+    //}
+    //Attack GetAttack()
+    //{
+    //    int selectedIndex = Random.Range(0, available.Count);
+    //    Attack selectedAttack = available[selectedIndex];
+    //    onCooldown.Add(available[selectedIndex]);
+    //    available.RemoveAt(selectedIndex);
+    //    return selectedAttack;
+    //}
     //void StartAttackAnimation()
     //{
     //    Attack selectedAttack = GetAttack();

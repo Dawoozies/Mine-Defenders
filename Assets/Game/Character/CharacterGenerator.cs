@@ -43,4 +43,10 @@ public class CharacterGenerator : MonoBehaviour
         ((IAgent)createdDefender).args.type = AgentType.Defender;
         return createdDefender;
     }
+    public DefenderData defenderToCreate;
+    [ContextMenu("Generate Defender JSON")]
+    public void GenerateDefenderJSON()
+    {
+
+    }
 }

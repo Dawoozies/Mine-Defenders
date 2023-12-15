@@ -1,3 +1,4 @@
+using ItemFactory;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -12,7 +13,7 @@ public class DefenderBase : ScriptableObject
     public float moveInterpolationSpeed;
     public InterpolationType moveInterpolationType;
     public Sprite[] defaultSprites;
-    public AttackBase[] attackBases;
+    public GameObject heldWeaponPrefab;
 }
 [Serializable]
 public class DefenderData
@@ -27,7 +28,9 @@ public class DefenderData
     public float moveInterpolationSpeed;
     public InterpolationType moveInterpolationType;
     public Sprite[] defaultSprites;
-    public AttackBase[] attackBases;
+    //public AttackBase[] attackBases;
+    [HideInInspector]
+    public GameObject heldWeaponPrefab;
     public DefenderData(DefenderJSON defenderJSON, DefenderBase defenderBase)
     {
         defenderName = defenderJSON.defenderBaseName;
@@ -37,11 +40,12 @@ public class DefenderData
         maxExp = defenderJSON.maxExp;
         exp = defenderJSON.exp;
         defaultSprites = defenderBase.defaultSprites;
-        attackBases = defenderBase.attackBases;
+        //attackBases = defenderBase.attackBases;
         movementPerTurn = defenderBase.movementPerTurn;
         moveInterpolationSpeed = defenderBase.moveInterpolationSpeed;
         moveInterpolationType = defenderBase.moveInterpolationType;
         attackRange = defenderBase.attackRange;
         attackChargeTime = defenderBase.attackChargeTime;
+        heldWeaponPrefab = defenderBase.heldWeaponPrefab;
     }
 }

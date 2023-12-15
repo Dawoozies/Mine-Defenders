@@ -173,8 +173,6 @@ public class GameManager : MonoBehaviour
         }
         return true;
     }
-    //public bool computePaths;
-    //public bool moveAlongPaths;
     void Update()
     {
         //This is where we should manage external "coupling"
@@ -212,13 +210,6 @@ public class GameManager : MonoBehaviour
         }
         return;
     }
-    //public bool nextOrderTest;
-    //public float orderUpdateSpeed;
-    //public bool refreshMovesManually;
-    //List<IAgent> agentsToMove = new List<IAgent>();
-    //public bool nextAgent;
-    //IAgent currentMovingAgent;
-    //public UI_Agent_Display agentDisplay;
     public float moveUpdateTime;
     float moveUpdateTimer;
     private void FixedUpdate()

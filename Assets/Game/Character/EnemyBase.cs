@@ -11,5 +11,5 @@ public class EnemyBase : ScriptableObject
     public float moveInterpolationSpeed;
     public InterpolationType moveInterpolationType;
     public Sprite[] defaultSprites;
-    public AttackBase[] attackBases;
+    //public AttackBase[] attackBases;
 }

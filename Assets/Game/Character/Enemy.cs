@@ -13,8 +13,8 @@ public class Enemy : MonoBehaviour, IAgent
     AgentArgs IAgent.args { get { return agentData; } }
     AgentArgs agentData;
 
-    List<Attack> onCooldown = new();
-    List<Attack> available = new();
+    //List<Attack> onCooldown = new();
+    //List<Attack> available = new();
     public Graphics baseGraphics;
     float attackCharge;
     public Vector3 worldPos => agentCellCenterPos;
@@ -67,11 +67,11 @@ public class Enemy : MonoBehaviour, IAgent
         baseGraphics.objectAnimator.CreateAnimation(deadObjectAnimation);
         #endregion
 
-        foreach (AttackBase attackBase in enemyBase.attackBases)
-        {
-            Attack attack = new Attack(attackBase);
-            available.Add(attack);
-        }
+        //foreach (AttackBase attackBase in enemyBase.attackBases)
+        //{
+        //    Attack attack = new Attack(attackBase);
+        //    available.Add(attack);
+        //}
 
         //Set up agent data
         agentData = new AgentArgs(transform, AgentType.Enemy, this);
@@ -95,56 +95,56 @@ public class Enemy : MonoBehaviour, IAgent
             baseGraphics.objectAnimator.PlayAnimation("Dead");
         };
 
-        agentData.attackRange = 1;
-        agentData.attacks = new List<Attack>();
-        foreach (AttackBase attackBase in enemyBase.attackBases)
-        {
-            agentData.attacks.Add(new Attack(attackBase));
-        }
+        //agentData.attackRange = 1;
+        //agentData.attacks = new List<Attack>();
+        //foreach (AttackBase attackBase in enemyBase.attackBases)
+        //{
+        //    agentData.attacks.Add(new Attack(attackBase));
+        //}
     }
-    void Update()
-    {
-        if (agentData.isDead)
-            return;
-        if (!agentData.isActive)
-            return;
-        attackCharge += Time.deltaTime;
-        //bool canAttack = GameManager.ins.DistanceFromPlayer(this) <= 1 && available.Count > 0;
-        if (agentData.target == null)
-            return;
-        bool canAttack = available.Count > 0 && Vector3Int.Distance(cellPos, agentData.target.args.cellPos) <= 1;
-        if(attackCharge >= enemyBase.attackChargeTime && canAttack)
-        {
-            //StartAttackAnimation();
-            attackCharge = 0;
-        }
-        Cooldown();
-    }
-    void Cooldown()
-    {
-        List<Attack> onCooldownNew = new List<Attack>();
-        foreach (Attack attack in onCooldown)
-        {
-            attack.CooldownUpdate(Time.deltaTime);
-            if(!attack.offCooldown)
-            {
-                onCooldownNew.Add(attack);
-            }
-            else
-            {
-                available.Add(attack);
-            }
-        }
-        onCooldown = onCooldownNew;
-    }
-    Attack GetAttack()
-    {
-        int selectedIndex = Random.Range(0, available.Count);
-        Attack selectedAttack = available[selectedIndex];
-        onCooldown.Add(available[selectedIndex]);
-        available.RemoveAt(selectedIndex);
-        return selectedAttack;
-    }
+    //void Update()
+    //{
+    //    if (agentData.isDead)
+    //        return;
+    //    if (!agentData.isActive)
+    //        return;
+    //    attackCharge += Time.deltaTime;
+    //    //bool canAttack = GameManager.ins.DistanceFromPlayer(this) <= 1 && available.Count > 0;
+    //    if (agentData.target == null)
+    //        return;
+    //    bool canAttack = available.Count > 0 && Vector3Int.Distance(cellPos, agentData.target.args.cellPos) <= 1;
+    //    if(attackCharge >= enemyBase.attackChargeTime && canAttack)
+    //    {
+    //        //StartAttackAnimation();
+    //        attackCharge = 0;
+    //    }
+    //    Cooldown();
+    //}
+    //void Cooldown()
+    //{
+    //    List<Attack> onCooldownNew = new List<Attack>();
+    //    foreach (Attack attack in onCooldown)
+    //    {
+    //        attack.CooldownUpdate(Time.deltaTime);
+    //        if(!attack.offCooldown)
+    //        {
+    //            onCooldownNew.Add(attack);
+    //        }
+    //        else
+    //        {
+    //            available.Add(attack);
+    //        }
+    //    }
+    //    onCooldown = onCooldownNew;
+    //}
+    //Attack GetAttack()
+    //{
+    //    int selectedIndex = Random.Range(0, available.Count);
+    //    Attack selectedAttack = available[selectedIndex];
+    //    onCooldown.Add(available[selectedIndex]);
+    //    available.RemoveAt(selectedIndex);
+    //    return selectedAttack;
+    //}
     //void StartAttackAnimation()
     //{
     //    Attack selectedAttack = GetAttack();

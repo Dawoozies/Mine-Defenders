@@ -55,7 +55,6 @@ public class AgentArgs
     public event OnDeath onDeath;
 
     public int attackRange;
-    public List<Attack> attacks;
     public AgentArgs(Transform transform, AgentType type, IAgent agent)
     {
         this.transform = transform;
@@ -90,38 +89,38 @@ public class AgentArgs
             onDeath?.Invoke();
         }
     }
-    public void AttackAgent(IAgent attackingAgent, Attack attackUsed)
-    {
-        if(health > 0)
-        {
-            health -= attackUsed.attackBase.damage;
-            if (health <= 0)
-            {
-                health = 0;
-                AgentDeath();
-                return;
-            }
-            if (target == null)
-            {
-                target = attackingAgent;
-                attackingAgent.args.targetedBy.Add(agent);
-            }
-            else
-            {
-                if(target != attackingAgent)
-                {
-                    float currentTargetDistance = Vector3Int.Distance(cellPos, target.args.cellPos);
-                    float attackingAgentDistance = Vector3Int.Distance(cellPos, attackingAgent.args.cellPos);
-                    if(attackingAgentDistance < currentTargetDistance)
-                    {
-                        target.args.targetedBy.Remove(agent);
-                        target = attackingAgent;
-                        attackingAgent.args.targetedBy.Add(agent);
-                    }
-                }
-            }
-        }
-    }
+    //public void AttackAgent(IAgent attackingAgent, Attack attackUsed)
+    //{
+    //    if(health > 0)
+    //    {
+    //        health -= attackUsed.attackBase.damage;
+    //        if (health <= 0)
+    //        {
+    //            health = 0;
+    //            AgentDeath();
+    //            return;
+    //        }
+    //        if (target == null)
+    //        {
+    //            target = attackingAgent;
+    //            attackingAgent.args.targetedBy.Add(agent);
+    //        }
+    //        else
+    //        {
+    //            if(target != attackingAgent)
+    //            {
+    //                float currentTargetDistance = Vector3Int.Distance(cellPos, target.args.cellPos);
+    //                float attackingAgentDistance = Vector3Int.Distance(cellPos, attackingAgent.args.cellPos);
+    //                if(attackingAgentDistance < currentTargetDistance)
+    //                {
+    //                    target.args.targetedBy.Remove(agent);
+    //                    target = attackingAgent;
+    //                    attackingAgent.args.targetedBy.Add(agent);
+    //                }
+    //            }
+    //        }
+    //    }
+    //}
     public void PickupLoot(CellLoot loot)
     {
         if(!lootDictionary.ContainsKey(loot.lootName))
