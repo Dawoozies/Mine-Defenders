@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 namespace ItemFactory
 {
-    [CreateAssetMenu]
+    [CreateAssetMenu(menuName = "Object Material")]
     public class Material : ScriptableObject
     {
         public Color color;
