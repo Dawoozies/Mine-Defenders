@@ -15,7 +15,7 @@ public class SpriteAnimation
     [HideInInspector]
     public float time;
 }
-public class SpriteAnimator : MonoBehaviour
+public class SpriteAnimator : MonoBehaviour, IAnimator
 {
     public string playOnStartAnimName;
     public string playOnEnableAnimName;
@@ -226,5 +226,11 @@ public class SpriteAnimator : MonoBehaviour
             }
         }
         #endregion
+    }
+
+    public void PlayAnimation(string animName, float animSpeed)
+    {
+        animationSpeed = animSpeed;
+        PlayAnimation(animName);
     }
 }

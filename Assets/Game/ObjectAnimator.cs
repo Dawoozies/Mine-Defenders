@@ -48,7 +48,7 @@ public class IndexProgress
         }
     }
 }
-public class ObjectAnimator : MonoBehaviour
+public class ObjectAnimator : MonoBehaviour, IAnimator
 {
 
     RectTransform rectTransform;
@@ -333,4 +333,15 @@ public class ObjectAnimator : MonoBehaviour
             return null;
         return currentAnimation.animName;
     }
+    public void PlayAnimation(string animName, float animSpeed)
+    {
+        animationSpeed = animSpeed;
+        PlayAnimation(animName);
+    }
+}
+public interface IAnimator
+{
+    public void PlayAnimation(string animName);
+    public void PlayAnimation(string animName, float animSpeed);
+    public string GetCurrentAnimationName();
 }

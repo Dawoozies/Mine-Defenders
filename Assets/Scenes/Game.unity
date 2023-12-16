@@ -4127,6 +4127,7 @@ Transform:
   - {fileID: 195271772}
   - {fileID: 1402697307}
   - {fileID: 1692475796}
+  - {fileID: 1591572673}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &755437059
@@ -7195,6 +7196,52 @@ MonoBehaviour:
     loop: 0
     time: 0
     useWorldPosition: 0
+--- !u!1 &1591572672
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1591572673}
+  - component: {fileID: 1591572674}
+  m_Layer: 0
+  m_Name: Projectiles
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1591572673
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1591572672}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 755437058}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1591572674
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1591572672}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5e480b03f735e144af049bc07310070, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  projectilePrefab: {fileID: 2596185292131749325, guid: 287ab8de1d8816a439471963805d3da9, type: 3}
+  poolSize: 10
 --- !u!1 &1622125207
 GameObject:
   m_ObjectHideFlags: 0
@@ -11596,12 +11643,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c9648ae77b4ec944a00e2b4e4957dfc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  weaponPartObjectAnimators:
-  - {fileID: 8233704140978298937}
-  - {fileID: 7689426609388554976}
-  - {fileID: 4222903284007513906}
-  - {fileID: 6076119777020795019}
-  - {fileID: 4436386592415990684}
   dirToTarget: {x: 0, y: 0, z: 0}
   reverseLookAt: 1
 --- !u!1 &9048267621531806907

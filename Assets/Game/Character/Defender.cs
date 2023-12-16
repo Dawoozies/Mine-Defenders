@@ -111,16 +111,48 @@ public class Defender : MonoBehaviour, IAgent
         if (!agentData.isActive) return;
         if(agentData.target != null)
         {
-            if(heldWeapon != null)
+            attackCharge += Time.deltaTime;
+            bool attackCharged = attackCharge >= defenderData.attackChargeTime;
+            if (heldWeapon != null)
             {
                 (HeldWeaponState, bool) stateStatus = heldWeapon.StateStatus();
                 heldWeapon.dirToTarget = agentData.target.args.worldPos - transform.position;
-                if(stateStatus.Item1 == HeldWeaponState.Idle)
+                if(attackCharged)
                     heldWeapon.SetWeaponState(HeldWeaponState.ReadyingAttack, 1f);
                 if (stateStatus.Item1 == HeldWeaponState.ReadyingAttack && stateStatus.Item2)
-                    heldWeapon.SetWeaponState(HeldWeaponState.Attacking, 2f);
+                {
+                    heldWeapon.SetWeaponState(HeldWeaponState.Attacking, 2f); //fire off attack
+                    List<Vector3> projectileFirePositions = heldWeapon.GetFirePositions();
+                    if(projectileFirePositions.Count > 0)
+                    {
+                        foreach (Vector3 pos in projectileFirePositions)
+                        {
+                            Projectile projectile = ProjectileManager.ins.FireProjectileAtPosition(
+                                    pos,
+                                    agentData.target.args.worldPos,
+                                    4f,
+                                    InterpolationType.EaseOutExp,
+                                    true
+                                );
+                            if (projectile == null)
+                            {
+                                Debug.LogError("NOT ENOUGH PROJECTILES IN POOL");
+                            }
+                            else
+                            {
+                                projectile.objectAnimator.onAnimationComplete += () =>
+                                {
+                                    ProjectileManager.ins.ReturnProjectileToPool(projectile);
+                                    agentData.target.args.AttackAgent(this, 2);
+                                };
+                            }
+                        }
+                    }
+                }
                 //heldWeapon.SetWeaponState(HeldWeaponState.ReadyingAttack);
             }
+            if (attackCharge >= defenderData.attackChargeTime)
+                attackCharge = 0;
         }
     }
     //void Update()

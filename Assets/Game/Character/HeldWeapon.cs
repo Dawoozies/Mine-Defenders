@@ -5,9 +5,15 @@ using UnityEngine;
 public class HeldWeapon : MonoBehaviour
 {
     HeldWeaponState state;
-    public List<ObjectAnimator> weaponPartObjectAnimators;
+    IAnimator[] weaponPartObjectAnimators;
     public Vector3 dirToTarget;
     public bool reverseLookAt;
+    IProjectile[] projectileInterfaces;
+    private void Start()
+    {
+        weaponPartObjectAnimators = GetComponentsInChildren<IAnimator>();
+        projectileInterfaces = GetComponentsInChildren<IProjectile>();
+    }
     public void SetWeaponState(HeldWeaponState state, float stateSpeed)
     {
         //We don't want to be able to move states while attacking
@@ -17,15 +23,22 @@ public class HeldWeapon : MonoBehaviour
             return;
         this.state = state;
         string stateName = state.ToString();
-        foreach (ObjectAnimator weaponPartObjectAnimator in weaponPartObjectAnimators)
+        foreach (IAnimator weaponPartObjectAnimator in weaponPartObjectAnimators)
         {
-            weaponPartObjectAnimator.PlayAnimation(stateName);
-            weaponPartObjectAnimator.animationSpeed = stateSpeed;
+            weaponPartObjectAnimator.PlayAnimation(stateName, stateSpeed);
+        }
+        foreach (IProjectile item in projectileInterfaces)
+        {
+            if (state == HeldWeaponState.ReadyingAttack)
+                item.ReadyProjectile();
+            if (state == HeldWeaponState.Attacking)
+                item.ShootProjectile();
         }
     }
     public (HeldWeaponState, bool) StateStatus()
+
     {
-        foreach (ObjectAnimator weaponPartObjectAnimator in weaponPartObjectAnimators)
+        foreach (IAnimator weaponPartObjectAnimator in weaponPartObjectAnimators)
         {
             if (weaponPartObjectAnimator.GetCurrentAnimationName() != null)
                 return (state, false);
@@ -38,6 +51,15 @@ public class HeldWeapon : MonoBehaviour
         {
             transform.right = reverseLookAt ? -dirToTarget : dirToTarget;
         }
+    }
+    public List<Vector3> GetFirePositions()
+    {
+        List<Vector3> positions = new List<Vector3>();
+        foreach (var item in projectileInterfaces)
+        {
+            positions.Add(item.firePos);
+        }
+        return positions;
     }
 }
 public enum HeldWeaponState
