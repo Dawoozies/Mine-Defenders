@@ -1,20 +1,24 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
-public class HeldWeapon : MonoBehaviour
+using System;
+public class HeldWeapon : MonoBehaviour, IHeldWeapon
 {
-    HeldWeaponState state;
-    IAnimator[] weaponPartObjectAnimators;
-    public Vector3 dirToTarget;
+    IAgent IHeldWeapon.owner { get => _owner; set => _owner = value; }
+    public IAgent _owner;
+    IAgent IHeldWeapon.target { get => _target; set => _target = value; }
+    public IAgent _target;
+    [HideInInspector]
+    public HeldWeaponState state;
+    public IAnimator[] weaponPartObjectAnimators;
+    [HideInInspector]
+    public Vector3 _dirToTarget;
+    public bool lookAt;
     public bool reverseLookAt;
-    IProjectile[] projectileInterfaces;
-    private void Start()
-    {
-        weaponPartObjectAnimators = GetComponentsInChildren<IAnimator>();
-        projectileInterfaces = GetComponentsInChildren<IProjectile>();
-    }
-    public void SetWeaponState(HeldWeaponState state, float stateSpeed)
+    Vector3 IHeldWeapon.dirToTarget { set => _dirToTarget = value; }
+    public delegate void OnHeldWeaponAttackComplete();
+    public event OnHeldWeaponAttackComplete onHeldWeaponAttackComplete;
+    public virtual void SetWeaponState(HeldWeaponState state, float stateSpeed)
     {
         //We don't want to be able to move states while attacking
         //We should have a cancel method which can push the weapon out of attacking
@@ -27,16 +31,8 @@ public class HeldWeapon : MonoBehaviour
         {
             weaponPartObjectAnimator.PlayAnimation(stateName, stateSpeed);
         }
-        foreach (IProjectile item in projectileInterfaces)
-        {
-            if (state == HeldWeaponState.ReadyingAttack)
-                item.ReadyProjectile();
-            if (state == HeldWeaponState.Attacking)
-                item.ShootProjectile();
-        }
     }
-    public (HeldWeaponState, bool) StateStatus()
-
+    public virtual (HeldWeaponState, bool) StateStatus()
     {
         foreach (IAnimator weaponPartObjectAnimator in weaponPartObjectAnimators)
         {
@@ -45,22 +41,6 @@ public class HeldWeapon : MonoBehaviour
         }
         return (state, true);
     }
-    private void Update()
-    {
-        if(dirToTarget != Vector3.zero)
-        {
-            transform.right = reverseLookAt ? -dirToTarget : dirToTarget;
-        }
-    }
-    public List<Vector3> GetFirePositions()
-    {
-        List<Vector3> positions = new List<Vector3>();
-        foreach (var item in projectileInterfaces)
-        {
-            positions.Add(item.firePos);
-        }
-        return positions;
-    }
 }
 public enum HeldWeaponState
 {
@@ -68,4 +48,12 @@ public enum HeldWeaponState
     ReadyingAttack = 1,
     Attacking = 2,
     ReturnToIdle = 3,
+}
+public interface IHeldWeapon
+{
+    public IAgent owner { get; set; }
+    public IAgent target { get; set; }
+    public Vector3 dirToTarget { set; }
+    public void SetWeaponState(HeldWeaponState state, float stateSpeed);
+    public (HeldWeaponState, bool) StateStatus();
 }

@@ -139,8 +139,8 @@ TextureImporter:
       name: Ammo_14
       rect:
         serializedVersion: 2
-        x: 0
-        y: 48
+        x: 32
+        y: 16
         width: 16
         height: 16
       alignment: 0
@@ -160,8 +160,8 @@ TextureImporter:
       name: Ammo_15
       rect:
         serializedVersion: 2
-        x: 16
-        y: 48
+        x: 48
+        y: 16
         width: 16
         height: 16
       alignment: 0
@@ -181,8 +181,8 @@ TextureImporter:
       name: Ammo_16
       rect:
         serializedVersion: 2
-        x: 32
-        y: 48
+        x: 64
+        y: 16
         width: 16
         height: 16
       alignment: 0
@@ -202,8 +202,8 @@ TextureImporter:
       name: Ammo_17
       rect:
         serializedVersion: 2
-        x: 48
-        y: 48
+        x: 80
+        y: 16
         width: 16
         height: 16
       alignment: 0
@@ -223,8 +223,8 @@ TextureImporter:
       name: Ammo_18
       rect:
         serializedVersion: 2
-        x: 64
-        y: 48
+        x: 96
+        y: 16
         width: 16
         height: 16
       alignment: 0
@@ -244,8 +244,8 @@ TextureImporter:
       name: Ammo_19
       rect:
         serializedVersion: 2
-        x: 80
-        y: 48
+        x: 112
+        y: 16
         width: 16
         height: 16
       alignment: 0
@@ -362,6 +362,132 @@ TextureImporter:
       bones: []
       spriteID: 275a56c422b8c4b4c898e50ee75355aa
       internalID: -1726747638
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ammo_0
+      rect:
+        serializedVersion: 2
+        x: 32
+        y: 0
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f1cc5b690a75f9342a2143912c176652
+      internalID: -25833891
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ammo_1
+      rect:
+        serializedVersion: 2
+        x: 48
+        y: 0
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 925316ad9727e3442b36a07d3b6322c9
+      internalID: 1921071429
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ammo_2
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 0
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1f6487d72e7ae24419803f21c963fe7c
+      internalID: -1664396872
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ammo_3
+      rect:
+        serializedVersion: 2
+        x: 80
+        y: 0
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d55b4b3742ffd324696ada3035a6c9b8
+      internalID: -524302759
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ammo_4
+      rect:
+        serializedVersion: 2
+        x: 96
+        y: 0
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e351b43f00e305f44bc8135efc78b92c
+      internalID: -1770744539
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Ammo_5
+      rect:
+        serializedVersion: 2
+        x: 112
+        y: 0
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d21b39ce0a486ec46b2c3d1fae2358ab
+      internalID: 1738959071
       vertices: []
       indices: 
       edges: []

@@ -50,20 +50,26 @@ public class Projectile
 {
     public bool inPool;
     public Transform transform;
-    public SpriteRenderer spriteRenderer;
+    public SpriteRenderer[] spriteRenderers;
     public ObjectAnimator objectAnimator;
     public Projectile(GameObject prefab)
     {
         transform = prefab.transform;
-        spriteRenderer = prefab.GetComponentInChildren<SpriteRenderer>();
+        spriteRenderers = prefab.GetComponentsInChildren<SpriteRenderer>();
         objectAnimator = prefab.GetComponentInChildren<ObjectAnimator>();
         inPool = true;
-        spriteRenderer.color = Color.clear;
+        foreach (SpriteRenderer item in spriteRenderers)
+        {
+            item.color = Color.clear;
+        }
     }
     public void FireProjectileAtPosition(Vector3 startPos, Vector3 targetPos, float interpolationSpeed, InterpolationType interpolationType, bool lookAtPos)
     {
         objectAnimator.animationSpeed = interpolationSpeed;
-        spriteRenderer.color = Color.white;
+        foreach (SpriteRenderer item in spriteRenderers)
+        {
+            item.color = Color.white;
+        }
         if (lookAtPos)
             transform.right = -(targetPos - startPos);
         ObjectAnimation anim = new ObjectAnimation();
@@ -79,7 +85,10 @@ public class Projectile
     }
     public void ReturnToPool()
     {
-        spriteRenderer.color = Color.clear;
+        foreach (SpriteRenderer item in spriteRenderers)
+        {
+            item.color = Color.clear;
+        }
         inPool = true;
     }
 }

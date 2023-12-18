@@ -20,7 +20,7 @@ public class Defender : MonoBehaviour, IAgent
     UI_Action_Display actionDisplay;
     List<AgentType> targetTypes = new List<AgentType> { AgentType.Enemy };
 
-    HeldWeapon heldWeapon;
+    IHeldWeapon heldWeapon;
     public void Initialise(DefenderData defenderData)
     {
         this.defenderData = defenderData;
@@ -102,7 +102,8 @@ public class Defender : MonoBehaviour, IAgent
         if(defenderData.heldWeaponPrefab != null)
         {
             GameObject heldWeaponClone = Instantiate(defenderData.heldWeaponPrefab, transform);
-            heldWeapon = heldWeaponClone.GetComponent<HeldWeapon>();
+            heldWeapon = heldWeaponClone.GetComponent<IHeldWeapon>();
+            heldWeapon.owner = this;
         }
     }
     void Update()
@@ -115,41 +116,13 @@ public class Defender : MonoBehaviour, IAgent
             bool attackCharged = attackCharge >= defenderData.attackChargeTime;
             if (heldWeapon != null)
             {
+                heldWeapon.target = agentData.target;
                 (HeldWeaponState, bool) stateStatus = heldWeapon.StateStatus();
-                heldWeapon.dirToTarget = agentData.target.args.worldPos - transform.position;
+                heldWeapon.dirToTarget = (agentData.target.args.worldPos - transform.position).normalized;
                 if(attackCharged)
                     heldWeapon.SetWeaponState(HeldWeaponState.ReadyingAttack, 1f);
                 if (stateStatus.Item1 == HeldWeaponState.ReadyingAttack && stateStatus.Item2)
-                {
                     heldWeapon.SetWeaponState(HeldWeaponState.Attacking, 2f); //fire off attack
-                    List<Vector3> projectileFirePositions = heldWeapon.GetFirePositions();
-                    if(projectileFirePositions.Count > 0)
-                    {
-                        foreach (Vector3 pos in projectileFirePositions)
-                        {
-                            Projectile projectile = ProjectileManager.ins.FireProjectileAtPosition(
-                                    pos,
-                                    agentData.target.args.worldPos,
-                                    4f,
-                                    InterpolationType.EaseOutExp,
-                                    true
-                                );
-                            if (projectile == null)
-                            {
-                                Debug.LogError("NOT ENOUGH PROJECTILES IN POOL");
-                            }
-                            else
-                            {
-                                projectile.objectAnimator.onAnimationComplete += () =>
-                                {
-                                    ProjectileManager.ins.ReturnProjectileToPool(projectile);
-                                    agentData.target.args.AttackAgent(this, 2);
-                                };
-                            }
-                        }
-                    }
-                }
-                //heldWeapon.SetWeaponState(HeldWeaponState.ReadyingAttack);
             }
             if (attackCharge >= defenderData.attackChargeTime)
                 attackCharge = 0;
