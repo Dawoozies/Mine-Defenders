@@ -123,6 +123,8 @@ public class Defender : MonoBehaviour, IAgent
                     heldWeapon.SetWeaponState(HeldWeaponState.ReadyingAttack, 1f);
                 if (stateStatus.Item1 == HeldWeaponState.ReadyingAttack && stateStatus.Item2)
                     heldWeapon.SetWeaponState(HeldWeaponState.Attacking, 2f); //fire off attack
+                if (stateStatus.Item1 == HeldWeaponState.Attacking && stateStatus.Item2)
+                    heldWeapon.SetWeaponState(HeldWeaponState.ReturnToIdle, 1f); //reset to idle
             }
             if (attackCharge >= defenderData.attackChargeTime)
                 attackCharge = 0;

@@ -50,7 +50,8 @@ MonoBehaviour:
   _dirToTarget: {x: 0, y: 0, z: 0}
   lookAt: 0
   reverseLookAt: 0
-  swordHoldPos: {x: -0.35, y: 0, z: 0}
+  swordHoldPos: {x: -0.3, y: -0.125, z: 0}
+  shieldHoldPos: {x: 0.275, y: -0.125, z: 0}
   sword: {fileID: 7161920507100234162}
   shield: {fileID: 8505986750784193134}
 --- !u!1 &3701174596568905575
@@ -78,13 +79,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3701174596568905575}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: -0.38268343, w: 0.92387956}
-  m_LocalPosition: {x: 0, y: 0.35, z: 0}
+  m_LocalRotation: {x: 0, y: 0, z: 0.38268343, w: 0.92387956}
+  m_LocalPosition: {x: -0.35, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7161920507100234162}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -45}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 45}
 --- !u!212 &7017276234949367690
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -125,7 +126,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 6
   m_Sprite: {fileID: -81121439, guid: c74d338ca4b4bcc42ba5798e2590d487, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -163,7 +164,7 @@ Transform:
   m_GameObject: {fileID: 4141769675973784831}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0.275, y: -0.125, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -184,34 +185,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playOnStartAnim: 
   animationSpeed: 1
-  animations:
-  - animName: Idle
-    frames: 1
-    positions:
-    - {x: 0.35, y: 0, z: 0}
-    localScales: []
-    eulerAngles: []
-    rotations: []
-    sizeDeltas: []
-    anchoredPositions: []
-    interpolationTypes: 00000000
-    loop: 0
-    time: 0
-    useWorldPosition: 0
-  - animName: ReadyingAttack
-    frames: 2
-    positions:
-    - {x: 0, y: 0, z: 0}
-    - {x: 0, y: 0, z: 0}
-    localScales: []
-    eulerAngles: []
-    rotations: []
-    sizeDeltas: []
-    anchoredPositions: []
-    interpolationTypes: 0500000005000000
-    loop: 0
-    time: 0
-    useWorldPosition: 0
+  animations: []
 --- !u!1 &4804125677821040330
 GameObject:
   m_ObjectHideFlags: 0
@@ -238,7 +212,7 @@ Transform:
   m_GameObject: {fileID: 4804125677821040330}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -0.3, y: -0.125, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -259,34 +233,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playOnStartAnim: 
   animationSpeed: 1
-  animations:
-  - animName: Idle
-    frames: 1
-    positions:
-    - {x: -0.35, y: 0, z: 0}
-    localScales: []
-    eulerAngles: []
-    rotations: []
-    sizeDeltas: []
-    anchoredPositions: []
-    interpolationTypes: 00000000
-    loop: 0
-    time: 0
-    useWorldPosition: 0
-  - animName: ReadyingAttack
-    frames: 2
-    positions:
-    - {x: 0, y: 0, z: 0}
-    - {x: 0, y: 0, z: 0}
-    localScales: []
-    eulerAngles: []
-    rotations: []
-    sizeDeltas: []
-    anchoredPositions: []
-    interpolationTypes: 0500000005000000
-    loop: 0
-    time: 0
-    useWorldPosition: 0
+  animations: []
 --- !u!1 &7776363056263931742
 GameObject:
   m_ObjectHideFlags: 0
@@ -298,7 +245,7 @@ GameObject:
   - component: {fileID: 6639246120106367986}
   - component: {fileID: 4002063373526225175}
   m_Layer: 0
-  m_Name: Sword
+  m_Name: Shield
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -359,8 +306,8 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_Sprite: {fileID: -1033187967, guid: 5cc79edf9d4b6a84a82ff8b7e6c9ce00, type: 3}
+  m_SortingOrder: 7
+  m_Sprite: {fileID: 8043616, guid: 5cc79edf9d4b6a84a82ff8b7e6c9ce00, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
