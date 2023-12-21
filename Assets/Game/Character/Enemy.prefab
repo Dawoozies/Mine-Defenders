@@ -99,6 +99,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playOnStartAnimName: 
+  playOnEnableAnimName: 
   animationSpeed: 1
   animations: []
 --- !u!114 &235708499718110832
@@ -162,5 +163,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   baseGraphics:
+    spriteRenderer: {fileID: 8630140708989846948}
     spriteAnimator: {fileID: 5428261035753032183}
     objectAnimator: {fileID: 235708499718110832}

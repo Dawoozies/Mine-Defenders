@@ -82,6 +82,7 @@ public class Defender : MonoBehaviour, IAgent
         agentData.allowedToLoot = LootType.None;
         agentData.target = null;
         agentData.targetedBy = new List<IAgent>();
+        agentData.attackRange = defenderData.attackRange;
 
         agentData.onDeath += () => {
             if (actionDisplay != null)
@@ -112,105 +113,27 @@ public class Defender : MonoBehaviour, IAgent
         if (!agentData.isActive) return;
         if(agentData.target != null)
         {
-            attackCharge += Time.deltaTime;
-            bool attackCharged = attackCharge >= defenderData.attackChargeTime;
-            if (heldWeapon != null)
+            if(inRangeOfTarget())
             {
-                heldWeapon.target = agentData.target;
-                (HeldWeaponState, bool) stateStatus = heldWeapon.StateStatus();
-                heldWeapon.dirToTarget = (agentData.target.args.worldPos - transform.position).normalized;
-                if(attackCharged)
-                    heldWeapon.SetWeaponState(HeldWeaponState.ReadyingAttack, 1f);
-                if (stateStatus.Item1 == HeldWeaponState.ReadyingAttack && stateStatus.Item2)
-                    heldWeapon.SetWeaponState(HeldWeaponState.Attacking, 2f); //fire off attack
-                if (stateStatus.Item1 == HeldWeaponState.Attacking && stateStatus.Item2)
-                    heldWeapon.SetWeaponState(HeldWeaponState.ReturnToIdle, 1f); //reset to idle
+                attackCharge += Time.deltaTime;
+                bool attackCharged = attackCharge >= defenderData.attackChargeTime;
+                if (heldWeapon != null)
+                {
+                    heldWeapon.target = agentData.target;
+                    (HeldWeaponState, bool) stateStatus = heldWeapon.StateStatus();
+                    heldWeapon.dirToTarget = (agentData.target.args.worldPos - transform.position).normalized;
+                    if (attackCharged)
+                        heldWeapon.SetWeaponState(HeldWeaponState.ReadyingAttack, 1f);
+                    if (stateStatus.Item1 == HeldWeaponState.ReadyingAttack && stateStatus.Item2)
+                        heldWeapon.SetWeaponState(HeldWeaponState.Attacking, 2f); //fire off attack
+                    if (stateStatus.Item1 == HeldWeaponState.Attacking && stateStatus.Item2)
+                        heldWeapon.SetWeaponState(HeldWeaponState.ReturnToIdle, 1f); //reset to idle
+                }
+                if (attackCharged)
+                    attackCharge = 0;
             }
-            if (attackCharge >= defenderData.attackChargeTime)
-                attackCharge = 0;
         }
     }
-    //void Update()
-    //{
-    //    if (agentData.isDead)
-    //        return;
-    //    if (!agentData.isActive)
-    //        return;
-    //    attackCharge += Time.deltaTime;
-    //    if (agentData.target == null)
-    //        return;
-    //    bool canAttack = available.Count > 0 && Vector3Int.Distance(cellPos, agentData.target.args.cellPos) <= 1;
-    //    if(attackCharge >= defenderData.attackChargeTime && canAttack)
-    //    {
-    //        //StartAttackAnimation();
-    //        attackCharge = 0;
-    //    }
-    //    Cooldown();
-    //}
-    //void Cooldown()
-    //{
-    //    List<Attack> onCooldownNew = new List<Attack>();
-    //    foreach (Attack attack in onCooldown)
-    //    {
-    //        attack.CooldownUpdate(Time.deltaTime);
-    //        if (!attack.offCooldown)
-    //            onCooldownNew.Add(attack);
-    //        else
-    //            available.Add(attack);
-    //    }
-    //    onCooldown = onCooldownNew;
-    //}
-    //Attack GetAttack()
-    //{
-    //    int selectedIndex = Random.Range(0, available.Count);
-    //    Attack selectedAttack = available[selectedIndex];
-    //    onCooldown.Add(available[selectedIndex]);
-    //    available.RemoveAt(selectedIndex);
-    //    return selectedAttack;
-    //}
-    //void StartAttackAnimation()
-    //{
-    //    Attack selectedAttack = GetAttack();
-    //    ObjectAnimation attackAnimation = new ObjectAnimation();
-    //    attackAnimation.animName = "Attack";
-    //    attackAnimation.frames = 3;
-    //    Vector3 dirToTarget = Vector3.Normalize(agentData.target.args.worldPos - agentCellCenterPos);
-    //    attackAnimation.positions = new List<Vector3>
-    //    {
-    //        Vector3.zero,
-    //        dirToTarget*0.5f,
-    //        Vector3.zero,
-    //    };
-    //    attackAnimation.interpolationTypes = new List<InterpolationType>
-    //    {
-    //        selectedAttack.attackBase.interpolationType,
-    //        selectedAttack.attackBase.interpolationType,
-    //        selectedAttack.attackBase.interpolationType,
-    //    };
-    //    baseGraphics.objectAnimator.animationSpeed = selectedAttack.attackBase.interpolationSpeed;
-    //    baseGraphics.objectAnimator.CreateAndPlayAnimation(attackAnimation);
-    //    //do ui action display
-    //    if(actionDisplay == null)
-    //    {
-    //        actionDisplay = UIManager.ins.Get_Action_Display().TrackingRequest(
-    //            this,
-    //            Vector3.zero,
-    //            selectedAttack.attackBase.icon
-    //            );
-    //    }
-    //    baseGraphics.objectAnimator.onAnimationComplete += () => {
-    //        if (actionDisplay != null)
-    //        {
-    //            actionDisplay.ReturnToPool();
-    //            actionDisplay = null;
-    //        }
-    //    };
-    //    baseGraphics.objectAnimator.onAnimationComplete += () => {
-    //        if (agentData.target == null)
-    //            return;
-    //        agentData.target.args.AttackAgent(this, selectedAttack);
-    //    };
-    //}
     public Tilemap[] GetInaccessibleTilemaps()
     {
         return GameManager.ins.GetPlayerInaccessibleTilemaps();
@@ -245,5 +168,13 @@ public class Defender : MonoBehaviour, IAgent
             }
         }
         agentData.SetTarget(closestEnemy);
+    }
+
+    public bool inRangeOfTarget()
+    {
+        if (agentData.target == null)
+            return false;
+        float distanceFromTarget = Vector3.Distance(transform.position, agentData.target.args.worldPos);
+        return distanceFromTarget < agentData.attackRange || Mathf.Approximately(distanceFromTarget, agentData.attackRange);
     }
 }

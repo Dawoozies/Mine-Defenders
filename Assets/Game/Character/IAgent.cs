@@ -9,6 +9,7 @@ public interface IAgent
     public AgentArgs args { get; }
     public Tilemap[] GetInaccessibleTilemaps();
     public void Retarget();
+    public bool inRangeOfTarget();
 }
 public enum AgentType
 {
@@ -54,7 +55,7 @@ public class AgentArgs
     public delegate void OnDeath();
     public event OnDeath onDeath;
 
-    public int attackRange;
+    public float attackRange;
     public AgentArgs(Transform transform, AgentType type, IAgent agent)
     {
         this.transform = transform;
@@ -134,6 +135,8 @@ public class AgentArgs
     }
     public void MoveAlongPath(float timeDelta)
     {
+        if (agent.inRangeOfTarget())
+            return;
         if(type == AgentType.Enemy || type == AgentType.Defender)
         {
             if (path == null || movesLeft <= 0)
@@ -237,6 +240,7 @@ public class AgentPath
 [Serializable]
 public class Graphics
 {
+    public SpriteRenderer spriteRenderer;
     public SpriteAnimator spriteAnimator;
     public ObjectAnimator objectAnimator;
 }

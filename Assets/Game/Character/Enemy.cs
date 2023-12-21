@@ -19,6 +19,7 @@ public class Enemy : MonoBehaviour, IAgent
     float attackCharge;
     public Vector3 worldPos => agentCellCenterPos;
     public Vector3Int cellPos => agentCellPos;
+
     UI_Action_Display actionDisplay;
     List<AgentType> targetTypes = new List<AgentType> { AgentType.Defender };
     public void Initialise(EnemyBase enemyBase)
@@ -84,6 +85,7 @@ public class Enemy : MonoBehaviour, IAgent
         agentData.allowedToLoot = LootType.None;
         agentData.target = null;
         agentData.targetedBy = new List<IAgent>();
+        agentData.attackRange = enemyBase.attackRange;
 
         agentData.onDeath += () => { 
             if(actionDisplay != null)
@@ -94,98 +96,44 @@ public class Enemy : MonoBehaviour, IAgent
             baseGraphics.spriteAnimator.PlayAnimation("Dead");
             baseGraphics.objectAnimator.PlayAnimation("Dead");
         };
-
-        //agentData.attackRange = 1;
-        //agentData.attacks = new List<Attack>();
-        //foreach (AttackBase attackBase in enemyBase.attackBases)
-        //{
-        //    agentData.attacks.Add(new Attack(attackBase));
-        //}
     }
-    //void Update()
-    //{
-    //    if (agentData.isDead)
-    //        return;
-    //    if (!agentData.isActive)
-    //        return;
-    //    attackCharge += Time.deltaTime;
-    //    //bool canAttack = GameManager.ins.DistanceFromPlayer(this) <= 1 && available.Count > 0;
-    //    if (agentData.target == null)
-    //        return;
-    //    bool canAttack = available.Count > 0 && Vector3Int.Distance(cellPos, agentData.target.args.cellPos) <= 1;
-    //    if(attackCharge >= enemyBase.attackChargeTime && canAttack)
-    //    {
-    //        //StartAttackAnimation();
-    //        attackCharge = 0;
-    //    }
-    //    Cooldown();
-    //}
-    //void Cooldown()
-    //{
-    //    List<Attack> onCooldownNew = new List<Attack>();
-    //    foreach (Attack attack in onCooldown)
-    //    {
-    //        attack.CooldownUpdate(Time.deltaTime);
-    //        if(!attack.offCooldown)
-    //        {
-    //            onCooldownNew.Add(attack);
-    //        }
-    //        else
-    //        {
-    //            available.Add(attack);
-    //        }
-    //    }
-    //    onCooldown = onCooldownNew;
-    //}
-    //Attack GetAttack()
-    //{
-    //    int selectedIndex = Random.Range(0, available.Count);
-    //    Attack selectedAttack = available[selectedIndex];
-    //    onCooldown.Add(available[selectedIndex]);
-    //    available.RemoveAt(selectedIndex);
-    //    return selectedAttack;
-    //}
-    //void StartAttackAnimation()
-    //{
-    //    Attack selectedAttack = GetAttack();
-    //    ObjectAnimation attackAnimation = new ObjectAnimation();
-    //    attackAnimation.animName = "Attack";
-    //    attackAnimation.frames = 3;
-    //    //Vector3 dirToPlayer = Vector3.Normalize(GameManager.ins.GetPlayerWorldPosition() - agentCellCenterPos);
-    //    Vector3 dirToTarget = Vector3.Normalize(agentData.target.args.worldPos - agentCellCenterPos);
-    //    attackAnimation.positions = new List<Vector3>
-    //    {
-    //        Vector3.zero,
-    //        dirToTarget*0.5f,
-    //        Vector3.zero,
-    //    };
-    //    attackAnimation.interpolationTypes = new List<InterpolationType>
-    //    {
-    //        selectedAttack.attackBase.interpolationType,
-    //        selectedAttack.attackBase.interpolationType,
-    //        selectedAttack.attackBase.interpolationType,
-    //    };
-    //    baseGraphics.objectAnimator.animationSpeed = selectedAttack.attackBase.interpolationSpeed;
-    //    baseGraphics.objectAnimator.CreateAndPlayAnimation(attackAnimation);
-    //    //do ui action display
-    //    actionDisplay = UIManager.ins.Get_Action_Display().TrackingRequest(
-    //        this, 
-    //        Vector3.zero,
-    //        selectedAttack.attackBase.icon
-    //        );
-    //    baseGraphics.objectAnimator.onAnimationComplete += () => {
-    //        if (actionDisplay != null)
-    //        {
-    //            actionDisplay.ReturnToPool();
-    //            actionDisplay = null;
-    //        }
-    //    };
-    //    baseGraphics.objectAnimator.onAnimationComplete += () => {
-    //        if (agentData.target == null)
-    //            return;
-    //        agentData.target.args.AttackAgent(this, selectedAttack);
-    //    };
-    //}
+    void Update()
+    {
+        if (agentData.isDead) return;
+        if (!agentData.isActive) return;
+        if(agentData.target != null)
+        {
+            if(inRangeOfTarget())
+            {
+                attackCharge += Time.deltaTime;
+                bool attackCharged = attackCharge >= enemyBase.attackChargeTime;
+                if (attackCharged)
+                {
+                    attackCharge = 0;
+                    Vector3 dirToTarget = (agentData.target.args.worldPos - transform.position).normalized;
+                    baseGraphics.spriteRenderer.flipX = dirToTarget.x > 0 ? true : false;
+                    ObjectAnimation anim = new ObjectAnimation();
+                    anim.animName = "Attack";
+                    anim.frames = 3;
+                    anim.positions = new List<Vector3> { Vector3.zero, dirToTarget, Vector3.zero};
+
+                    anim.rotations = new List<Quaternion> {
+                        Quaternion.identity,
+                        Quaternion.FromToRotation(Vector3.right, (Vector3.right - Vector3.up*0.25f).normalized),
+                        Quaternion.identity
+                    };
+                    anim.localScales = new List<Vector3> { Vector3.one, Vector3.one*1.125f, Vector3.one};
+                    anim.interpolationTypes = new List<InterpolationType> {
+                        InterpolationType.EaseOutExp,
+                        InterpolationType.EaseOutExp,
+                        InterpolationType.EaseOutExp,
+                    };
+                    baseGraphics.objectAnimator.animationSpeed = 4f;
+                    baseGraphics.objectAnimator.CreateAndPlayAnimation(anim);
+                }
+            }
+        }
+    }
     public Tilemap[] GetInaccessibleTilemaps()
     {
         return GameManager.ins.GetEnemyInaccessibleTilemaps();
@@ -196,7 +144,7 @@ public class Enemy : MonoBehaviour, IAgent
             return;
         if (!agentData.isActive)
             return;
-        if (agentData.target != null)
+        if (agentData.target != null  && agentData.target != (IAgent)GameManager.ins.agentController.player)
             return;
         List<Defender> defenders = GameManager.ins.GetDefenders();
         List<IAgent> targetable = new List<IAgent>();
@@ -226,5 +174,12 @@ public class Enemy : MonoBehaviour, IAgent
             }
         }
         agentData.SetTarget(closestDefender);
+    }
+    public bool inRangeOfTarget()
+    {
+        if (agentData.target == null)
+            return false;
+        float distanceFromTarget = Vector3.Distance(transform.position, agentData.target.args.worldPos);
+        return distanceFromTarget < agentData.attackRange || Mathf.Approximately(distanceFromTarget, agentData.attackRange);
     }
 }

@@ -161,4 +161,9 @@ public class Player : MonoBehaviour, IAgent
     {
 
     }
+    public bool inRangeOfTarget()
+    {
+        //player doesnt have targets yet
+        return false;
+    }
 }

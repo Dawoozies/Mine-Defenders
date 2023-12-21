@@ -22,7 +22,7 @@ public class DefenderData
     public int defenderKey;
     public int maxHealth, health;
     public int maxExp, exp;
-    public int attackRange;
+    public float attackRange;
     public float attackChargeTime;
     public int movementPerTurn;
     public float moveInterpolationSpeed;
