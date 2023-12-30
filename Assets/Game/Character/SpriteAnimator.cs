@@ -233,4 +233,16 @@ public class SpriteAnimator : MonoBehaviour, IAnimator
         animationSpeed = animSpeed;
         PlayAnimation(animName);
     }
+    public Sprite getCurrentSprite()
+    {
+        if(spriteRenderer != null)
+        {
+            return spriteRenderer.sprite;
+        }
+        if(image != null)
+        {
+            return image.sprite;
+        }
+        return null;
+    }
 }

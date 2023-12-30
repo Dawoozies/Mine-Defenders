@@ -19,6 +19,7 @@ public class CommandMenu : MonoBehaviour
     //0 = bottom left 1 = top left 2 = top right 3 = bottom right
     List<DefenderListElement> defenderListElements = new List<DefenderListElement>();
     List<Bar> bars = new List<Bar>();
+
     private void OnEnable()
     {
         //List<DefenderData> d = GameManager.ins.defendersLoaded;

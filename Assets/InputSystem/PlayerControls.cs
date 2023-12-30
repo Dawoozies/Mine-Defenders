@@ -24,6 +24,45 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     ""name"": ""PlayerControls"",
     ""maps"": [
         {
+            ""name"": ""ScreenPos"",
+            ""id"": ""bd891f5f-6134-4580-b0e3-76bf90423583"",
+            ""actions"": [
+                {
+                    ""name"": ""MouseScreenPos"",
+                    ""type"": ""Value"",
+                    ""id"": ""d3859f38-9b15-4ad6-8257-6d9d2a54da20"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""2355eae8-aa9c-42e0-b4ba-f07464b69f6d"",
+                    ""path"": ""<Mouse>/position"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""MouseScreenPos"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""cb7230f3-6fe8-4b7a-896f-98acd88538de"",
+                    ""path"": ""<Touchscreen>/position"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""MouseScreenPos"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
+        },
+        {
             ""name"": ""Player"",
             ""id"": ""ba636e95-1bad-4f4b-a8de-2842b799aeb1"",
             ""actions"": [
@@ -43,15 +82,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": ""Press"",
-                    ""initialStateCheck"": true
-                },
-                {
-                    ""name"": ""MouseScreenPos"",
-                    ""type"": ""Value"",
-                    ""id"": ""a09cfc6c-26cd-41a9-a664-9df2d9555055"",
-                    ""expectedControlType"": ""Vector2"",
-                    ""processors"": """",
-                    ""interactions"": """",
                     ""initialStateCheck"": true
                 }
             ],
@@ -88,39 +118,19 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""action"": ""Press"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""93e01ff1-36b9-405f-abd6-a9c438d292f8"",
-                    ""path"": ""<Mouse>/position"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""MouseScreenPos"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""d8b7280b-ed8c-42b5-8ba0-297fb81b4f40"",
-                    ""path"": ""<Touchscreen>/position"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""MouseScreenPos"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
                 }
             ]
         }
     ],
     ""controlSchemes"": []
 }");
+        // ScreenPos
+        m_ScreenPos = asset.FindActionMap("ScreenPos", throwIfNotFound: true);
+        m_ScreenPos_MouseScreenPos = m_ScreenPos.FindAction("MouseScreenPos", throwIfNotFound: true);
         // Player
         m_Player = asset.FindActionMap("Player", throwIfNotFound: true);
         m_Player_Tap = m_Player.FindAction("Tap", throwIfNotFound: true);
         m_Player_Press = m_Player.FindAction("Press", throwIfNotFound: true);
-        m_Player_MouseScreenPos = m_Player.FindAction("MouseScreenPos", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -179,19 +189,63 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         return asset.FindBinding(bindingMask, out action);
     }
 
+    // ScreenPos
+    private readonly InputActionMap m_ScreenPos;
+    private List<IScreenPosActions> m_ScreenPosActionsCallbackInterfaces = new List<IScreenPosActions>();
+    private readonly InputAction m_ScreenPos_MouseScreenPos;
+    public struct ScreenPosActions
+    {
+        private @PlayerControls m_Wrapper;
+        public ScreenPosActions(@PlayerControls wrapper) { m_Wrapper = wrapper; }
+        public InputAction @MouseScreenPos => m_Wrapper.m_ScreenPos_MouseScreenPos;
+        public InputActionMap Get() { return m_Wrapper.m_ScreenPos; }
+        public void Enable() { Get().Enable(); }
+        public void Disable() { Get().Disable(); }
+        public bool enabled => Get().enabled;
+        public static implicit operator InputActionMap(ScreenPosActions set) { return set.Get(); }
+        public void AddCallbacks(IScreenPosActions instance)
+        {
+            if (instance == null || m_Wrapper.m_ScreenPosActionsCallbackInterfaces.Contains(instance)) return;
+            m_Wrapper.m_ScreenPosActionsCallbackInterfaces.Add(instance);
+            @MouseScreenPos.started += instance.OnMouseScreenPos;
+            @MouseScreenPos.performed += instance.OnMouseScreenPos;
+            @MouseScreenPos.canceled += instance.OnMouseScreenPos;
+        }
+
+        private void UnregisterCallbacks(IScreenPosActions instance)
+        {
+            @MouseScreenPos.started -= instance.OnMouseScreenPos;
+            @MouseScreenPos.performed -= instance.OnMouseScreenPos;
+            @MouseScreenPos.canceled -= instance.OnMouseScreenPos;
+        }
+
+        public void RemoveCallbacks(IScreenPosActions instance)
+        {
+            if (m_Wrapper.m_ScreenPosActionsCallbackInterfaces.Remove(instance))
+                UnregisterCallbacks(instance);
+        }
+
+        public void SetCallbacks(IScreenPosActions instance)
+        {
+            foreach (var item in m_Wrapper.m_ScreenPosActionsCallbackInterfaces)
+                UnregisterCallbacks(item);
+            m_Wrapper.m_ScreenPosActionsCallbackInterfaces.Clear();
+            AddCallbacks(instance);
+        }
+    }
+    public ScreenPosActions @ScreenPos => new ScreenPosActions(this);
+
     // Player
     private readonly InputActionMap m_Player;
     private List<IPlayerActions> m_PlayerActionsCallbackInterfaces = new List<IPlayerActions>();
     private readonly InputAction m_Player_Tap;
     private readonly InputAction m_Player_Press;
-    private readonly InputAction m_Player_MouseScreenPos;
     public struct PlayerActions
     {
         private @PlayerControls m_Wrapper;
         public PlayerActions(@PlayerControls wrapper) { m_Wrapper = wrapper; }
         public InputAction @Tap => m_Wrapper.m_Player_Tap;
         public InputAction @Press => m_Wrapper.m_Player_Press;
-        public InputAction @MouseScreenPos => m_Wrapper.m_Player_MouseScreenPos;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -207,9 +261,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Press.started += instance.OnPress;
             @Press.performed += instance.OnPress;
             @Press.canceled += instance.OnPress;
-            @MouseScreenPos.started += instance.OnMouseScreenPos;
-            @MouseScreenPos.performed += instance.OnMouseScreenPos;
-            @MouseScreenPos.canceled += instance.OnMouseScreenPos;
         }
 
         private void UnregisterCallbacks(IPlayerActions instance)
@@ -220,9 +271,6 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Press.started -= instance.OnPress;
             @Press.performed -= instance.OnPress;
             @Press.canceled -= instance.OnPress;
-            @MouseScreenPos.started -= instance.OnMouseScreenPos;
-            @MouseScreenPos.performed -= instance.OnMouseScreenPos;
-            @MouseScreenPos.canceled -= instance.OnMouseScreenPos;
         }
 
         public void RemoveCallbacks(IPlayerActions instance)
@@ -240,10 +288,13 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         }
     }
     public PlayerActions @Player => new PlayerActions(this);
+    public interface IScreenPosActions
+    {
+        void OnMouseScreenPos(InputAction.CallbackContext context);
+    }
     public interface IPlayerActions
     {
         void OnTap(InputAction.CallbackContext context);
         void OnPress(InputAction.CallbackContext context);
-        void OnMouseScreenPos(InputAction.CallbackContext context);
     }
 }

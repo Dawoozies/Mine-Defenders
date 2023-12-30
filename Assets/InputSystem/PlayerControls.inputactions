@@ -2,6 +2,45 @@
     "name": "PlayerControls",
     "maps": [
         {
+            "name": "ScreenPos",
+            "id": "bd891f5f-6134-4580-b0e3-76bf90423583",
+            "actions": [
+                {
+                    "name": "MouseScreenPos",
+                    "type": "Value",
+                    "id": "d3859f38-9b15-4ad6-8257-6d9d2a54da20",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "2355eae8-aa9c-42e0-b4ba-f07464b69f6d",
+                    "path": "<Mouse>/position",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "MouseScreenPos",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "cb7230f3-6fe8-4b7a-896f-98acd88538de",
+                    "path": "<Touchscreen>/position",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "MouseScreenPos",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
             "name": "Player",
             "id": "ba636e95-1bad-4f4b-a8de-2842b799aeb1",
             "actions": [
@@ -21,15 +60,6 @@
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "Press",
-                    "initialStateCheck": true
-                },
-                {
-                    "name": "MouseScreenPos",
-                    "type": "Value",
-                    "id": "a09cfc6c-26cd-41a9-a664-9df2d9555055",
-                    "expectedControlType": "Vector2",
-                    "processors": "",
-                    "interactions": "",
                     "initialStateCheck": true
                 }
             ],
@@ -64,28 +94,6 @@
                     "processors": "",
                     "groups": "",
                     "action": "Press",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "93e01ff1-36b9-405f-abd6-a9c438d292f8",
-                    "path": "<Mouse>/position",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "MouseScreenPos",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "d8b7280b-ed8c-42b5-8ba0-297fb81b4f40",
-                    "path": "<Touchscreen>/position",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "MouseScreenPos",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

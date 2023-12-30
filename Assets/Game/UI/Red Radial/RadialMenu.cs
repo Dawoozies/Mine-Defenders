@@ -15,6 +15,7 @@ public class RadialMenu : MonoBehaviour
     bool menuOpen;
     public GameObject[] buttonObjects;
     RadialButton[] radialButtons;
+
     private void Start()
     {
         menuAnimator.EndFrameEvent += OnMenuOpening;

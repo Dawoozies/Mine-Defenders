@@ -12,7 +12,7 @@ public class DragTest : MonoBehaviour
     {
         rectTransform = GetComponent<RectTransform>();
         input = new PlayerControls();
-        input.Player.MouseScreenPos.performed += (input) =>
+        input.ScreenPos.MouseScreenPos.performed += (input) =>
         {
             screenPos = input.ReadValue<Vector2>();
         };
