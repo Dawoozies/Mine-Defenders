@@ -6603,6 +6603,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: DefenderDraggable
       objectReference: {fileID: 0}
+    - target: {fileID: 5372973456485594858, guid: 0318e4ac00717a44180ed1678410386f, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

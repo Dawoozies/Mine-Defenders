@@ -1,12 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-public class DefenderButton : Draggable
+public class UIDrag : Draggable
 {
     RectTransform rectTransform;
     Vector3[] rectCorners;
     Vector2 pivotOffset => rectTransform.sizeDelta * rectTransform.pivot;
     Vector2 originalAnchoredPosition;
+    public delegate void DragStartEvent(Vector2 pos);
+    public event DragStartEvent onDragStart;
+    public delegate void WhileDragEvent(Vector2 pos);
+    public event WhileDragEvent onWhileDrag;
+    public delegate void DragEndEvent(Vector2 pos);
+    public event DragEndEvent onDragEnd;
     private void Start()
     {
         rectTransform = GetComponent<RectTransform>();
@@ -16,6 +22,13 @@ public class DefenderButton : Draggable
     {
         //base.OnDragStart();
         originalAnchoredPosition = rectTransform.anchoredPosition;
+        onDragStart?.Invoke(mouseDragStartPos);
+    }
+    public override void WhileDrag()
+    {
+        //base.WhileDrag();
+        rectTransform.anchoredPosition = mouseScreenPos;
+        onWhileDrag?.Invoke(mouseScreenPos);
     }
     public override void OnDragEnd()
     {
@@ -23,12 +36,9 @@ public class DefenderButton : Draggable
         //We check if we let go over a valid tile and then place the defender down
         //rectTransform.anchoredPosition = mouseDragStartPos + pivotOffset;
         rectTransform.anchoredPosition = originalAnchoredPosition;
+        onDragEnd?.Invoke(mouseDragEndPos);
     }
-    public override void WhileDrag()
-    {
-        //base.WhileDrag();
-        rectTransform.anchoredPosition = mouseScreenPos;
-    }
+
     public override bool CheckDragAllowed()
     {
         rectTransform.GetWorldCorners(rectCorners);
