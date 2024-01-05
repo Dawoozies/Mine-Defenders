@@ -9,6 +9,12 @@ public class Draggable : MonoBehaviour, IDrag
     public Vector2 mouseDragEndPos;
     public Vector2 mouseScreenPos;
     bool isDragging;
+    public delegate void DragStartEvent(Vector2 pos);
+    public event DragStartEvent onDragStart;
+    public delegate void WhileDragEvent(Vector2 pos);
+    public event WhileDragEvent onWhileDrag;
+    public delegate void DragEndEvent(Vector2 pos);
+    public event DragEndEvent onDragEnd;
     void Awake()
     {
         input = new PlayerControls();
@@ -43,16 +49,20 @@ public class Draggable : MonoBehaviour, IDrag
     }
     public virtual void OnDragStart()
     {
-        Debug.Log("On Drag Start base method called, this should be overwritten");
-    }
-    public virtual void OnDragEnd()
-    {
-        Debug.Log("On Drag End base method called, this should be overwritten");
+        //Debug.Log("On Drag Start base method called, this should be overwritten");
+        onDragStart?.Invoke(mouseDragStartPos);
     }
     public virtual void WhileDrag()
     {
-        Debug.Log("While Drag base method called, this should be overwritten");
+        //Debug.Log("While Drag base method called, this should be overwritten");
+        onWhileDrag?.Invoke(mouseScreenPos);
     }
+    public virtual void OnDragEnd()
+    {
+        //Debug.Log("On Drag End base method called, this should be overwritten");
+        onDragEnd?.Invoke(mouseDragEndPos);
+    }
+
     public virtual bool CheckDragAllowed()
     {
         Debug.Log("Check Drag Allowed base method called, this should be overwritten");

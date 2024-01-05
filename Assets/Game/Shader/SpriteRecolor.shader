@@ -4,6 +4,7 @@ Shader "Unlit/SpriteRecolor"
     {
         //the full texture
         _MainTex ("Texture", 2D) = "white" {}
+        [MaterialToggle] _RecolorActive("Recolor Active", Float) = 0
         _Target1 ("Target 1", Color) = (0,0,0,0)
         _Color1 ("Color 1", Color) = (0,0,0,0)
         _Target2 ("Target 2", Color) = (0,0,0,0)
@@ -75,6 +76,7 @@ Shader "Unlit/SpriteRecolor"
 
             sampler2D _MainTex;
             float4 _MainTex_ST;
+            float _RecolorActive;
             fixed4 _Target1;
             fixed4 _Target2;
             fixed4 _Target3;
@@ -121,6 +123,8 @@ Shader "Unlit/SpriteRecolor"
             {
                 // sample the texture
                 fixed4 col = tex2D(_MainTex, i.uv);
+                if(_RecolorActive == 1)
+                {
                 col = all(col == _Target1) ? _Color1 : col;
                 col = all(col == _Target2) ? _Color2 : col;
                 col = all(col == _Target3) ? _Color3 : col;
@@ -137,6 +141,7 @@ Shader "Unlit/SpriteRecolor"
                 col = all(col == _Target14) ? _Color14 : col;
                 col = all(col == _Target15) ? _Color15 : col;
                 col = all(col == _Target16) ? _Color16 : col;
+                }
                 return col * i.color;
             }
             ENDCG
