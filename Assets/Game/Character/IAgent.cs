@@ -133,6 +133,21 @@ public class AgentArgs
         Debug.LogWarning($"{type} picking up {loot.lootName}. Amount in backpack going from {lootDictionary[loot.lootName]} to {lootDictionary[loot.lootName]+loot.amount}. Increase by {loot.amount}");
         lootDictionary[loot.lootName] = lootDictionary[loot.lootName] + loot.amount;
     }
+    public void ClearLoot()
+    {
+        lootDictionary = new Dictionary<string, int>();
+    }
+    public int TotalLootCount()
+    {
+        if (lootDictionary == null || lootDictionary.Count == 0)
+            return 0;
+        int total = 0;
+        foreach (int value in lootDictionary.Values)
+        {
+            total += value;
+        }
+        return total;
+    }
     public void MoveAlongPath(float timeDelta)
     {
         if (agent.inRangeOfTarget())
@@ -173,6 +188,12 @@ public class AgentArgs
             if (playerPath[playerPathIndex].completed)
             {
                 GameManager.ins.TryLootAtCell(playerPath[playerPathIndex].end, agent);
+                if(Mathf.Approximately(cellPos.sqrMagnitude, 0f))
+                {
+                    GameManager.ins.DepositLoot(lootDictionary);
+                    ClearLoot();
+                }
+
                 if (playerPathIndex + 1 <= playerPath.Count)
                 {
                     //Debug.Log($"player path at index {playerPathIndex} is complete and there is another");

@@ -162,6 +162,9 @@ public class GameManager : MonoBehaviour
             this.position = position;
         }
     }
+
+    public delegate void OnPlayerLootPickup(string lootName, int addedAmount, int totalAmount);
+    public static event OnPlayerLootPickup onPlayerLootPickup;
     public bool isInLevelBounds(Vector3Int position) {
         if (position.x < levelGenerator.bottomLeftCorner.x || position.x > levelGenerator.topRightCorner.x)
         {
@@ -495,7 +498,23 @@ public class GameManager : MonoBehaviour
     public void TryLootAtCell(Vector3Int cellPos, IAgent agent)
     {
         CellData cellData = GetCellDataAtPosition(cellPos);
-        cellData.TryLoot(agent);
+        CellLoot loot = cellData.loot;
+        if (loot == null)
+            return;
+        if (!agent.args.allowedToLoot.HasFlag(LootType.All))
+        {
+            if (agent.args.allowedToLoot.HasFlag(LootType.None))
+                return;
+            if (!agent.args.allowedToLoot.HasFlag(loot.type))
+                return;
+        }
+        if (loot != null)
+        {
+            agent.args.PickupLoot(loot);
+            GameObject.Destroy(loot.instantiatedObject);
+            onPlayerLootPickup?.Invoke(loot.lootName, loot.amount, agent.args.TotalLootCount());
+            cellData.loot = null;
+        }
     }
     public List<Defender> GetDefenders()
     {
@@ -508,6 +527,23 @@ public class GameManager : MonoBehaviour
     public Vector2 GetScreenPosition(Vector3 position)
     {
         return mainCamera.WorldToScreenPoint(position);
+    }
+    public void DepositLoot(Dictionary<string, int> lootToDeposit)
+    {
+        lootManager.DepositLoot(lootToDeposit);
+    }
+    public List<string> PlayerLootStringList()
+    {
+        Dictionary<string, int> playerLoot = (agentController.player as IAgent).args.lootDictionary;
+        if (playerLoot == null || playerLoot.Count == 0)
+            return null;
+        List<string> lootStringList = new List<string>();
+        foreach (string lootName in playerLoot.Keys)
+        {
+            string lootString = $"{playerLoot[lootName]}x {lootName.ToUpper()}";
+            lootStringList.Add(lootString);
+        }
+        return lootStringList;
     }
 }
 public class CellData
@@ -555,23 +591,6 @@ public class CellData
         }
         List<Vector3Int> path = Pathfinding.aStarWithIgnore(agent.args.cellPos, cellPosition, agent.GetInaccessibleTilemaps(), null);
         return path;
-    }
-    public void TryLoot(IAgent agent)
-    {
-        if(!agent.args.allowedToLoot.HasFlag(LootType.All))
-        {
-            if (agent.args.allowedToLoot.HasFlag(LootType.None))
-                return;
-            if (!agent.args.allowedToLoot.HasFlag(loot.type))
-                return;
-        }
-        if (loot != null)
-        {
-            //Debug.Log($"Agent {agent.args.type} trying to loot {loot.lootName}");
-            agent.args.PickupLoot(loot);
-            GameObject.Destroy(loot.instantiatedObject);
-            loot = null;
-        }
     }
     public void CellInfoDebug()
     {
