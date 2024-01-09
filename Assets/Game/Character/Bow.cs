@@ -55,7 +55,7 @@ public class Bow : HeldWeapon
             projectile.objectAnimator.onAnimationComplete += () =>
             {
                 ProjectileManager.ins.ReturnProjectileToPool(projectile);
-                _target.args.AttackAgent(_owner, 2);
+                _target.AttackAgent(_owner, 2);
             };
         }
     }

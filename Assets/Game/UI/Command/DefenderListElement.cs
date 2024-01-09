@@ -11,8 +11,7 @@ public class DefenderListElement : MonoBehaviour, IButtonLayout
     public GameObject deathIndicator;
     public ObjectAnimator barLayoutAnimator;
     RectTransform barLayoutRectTransform;
-    Defender defender;
-    AgentArgs defenderArgs;
+    DefenderData defenderData;
     Bar[] bars;
     public SpriteAnimator portraitAnimator;
     public ObjectAnimator tabAnimator;
@@ -30,6 +29,8 @@ public class DefenderListElement : MonoBehaviour, IButtonLayout
     }
     public void MoveListElementAlong(Vector3[] listCorners)
     {
+        if (defenderData == null)
+            return;
         Vector3 listLeftMidpoint = (listCorners[0] + listCorners[1]) / 2;
         Vector3 listRightMidpoint = (listCorners[2] + listCorners[3]) / 2;
         ObjectAnimation moveAlong = new ObjectAnimation();
@@ -53,7 +54,7 @@ public class DefenderListElement : MonoBehaviour, IButtonLayout
             mainAnimator.onAnimationComplete += item.StopAnimation;
         }
         mainAnimator.onAnimationComplete += () => {
-            if (defenderArgs.health == 0)
+            if (defenderData.health == 0)
                 return;
             barLayoutAnimator.PlayAnimation("ShowBars");
         };
@@ -66,15 +67,15 @@ public class DefenderListElement : MonoBehaviour, IButtonLayout
             {
                 if (bar.barType == BarType.Health)
                 {
-                    bar.maxValue = defender.defenderData.maxHealth;
+                    bar.maxValue = defenderData.maxHealth;
                     bar.minValue = 0;
-                    bar.ChangeValue(defenderArgs.health);
+                    bar.ChangeValue(defenderData.health);
                 }
                 if (bar.barType == BarType.Exp)
                 {
-                    bar.maxValue = defender.defenderData.maxExp;
+                    bar.maxValue = defenderData.maxExp;
                     bar.minValue = 0;
-                    bar.ChangeValue(defenderArgs.exp);
+                    bar.ChangeValue(defenderData.exp);
                 }
             }
             barsDisplayed = true;
@@ -83,7 +84,7 @@ public class DefenderListElement : MonoBehaviour, IButtonLayout
             SpriteAnimation portraitAnimation = new SpriteAnimation();
             portraitAnimation.animName = "Default";
             portraitAnimation.frames = 2;
-            portraitAnimation.sprites = new List<Sprite>() { defender.defenderData.defaultSprites[0], defender.defenderData.defaultSprites[1] };
+            portraitAnimation.sprites = new List<Sprite>() { defenderData.defaultSprites[0], defenderData.defaultSprites[1] };
             portraitAnimation.spriteColors = new List<Color>() { Color.white, Color.white };
             portraitAnimator.CreateAndPlayAnimation(portraitAnimation);
         };
@@ -117,15 +118,14 @@ public class DefenderListElement : MonoBehaviour, IButtonLayout
             portraitImage = portraitAnimator.GetComponent<Image>();
         portraitImage.color = Color.clear;
     }
-    public void SetElementDefender(Defender defender)
+    public void SetElementDefender(DefenderData defenderData)
     {
-        this.defender = defender;
-        defenderArgs = ((IAgent)defender).args;
+        this.defenderData = defenderData;
     }
     private void Update()
     {
-        if (defender == null) return;
-        if (defenderArgs.health == 0 && !dead)
+        if (defenderData == null) return;
+        if (defenderData.health == 0 && !dead)
         {
             tabAnimator.PlayAnimation("Dead");
             tabBorderSpriteAnimator.PlayAnimation("Dead");
@@ -133,7 +133,7 @@ public class DefenderListElement : MonoBehaviour, IButtonLayout
             barLayoutAnimator.PlayAnimation("HideBars");
             dead = true;
         }
-        if (defenderArgs.health > 0 && dead)
+        if (defenderData.health > 0 && dead)
         {
             tabAnimator.PlayAnimation("Alive");
             tabBorderSpriteAnimator.PlayAnimation("Alive");
@@ -146,9 +146,9 @@ public class DefenderListElement : MonoBehaviour, IButtonLayout
             foreach (Bar bar in bars)
             {
                 if (bar.barType == BarType.Health)
-                    bar.ChangeValue(defenderArgs.health);
+                    bar.ChangeValue(defenderData.health);
                 if (bar.barType == BarType.Exp)
-                    bar.ChangeValue(defenderArgs.exp);
+                    bar.ChangeValue(defenderData.exp);
             }
         }
     }
@@ -157,7 +157,7 @@ public class DefenderListElement : MonoBehaviour, IButtonLayout
         if (buttonPressed == 0)
         {
             //GameManager.ins.Place_Defender(((IAgent)GameManager.ins.agentController.player).args.cellPos, defender);
-            GameManager.PlaceDefenderRequest += () => { return new GameManager.PlaceDefenderRequestArgs(defender, ((IAgent)GameManager.ins.agentController.player).args.cellPos); };
+            GameManager.PlaceDefenderRequest += () => { return new GameManager.PlaceDefenderRequestArgs(defenderData, ((IAgent)GameManager.ins.agentController.player).args.cellPos); };
         }
     }
     void OnDisable()

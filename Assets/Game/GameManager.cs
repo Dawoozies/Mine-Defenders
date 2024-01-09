@@ -103,7 +103,7 @@ public class GameManager : MonoBehaviour
         #region AgentController Start
         agentController = new AgentController();
         agentController.player = characterGenerator.CreatePlayer(Vector3Int.zero);
-        ((IAgent)agentController.player).args.onPlayerNoMovesLeft += agentController.Agents_RefreshMovesLeft;
+        //((IAgent)agentController.player).args.onPlayerNoMovesLeft += agentController.Agents_RefreshMovesLeft;
 
         onTap += agentController.Player_PathCalculate;
         #region Construct Enemies
@@ -122,17 +122,7 @@ public class GameManager : MonoBehaviour
 
         characterGenerator.SaveTestDefenders();
         defendersLoaded = DefenderIO.LoadDefendersFromJSON(characterGenerator.defenderBases);
-        #region Construct Defenders
-        agentController.defenders = new List<Defender>()
-        {
-            characterGenerator.CreateDefender(defendersLoaded[0]),
-            characterGenerator.CreateDefender(defendersLoaded[1]),
-            characterGenerator.CreateDefender(defendersLoaded[2]),
-            characterGenerator.CreateDefender(defendersLoaded[3]),
-            characterGenerator.CreateDefender(defendersLoaded[4]),
-            characterGenerator.CreateDefender(defendersLoaded[5]),
-        };
-        #endregion
+        agentController.defenders = new List<Defender>();
     }
 
     public delegate Vector3Int PlayerPositionBufferUpdated(); //Just updates cell position
@@ -154,11 +144,11 @@ public class GameManager : MonoBehaviour
     public static event PlaceDefender PlaceDefenderRequest;
     public class PlaceDefenderRequestArgs
     {
-        public Defender defenderToPlace;
+        public DefenderData defenderDataToPlace;
         public Vector3Int position;
-        public PlaceDefenderRequestArgs(Defender defenderToPlace, Vector3Int position)
+        public PlaceDefenderRequestArgs(DefenderData defenderDataToPlace, Vector3Int position)
         {
-            this.defenderToPlace = defenderToPlace;
+            this.defenderDataToPlace = defenderDataToPlace;
             this.position = position;
         }
     }
@@ -222,14 +212,11 @@ public class GameManager : MonoBehaviour
             foreach (Delegate item in PlaceDefenderRequest.GetInvocationList())
             {
                 PlaceDefenderRequestArgs args = item.DynamicInvoke() as PlaceDefenderRequestArgs;
-                Defender defenderToPlace = args.defenderToPlace;
-                Vector3Int pos = args.position;
-                //Debug.Log($"Placing defender {defenderToPlace.defenderData.defenderName}_{defenderToPlace.defenderData.defenderKey}");
-                defenderToPlace.gameObject.SetActive(true);
-                defenderToPlace.transform.position = CellToWorld(pos);
-                ((IAgent)defenderToPlace).args.isActive = true;
-
-                //just as testing
+                //first we need to look in current defenders to see if already placed
+                bool defenderAlreadyExists = agentController.DefenderAlreadyExists(args.defenderDataToPlace);
+                if (defenderAlreadyExists)
+                    continue;
+                agentController.defenders.Add(characterGenerator.CreateDefender(args.defenderDataToPlace, args.position));
             }
             PlaceDefenderRequest = null;
             if (agentController.defenders != null)
@@ -249,6 +236,15 @@ public class GameManager : MonoBehaviour
         }
         ((IAgent)agentController.player).args.MoveAlongPath(Time.fixedDeltaTime);
         #region Agent movement
+        if(moveUpdateTimer > 0)
+        {
+            moveUpdateTimer -= Time.fixedDeltaTime;
+        }
+        if (moveUpdateTimer <= 0)
+        {
+            agentController.Agents_RefreshMovesLeft();
+            moveUpdateTimer = moveUpdateTime;
+        }
         if (agentController.defenders != null)
         {
             foreach (IAgent defender in agentController.defenders)
@@ -876,5 +872,16 @@ public class AgentController
 
         int randomIndex = Random.Range(0, adjacentAgents.Count);
         return adjacentAgents[randomIndex];
+    }
+    public bool DefenderAlreadyExists(DefenderData defenderDataToPlace)
+    {
+        if (defenders == null || defenders.Count == 0)
+            return false;
+        foreach (Defender defender in defenders)
+        {
+            if (defender.defenderData.defenderKey == defenderDataToPlace.defenderKey)
+                return true;
+        }
+        return false;
     }
 }

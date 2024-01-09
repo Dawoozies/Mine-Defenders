@@ -17,6 +17,9 @@ public class Defender : MonoBehaviour, IAgent
     public Graphics baseGraphics;
     public Vector3 worldPos => agentCellCenterPos;
     public Vector3Int cellPos => agentCellPos;
+    public int health { get { return defenderData.health; } set { defenderData.health = value; } }
+    public int exp { get { return defenderData.exp; } set { defenderData.exp = value; } }
+
     UI_Action_Display actionDisplay;
     List<AgentType> targetTypes = new List<AgentType> { AgentType.Enemy };
 
@@ -71,14 +74,12 @@ public class Defender : MonoBehaviour, IAgent
         //    Attack attack = new Attack(attackBase);
         //    available.Add(attack);
         //}
-        agentData = new AgentArgs(transform, AgentType.Enemy, this);
+        agentData = new AgentArgs(transform, AgentType.Defender, this);
         agentData.movementPerTurn = defenderData.movementPerTurn;
         agentData.moveInterpolationSpeed = defenderData.moveInterpolationSpeed;
         agentData.moveInterpolationType = defenderData.moveInterpolationType;
         agentData.previousPoint = new Vector3Int(0, 0, -1);
         agentData.movesLeft = 0;
-        agentData.health = defenderData.health;
-        agentData.exp = defenderData.exp;
         agentData.allowedToLoot = LootType.None;
         agentData.target = null;
         agentData.targetedBy = new List<IAgent>();
@@ -176,5 +177,39 @@ public class Defender : MonoBehaviour, IAgent
             return false;
         float distanceFromTarget = Vector3.Distance(transform.position, agentData.target.args.worldPos);
         return distanceFromTarget < agentData.attackRange || Mathf.Approximately(distanceFromTarget, agentData.attackRange);
+    }
+
+
+    public void AttackAgent(IAgent attackingAgent, int damage)
+    {
+        if (health > 0)
+        {
+            health -= damage;
+            if (health <= 0)
+            {
+                health = 0;
+                agentData.AgentDeath();
+                return;
+            }
+            if (agentData.target == null)
+            {
+                agentData.target = attackingAgent;
+                attackingAgent.args.targetedBy.Add(this);
+            }
+            else
+            {
+                if (agentData.target != attackingAgent)
+                {
+                    float currentTargetDistance = Vector3Int.Distance(cellPos, agentData.target.args.cellPos);
+                    float attackingAgentDistance = Vector3Int.Distance(cellPos, attackingAgent.args.cellPos);
+                    if (attackingAgentDistance < currentTargetDistance)
+                    {
+                        agentData.target.args.targetedBy.Remove(this);
+                        agentData.target = attackingAgent;
+                        attackingAgent.args.targetedBy.Add(this);
+                    }
+                }
+            }
+        }
     }
 }

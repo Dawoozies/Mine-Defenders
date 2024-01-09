@@ -55,7 +55,7 @@ public class SwordAndShield : HeldWeapon
                 swordAnimator.onAnimationComplete += () => {
                     if(swordAnimator.GetCurrentAnimationName() == "Attacking")
                     {
-                        _target.args.AttackAgent(_owner, 2);
+                        _target.AttackAgent(_owner, 2);
                         Debug.LogError("Damage Dealt");
                     }
                 };

@@ -1339,20 +1339,6 @@ MonoBehaviour:
     - {fileID: 347608431, guid: 101dd67895840b94a9a228a2b7e74bd2, type: 3}
     - {fileID: -252073051, guid: b8d6cec06b155e449865e165f84205b1, type: 3}
     heldWeaponPrefab: {fileID: 0}
-  defenderToCreate:
-    defenderName: 
-    defenderKey: 0
-    maxHealth: 0
-    health: 0
-    maxExp: 0
-    exp: 0
-    attackRange: 0
-    attackChargeTime: 0
-    movementPerTurn: 0
-    moveInterpolationSpeed: 0
-    moveInterpolationType: 0
-    defaultSprites: []
-    heldWeaponPrefab: {fileID: 0}
 --- !u!1 &226689017
 GameObject:
   m_ObjectHideFlags: 0
@@ -5476,7 +5462,7 @@ MonoBehaviour:
   raycaster: {fileID: 1402697308}
   eventSystem: {fileID: 226689019}
   defendersLoaded: []
-  moveUpdateTime: 0
+  moveUpdateTime: 2
 --- !u!1 &774018938
 GameObject:
   m_ObjectHideFlags: 0
@@ -10420,8 +10406,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playOnStartAnimName: 
-  animationSpeed: 3
-  argsIterationSpeed: 3
+  animationSpeed: 1
+  argsIterationSpeed: 1
   oneAtATime: 0
   playOnce: 0
   animations:
@@ -12783,7 +12769,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playOnStartAnim: 
-  animationSpeed: 2
+  animationSpeed: 8
   animations: []
 --- !u!1 &2125017623
 GameObject:

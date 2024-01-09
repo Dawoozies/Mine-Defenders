@@ -818,7 +818,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playOnStartAnim: 
-  animationSpeed: 2
+  animationSpeed: 4
   animations: []
 --- !u!1 &5574241892861093670
 GameObject:

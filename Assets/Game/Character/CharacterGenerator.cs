@@ -15,7 +15,7 @@ public class CharacterGenerator : MonoBehaviour
     {
         Player player = Instantiate(playerPrefab, GameManager.ins.CellToWorld(cellToSpawnAt), Quaternion.identity, transform).GetComponent<Player>();
         IAgent playerAgent = player;
-        playerAgent.args.health = 100;
+        playerAgent.health = 100;
         playerAgent.args.type = AgentType.Player;
         return player;
     }
@@ -35,18 +35,12 @@ public class CharacterGenerator : MonoBehaviour
             return;
         DefenderIO.SaveDefendersToJSON(testDefenders);
     }
-    public Defender CreateDefender(DefenderData defenderData)
+    public Defender CreateDefender(DefenderData defenderData, Vector3Int cellToSpawnAt)
     {
-        Defender createdDefender = Instantiate(defenderPrefab, GameManager.ins.CellToWorld(Vector3Int.zero), Quaternion.identity, transform).GetComponent<Defender>();
+        Defender createdDefender = Instantiate(defenderPrefab, GameManager.ins.CellToWorld(cellToSpawnAt), Quaternion.identity, transform).GetComponent<Defender>();
         createdDefender.Initialise(defenderData);
-        createdDefender.gameObject.SetActive(false);
+        ((IAgent)createdDefender).args.isActive = true;
         ((IAgent)createdDefender).args.type = AgentType.Defender;
         return createdDefender;
-    }
-    public DefenderData defenderToCreate;
-    [ContextMenu("Generate Defender JSON")]
-    public void GenerateDefenderJSON()
-    {
-
     }
 }

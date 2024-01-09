@@ -8,6 +8,9 @@ using Material = ItemFactory.Material;
 
 public class Player : MonoBehaviour, IAgent
 {
+    int _health;
+    public int health { get { return _health; } set { _health = value; } }
+
     public int movementPerTurn;
     public float moveInterpolationSpeed;
     public InterpolationType moveInterpolationType;
@@ -38,6 +41,8 @@ public class Player : MonoBehaviour, IAgent
 
     public Vector3 worldPos => agentCellCenterPos;
     public Vector3Int cellPos => agentCellPos;
+    public int healthLeft => health;
+
     private void Awake()
     {
         //Set up agentData
@@ -165,5 +170,13 @@ public class Player : MonoBehaviour, IAgent
     {
         //player doesnt have targets yet
         return false;
+    }
+
+    public void AttackAgent(IAgent attackingAgent, int damage)
+    {
+        health -= damage;
+        Debug.Log("Player took damage");
+        if(health <= 0)
+            Debug.LogError("Player has died");
     }
 }

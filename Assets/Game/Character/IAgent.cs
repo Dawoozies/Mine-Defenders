@@ -10,6 +10,8 @@ public interface IAgent
     public Tilemap[] GetInaccessibleTilemaps();
     public void Retarget();
     public bool inRangeOfTarget();
+    public int health { get; set; }
+    public void AttackAgent(IAgent attackingAgent, int damage);
 }
 public enum AgentType
 {
@@ -42,8 +44,7 @@ public class AgentArgs
     public delegate void PlayerCompletedFullPath();
     public event PlayerCompletedFullPath onPlayerCompletedFullPath;
 
-    public int health;
-    public int exp;
+    //public int health;
     public LootType allowedToLoot;
     public Dictionary<string, int> lootDictionary;
 
@@ -88,38 +89,6 @@ public class AgentArgs
                 previousPoint = new Vector3Int(0, 0, -1);
             }
             onDeath?.Invoke();
-        }
-    }
-    public void AttackAgent(IAgent attackingAgent, int damage)
-    {
-        if (health > 0)
-        {
-            health -= damage;
-            if (health <= 0)
-            {
-                health = 0;
-                AgentDeath();
-                return;
-            }
-            if (target == null)
-            {
-                target = attackingAgent;
-                attackingAgent.args.targetedBy.Add(agent);
-            }
-            else
-            {
-                if (target != attackingAgent)
-                {
-                    float currentTargetDistance = Vector3Int.Distance(cellPos, target.args.cellPos);
-                    float attackingAgentDistance = Vector3Int.Distance(cellPos, attackingAgent.args.cellPos);
-                    if (attackingAgentDistance < currentTargetDistance)
-                    {
-                        target.args.targetedBy.Remove(agent);
-                        target = attackingAgent;
-                        attackingAgent.args.targetedBy.Add(agent);
-                    }
-                }
-            }
         }
     }
     public void PickupLoot(CellLoot loot)

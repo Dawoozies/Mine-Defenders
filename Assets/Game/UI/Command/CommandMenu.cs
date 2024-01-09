@@ -19,37 +19,43 @@ public class CommandMenu : MonoBehaviour
     //0 = bottom left 1 = top left 2 = top right 3 = bottom right
     List<DefenderListElement> defenderListElements = new List<DefenderListElement>();
     List<Bar> bars = new List<Bar>();
-
+    int previousDefenderCount;
     private void OnEnable()
     {
         //List<DefenderData> d = GameManager.ins.defendersLoaded;
-        List<Defender> defenders = GameManager.ins.GetDefenders();
-        int defenderCount = defenders.Count;
-        listElementRectTransform = listElementPrefab.GetComponent<RectTransform>();
-        #region Set up defender list elements
-        if(defenderListElements == null || defenderListElements.Count == 0)
-        {
+        List<DefenderData> defenders = GameManager.ins.defendersLoaded;
+        if(defenderListElements == null)
             defenderListElements = new List<DefenderListElement>();
-            for (int i = 0; i < defenderCount; i++)
+        #region Add new defender list elements to pool
+        if(previousDefenderCount < defenders.Count)
+        {
+            int elementsToAdd = defenders.Count - previousDefenderCount;
+            for(int i = 0; i < elementsToAdd; i++)
             {
                 GameObject clonedObject = Instantiate(listElementPrefab, defenderListElementsParent);
                 DefenderListElement defenderListElement = clonedObject.GetComponent<DefenderListElement>();
                 defenderListElements.Add(defenderListElement);
             }
+            previousDefenderCount = defenders.Count;
         }
-        else
+        #endregion
+        #region Set up defender list elements
+        listElementRectTransform = listElementPrefab.GetComponent<RectTransform>();
+        for (int i = 0; i < defenderListElements.Count; i++)
         {
-            foreach (DefenderListElement item in defenderListElements)
+            if (i >= defenders.Count)
             {
-                item.rectTransform.anchoredPosition = Vector2.zero;
+                defenderListElements[i].SetElementDefender(null);
+                continue;
             }
+            defenderListElements[i].SetElementDefender(defenders[i]);
         }
         #endregion
         #region Set up defender list base rect animation
         listBaseAnimator = defenderListBaseRect.GetComponent<ObjectAnimator>();
         chainSpriteAnimator = defenderListBaseRect.GetComponentInChildren<SpriteAnimator>();
 
-        listWidth = defenderCount*listElementRectTransform.sizeDelta.x;
+        listWidth = defenders.Count*listElementRectTransform.sizeDelta.x;
 
         listStartPos = 
             new Vector2(
@@ -80,7 +86,7 @@ public class CommandMenu : MonoBehaviour
         listBaseAnimator.CreateAndPlayAnimation(openAnimation);
         chainSpriteAnimator.PlayAnimation("ChainMoveLeft");
         listBaseAnimator.onAnimationComplete += chainSpriteAnimator.StopAnimation;
-        for (int i = 0; i < defenderCount; i++)
+        for (int i = 0; i < defenders.Count; i++)
         {
             defenderListElements[i].SetElementDefender(defenders[i]);
             //Debug.Log($"Defender = {i}");

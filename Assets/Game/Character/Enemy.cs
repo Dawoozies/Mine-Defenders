@@ -19,7 +19,8 @@ public class Enemy : MonoBehaviour, IAgent
     float attackCharge;
     public Vector3 worldPos => agentCellCenterPos;
     public Vector3Int cellPos => agentCellPos;
-
+    int _health;
+    public int health { get { return _health; } set { _health = value; } }
     UI_Action_Display actionDisplay;
     List<AgentType> targetTypes = new List<AgentType> { AgentType.Defender };
     public void Initialise(EnemyBase enemyBase)
@@ -81,7 +82,7 @@ public class Enemy : MonoBehaviour, IAgent
         agentData.moveInterpolationType = enemyBase.moveInterpolationType;
         agentData.previousPoint = new Vector3Int(0, 0, -1);
         agentData.movesLeft = 0;
-        agentData.health = enemyBase.baseHealth;
+        health = enemyBase.baseHealth;
         agentData.allowedToLoot = LootType.None;
         agentData.target = null;
         agentData.targetedBy = new List<IAgent>();
@@ -130,6 +131,12 @@ public class Enemy : MonoBehaviour, IAgent
                     };
                     baseGraphics.objectAnimator.animationSpeed = 4f;
                     baseGraphics.objectAnimator.CreateAndPlayAnimation(anim);
+                    baseGraphics.objectAnimator.onAnimationComplete += () =>
+                    {
+                        if (agentData.isDead)
+                            return;
+                        agentData.target.AttackAgent(this, 1);
+                    };
                 }
             }
         }
@@ -181,5 +188,38 @@ public class Enemy : MonoBehaviour, IAgent
             return false;
         float distanceFromTarget = Vector3.Distance(transform.position, agentData.target.args.worldPos);
         return distanceFromTarget < agentData.attackRange || Mathf.Approximately(distanceFromTarget, agentData.attackRange);
+    }
+
+    public void AttackAgent(IAgent attackingAgent, int damage)
+    {
+        if (health > 0)
+        {
+            health -= damage;
+            if (health <= 0)
+            {
+                health = 0;
+                agentData.AgentDeath();
+                return;
+            }
+            if (agentData.target == null)
+            {
+                agentData.target = attackingAgent;
+                attackingAgent.args.targetedBy.Add(this);
+            }
+            else
+            {
+                if (agentData.target != attackingAgent)
+                {
+                    float currentTargetDistance = Vector3Int.Distance(cellPos, agentData.target.args.cellPos);
+                    float attackingAgentDistance = Vector3Int.Distance(cellPos, attackingAgent.args.cellPos);
+                    if (attackingAgentDistance < currentTargetDistance)
+                    {
+                        agentData.target.args.targetedBy.Remove(this);
+                        agentData.target = attackingAgent;
+                        attackingAgent.args.targetedBy.Add(this);
+                    }
+                }
+            }
+        }
     }
 }
