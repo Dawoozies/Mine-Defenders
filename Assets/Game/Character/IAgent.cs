@@ -57,6 +57,7 @@ public class AgentArgs
     public event OnDeath onDeath;
 
     public float attackRange;
+    public float timeSpentNotMoving;
     public AgentArgs(Transform transform, AgentType type, IAgent agent)
     {
         this.transform = transform;
@@ -123,6 +124,7 @@ public class AgentArgs
             return;
         if(type == AgentType.Enemy || type == AgentType.Defender)
         {
+            Vector3 previousPos = transform.position;
             if (path == null || movesLeft <= 0)
                 return;
             //Debug.Log($"Moving along path {path.start} -> {path.end}");

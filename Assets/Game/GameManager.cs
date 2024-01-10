@@ -52,6 +52,9 @@ public class GameManager : MonoBehaviour
     public List<DefenderData> defendersLoaded;
 
     #endregion
+
+    public Hashtable cellTable;
+    public Hashtable uncoveredPitCenters;
     void Awake()
     {
         ins = this;
@@ -155,6 +158,8 @@ public class GameManager : MonoBehaviour
 
     public delegate void OnPlayerLootPickup(string lootName, int addedAmount, int totalAmount);
     public static event OnPlayerLootPickup onPlayerLootPickup;
+    public delegate void OnCellBreak(CellData cellBrokenData);
+    public static event OnCellBreak onCellBreak;
     public bool isInLevelBounds(Vector3Int position) {
         if (position.x < levelGenerator.bottomLeftCorner.x || position.x > levelGenerator.topRightCorner.x)
         {
@@ -253,6 +258,10 @@ public class GameManager : MonoBehaviour
                 {
                     defender.args.MoveAlongPath(Time.fixedDeltaTime);
                 }
+                if(defender.args.timeSpentNotMoving >= 30)
+                {
+                    Debug.LogError("Defender has been still for 30 seconds");
+                }
             }
         }
         if (agentController.enemies != null)
@@ -262,6 +271,10 @@ public class GameManager : MonoBehaviour
                 if (enemy.args.hasInstruction)
                 {
                     enemy.args.MoveAlongPath(Time.fixedDeltaTime);
+                }
+                if (enemy.args.timeSpentNotMoving >= 30)
+                {
+                    Debug.LogError("Defender has been still for 30 seconds");
                 }
             }
         }
@@ -393,8 +406,7 @@ public class GameManager : MonoBehaviour
             }
         }
     }
-    public Hashtable cellTable;
-    public Hashtable uncoveredPitCenters;
+
     public CellData GetCellDataAtPosition(Vector3Int cellPosition)
     {
         return (CellData)cellTable[cellPosition];
@@ -490,6 +502,8 @@ public class GameManager : MonoBehaviour
         //Dont spawn ore if its a pit uncovering
         if (cellData.ore != null)
             cellData.loot = lootManager.InstantiateLoot_Ore(cellData.cellCenterWorldPosition, cellData.ore);
+
+        onCellBreak?.Invoke(cellData);
     }
     public void TryLootAtCell(Vector3Int cellPos, IAgent agent)
     {
@@ -554,13 +568,48 @@ public class CellData
     public bool isUncoveredPit;
     public bool isPitCenter;
     public CellLoot loot;
+    public List<CellData> neighbours;
+    int _region;
+    public int region { 
+        get { return isPlayerSpawnArea ? 0 : (isTraversable() ? _region : -1); } 
+        set { _region = value; } 
+    }
+    public bool isTraversable()
+    {
+        if (durability > 0)
+            return false;
+        if (isPit || isUncoveredPit || isPitCenter)
+            return false;
+        if (isLevelBoundary)
+            return false;
+        return true;
+    }
+    public int traversableNeighbours()
+    {
+        if (neighbours == null)
+            neighbours = GetCardinalNeighbours(false);
+        if (neighbours == null)
+            return 0;
+        int traversableNeighbours = 0;
+        foreach (CellData item in neighbours)
+        {
+            if (item == null)
+                continue;
+            if (item.isTraversable())
+                traversableNeighbours++;
+        }
+        return traversableNeighbours;
+    }
     public List<CellData> GetAllNeighbours(bool includeSelf)
     {
         return GameManager.ins.GetAllNeighboursAroundCell(cellPosition, includeSelf);
     }
     public List<CellData> GetCardinalNeighbours(bool includeSelf)
     {
-        return GameManager.ins.GetCardinalNeighboursAroundCell(cellPosition, includeSelf);
+        if (neighbours != null)
+            return neighbours;
+        neighbours = GameManager.ins.GetCardinalNeighboursAroundCell(cellPosition, false);
+        return neighbours;
     }
     public List<Vector3Int> GetPathToClosestCardinalNeighbour(IAgent agent)
     {

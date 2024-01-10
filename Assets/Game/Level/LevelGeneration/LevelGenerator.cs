@@ -67,9 +67,9 @@ public class LevelGenerator : MonoBehaviour
         }
         //Setting spawn area
         List<Vector3Int> spawnArea = new List<Vector3Int>();
-        for (int x = spawnAreaBottomLeftCorner.x + 1; x < spawnAreaTopRightCorner.x - 1; x++)
+        for (int x = spawnAreaBottomLeftCorner.x + 1; x <= spawnAreaTopRightCorner.x - 1; x++)
         {
-            for (int y = spawnAreaBottomLeftCorner.y + 1; y < spawnAreaTopRightCorner.y - 1; y++)
+            for (int y = spawnAreaBottomLeftCorner.y + 1; y <= spawnAreaTopRightCorner.y - 1; y++)
             {
                 Vector3Int cell = new Vector3Int(x,y,0);
                 CellData cellData = (CellData)cellTable[cell];
