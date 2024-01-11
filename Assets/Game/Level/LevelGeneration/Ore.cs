@@ -19,6 +19,6 @@ public class Ore : ScriptableObject
 
     public bool BaseRoll()
     {
-        return baseRollChance > UnityEngine.Random.Range(0f, 1f);
+        return UnityEngine.Random.Range(0f, 1f) <= baseRollChance; 
     }
 }

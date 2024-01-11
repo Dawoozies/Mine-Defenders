@@ -566,97 +566,97 @@ public class GameManager : MonoBehaviour
         //agentController.Player_PathCalculate((CellData)cellTable[cellPosition]);
     }
 }
-public class CellData
-{
-    public Vector3Int cellPosition;
-    public Vector3 cellCenterWorldPosition;
-    public bool isPlayerSpawnArea;
-    public bool isLevelBoundary;
-    public Ore ore;
-    public int durability;
-    public bool isPit;
-    public bool isUncoveredPit;
-    public bool isPitCenter;
-    public CellLoot loot;
-    public List<CellData> neighbours;
-    public bool isTraversable()
-    {
-        if (durability > 0)
-            return false;
-        if (isPit || isUncoveredPit || isPitCenter)
-            return false;
-        if (isLevelBoundary)
-            return false;
-        return true;
-    }
-    public int traversableNeighbours()
-    {
-        if (neighbours == null)
-            neighbours = GetCardinalNeighbours(false);
-        if (neighbours == null)
-            return 0;
-        int traversableNeighbours = 0;
-        foreach (CellData item in neighbours)
-        {
-            if (item == null)
-                continue;
-            if (item.isTraversable())
-                traversableNeighbours++;
-        }
-        return traversableNeighbours;
-    }
-    public List<CellData> GetAllNeighbours(bool includeSelf)
-    {
-        return GameManager.ins.GetAllNeighboursAroundCell(cellPosition, includeSelf);
-    }
-    public List<CellData> GetCardinalNeighbours(bool includeSelf)
-    {
-        if (neighbours != null)
-            return neighbours;
-        neighbours = GameManager.ins.GetCardinalNeighboursAroundCell(cellPosition, false);
-        return neighbours;
-    }
-    public List<Vector3Int> GetPathToClosestCardinalNeighbour(IAgent agent)
-    {
-        List<CellData> neighbours = GetCardinalNeighbours(true);
-        List<Vector3Int> shortestPath = null;
-        foreach (CellData neighbour in neighbours)
-        {
-            List<Vector3Int> path;
-            path = Pathfinding.aStarWithIgnore(agent.args.cellPos, neighbour.cellPosition, agent.GetInaccessibleTilemaps(), null);
-            if (path == null || path.Count == 0)
-                continue;
-            if (shortestPath == null)
-                shortestPath = path;
-            else
-                shortestPath = path.Count < shortestPath.Count ? path : shortestPath;
-        }
-        return shortestPath;
-    }
-    public List<Vector3Int> GetPathToCell(IAgent agent)
-    {
-        if(durability > 0)
-        {
-            return GetPathToClosestCardinalNeighbour(agent);
-        }
-        List<Vector3Int> path = Pathfinding.aStarWithIgnore(agent.args.cellPos, cellPosition, agent.GetInaccessibleTilemaps(), null);
-        return path;
-    }
-    public void CellInfoDebug()
-    {
-        Debug.Log("[--------------------------------]");
-        Debug.Log($"cellPosition = {cellPosition}");
-        Debug.Log($"cellCenterWorldPosition = {cellCenterWorldPosition}");
-        Debug.Log($"isPlayerSpawnArea = {cellPosition}");
-        Debug.Log($"isLevelBoundary = {cellCenterWorldPosition}");
-        string oreDebug = ore == null ? "ore = null" : $"ore = {ore.name}";
-        Debug.Log(oreDebug);
-        Debug.Log($"durability = {durability}");
-        Debug.Log($"isPit = {isPit}");
-        Debug.Log($"isUncoveredPit = {isUncoveredPit}");
-        Debug.Log("[--------------------------------]");
-    }
-}
+//public class CellData
+//{
+//    public Vector3Int cellPosition;
+//    public Vector3 cellCenterWorldPosition;
+//    public bool isPlayerSpawnArea;
+//    public bool isLevelBoundary;
+//    public Ore ore;
+//    public int durability;
+//    public bool isPit;
+//    public bool isUncoveredPit;
+//    public bool isPitCenter;
+//    public CellLoot loot;
+//    public List<CellData> neighbours;
+//    public bool isTraversable()
+//    {
+//        if (durability > 0)
+//            return false;
+//        if (isPit || isUncoveredPit || isPitCenter)
+//            return false;
+//        if (isLevelBoundary)
+//            return false;
+//        return true;
+//    }
+//    public int traversableNeighbours()
+//    {
+//        if (neighbours == null)
+//            neighbours = GetCardinalNeighbours(false);
+//        if (neighbours == null)
+//            return 0;
+//        int traversableNeighbours = 0;
+//        foreach (CellData item in neighbours)
+//        {
+//            if (item == null)
+//                continue;
+//            if (item.isTraversable())
+//                traversableNeighbours++;
+//        }
+//        return traversableNeighbours;
+//    }
+//    public List<CellData> GetAllNeighbours(bool includeSelf)
+//    {
+//        return GameManager.ins.GetAllNeighboursAroundCell(cellPosition, includeSelf);
+//    }
+//    public List<CellData> GetCardinalNeighbours(bool includeSelf)
+//    {
+//        if (neighbours != null)
+//            return neighbours;
+//        neighbours = GameManager.ins.GetCardinalNeighboursAroundCell(cellPosition, false);
+//        return neighbours;
+//    }
+//    public List<Vector3Int> GetPathToClosestCardinalNeighbour(IAgent agent)
+//    {
+//        List<CellData> neighbours = GetCardinalNeighbours(true);
+//        List<Vector3Int> shortestPath = null;
+//        foreach (CellData neighbour in neighbours)
+//        {
+//            List<Vector3Int> path;
+//            path = Pathfinding.aStarWithIgnore(agent.args.cellPos, neighbour.cellPosition, agent.GetInaccessibleTilemaps(), null);
+//            if (path == null || path.Count == 0)
+//                continue;
+//            if (shortestPath == null)
+//                shortestPath = path;
+//            else
+//                shortestPath = path.Count < shortestPath.Count ? path : shortestPath;
+//        }
+//        return shortestPath;
+//    }
+//    public List<Vector3Int> GetPathToCell(IAgent agent)
+//    {
+//        if(durability > 0)
+//        {
+//            return GetPathToClosestCardinalNeighbour(agent);
+//        }
+//        List<Vector3Int> path = Pathfinding.aStarWithIgnore(agent.args.cellPos, cellPosition, agent.GetInaccessibleTilemaps(), null);
+//        return path;
+//    }
+//    public void CellInfoDebug()
+//    {
+//        Debug.Log("[--------------------------------]");
+//        Debug.Log($"cellPosition = {cellPosition}");
+//        Debug.Log($"cellCenterWorldPosition = {cellCenterWorldPosition}");
+//        Debug.Log($"isPlayerSpawnArea = {cellPosition}");
+//        Debug.Log($"isLevelBoundary = {cellCenterWorldPosition}");
+//        string oreDebug = ore == null ? "ore = null" : $"ore = {ore.name}";
+//        Debug.Log(oreDebug);
+//        Debug.Log($"durability = {durability}");
+//        Debug.Log($"isPit = {isPit}");
+//        Debug.Log($"isUncoveredPit = {isUncoveredPit}");
+//        Debug.Log("[--------------------------------]");
+//    }
+//}
 public class AgentController
 {
     public Player player;
