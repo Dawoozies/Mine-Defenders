@@ -32,7 +32,7 @@ public class LevelGenerator : MonoBehaviour
     public List<Ore> ores;
 
     GridInformation GridInformation;
-
+    public Vector2Int enemyPortalLocation;
     public Hashtable GenerateLevelHashtable()
     {
         //Add all empty cellData
@@ -88,6 +88,12 @@ public class LevelGenerator : MonoBehaviour
                 bool inSpawnArea =
                     (spawnAreaBottomLeftCorner.x < cell.x && cell.x < spawnAreaTopRightCorner.x &&
                     spawnAreaBottomLeftCorner.y < cell.y && cell.y < spawnAreaTopRightCorner.y);
+                if (!inSpawnArea && x == 0 && y > 0 && y < enemyPortalLocation.y)
+                {
+                    GenerateFloor(cell);
+                    ignoreCells.Add(cell);
+                    continue;
+                }
                 bool ignoreCell = inSpawnArea || ignoreCells.Contains(cell);
                 if(!ignoreCell)
                 {
@@ -157,7 +163,7 @@ public class LevelGenerator : MonoBehaviour
             bool inSpawnArea = 
                 (spawnAreaBottomLeftCorner.x - minPitDistanceFromSpawn < cell.x && cell.x < spawnAreaTopRightCorner.x + minPitDistanceFromSpawn &&
                 spawnAreaBottomLeftCorner.y - minPitDistanceFromSpawn < cell.y && cell.y < spawnAreaTopRightCorner.y + minPitDistanceFromSpawn);
-            if (inSpawnArea)
+            if (inSpawnArea || ignoreCells.Contains(cell))
                 continue;
             List<CellData> neighbours = GameManager.ins.GetAllNeighboursAroundCell_InGivenHashtable(cellTable, cell, true);
             foreach (CellData cellData in neighbours)
@@ -177,25 +183,6 @@ public class LevelGenerator : MonoBehaviour
         StoneTilemap.SetTile(cellPos, null);
         StoneColorTilemap.SetTile(cellPos, null);
         HiddenTilemap.SetTile(cellPos, null);
-    }
-    public void ManagedStart()
-    {
-        GridInformation = GetComponent<GridInformation>();
-
-        ignoreCells = new List<Vector3Int>();
-        List<Vector3Int> levelBoundary = Boundaries(bottomLeftCorner - Vector2Int.one, topRightCorner + Vector2Int.one);
-        List<Vector3Int> spawnBoundary = Boundaries(spawnAreaBottomLeftCorner + Vector2Int.one, spawnAreaTopRightCorner - Vector2Int.one);
-        ignoreCells.AddRange(levelBoundary);
-        ignoreCells.AddRange(spawnBoundary);
-
-        GenerationLayer_StoneAndSeedOreWalkers();
-        GenerationLayer_GeneratePits();
-
-        GridInteraction.StoneDestroyedEvent += (StoneDestroyedArgs args) => { GenerateFloor(args.CellPosition); };
-        GridInteraction.StoneDestroyedEvent += (StoneDestroyedArgs args) => {
-            if (GridInformation.GetPositionProperty(args.CellPosition, "IsPit", 0) == 1) {
-                UncoverPit(args.CellPosition);
-            } };
     }
     List<Vector3Int> Boundaries(Vector2Int bottomLeft, Vector2Int topRight)
     {
@@ -222,151 +209,9 @@ public class LevelGenerator : MonoBehaviour
         }
         return boundaries;
     }
-    void GenerationLayer_StoneAndSeedOreWalkers()
-    {
-        //Generates stone and does seed ore walkers
-        //Once an ore walker has been put down
-        //add cell to ignore list and do random walks
-        for (int x = bottomLeftCorner.x; x <= topRightCorner.x; x++)
-        {
-            for(int y = bottomLeftCorner.y; y <= topRightCorner.y; y++)
-            {
-                Vector3Int currentCoordinate = new Vector3Int(x, y, 0);
-
-                //Ignore generation if in spawn area or current coordinates are on the ignore list
-                bool inSpawnArea =
-                    (spawnAreaBottomLeftCorner.x < x && x < spawnAreaTopRightCorner.x &&
-                    spawnAreaBottomLeftCorner.y < y && y < spawnAreaTopRightCorner.y);
-                bool ignoreCell = inSpawnArea || ignoreCells.Contains(currentCoordinate);
-
-                if (!ignoreCell)
-                {
-                    //StoneTilemap.SetTile(currentCoordinate, stone);
-                    Ore highestRarityOreRolled = null;
-                    foreach (Ore ore in ores)
-                    {
-                        if(ore.BaseRoll())
-                        {
-                            if(highestRarityOreRolled == null || ore.rarity > highestRarityOreRolled.rarity)
-                            {
-                                highestRarityOreRolled = ore;
-                                continue;
-                            }
-                        }
-                    }
-                    if(highestRarityOreRolled != null)
-                    {
-                        int stepsRoll = highestRarityOreRolled.stepMinMax.x + Random.Range(0, highestRarityOreRolled.stepMinMax.y + 1);
-                        //Debug.LogError($"Starting random walk for: {highestRarityOreRolled.name} with steps = {stepsRoll}");
-                        CellWalker oreWalker = new CellWalker(currentCoordinate, stepsRoll);
-                        List<Vector3Int> walkedTiles = oreWalker.CalculateWalk(ignoreCells);
-                        ignoreCells.AddRange(walkedTiles);
-                        foreach (Vector3Int walkedTile in walkedTiles)
-                        {
-                            OreTilemap.SetTile(walkedTile, ore);
-                            OreTilemap.SetColor(walkedTile, highestRarityOreRolled.color);
-
-                            GridInformation.SetPositionProperty(walkedTile, "OreName", highestRarityOreRolled.name);
-                            GridInformation.SetPositionProperty(walkedTile, "Durability", highestRarityOreRolled.durability);
-                        }
-                    }
-                    else
-                    {
-                        OreTilemap.SetTile(currentCoordinate, ore);
-                        OreTilemap.SetColor(currentCoordinate, emptyOre.color);
-                    }
-
-                }
-                if(!inSpawnArea)
-                {
-                    StoneTilemap.SetTile(currentCoordinate, stone);
-                    StoneColorTilemap.SetTile(currentCoordinate, stoneColor);
-                    StoneColorTilemap.SetColor(currentCoordinate, defaultStoneColor);
-                    HiddenTilemap.SetTile(currentCoordinate, hiddenTile);
-
-                    int existingDurability = GridInformation.GetPositionProperty(currentCoordinate, "Durability", 0);
-                    GridInformation.SetPositionProperty(currentCoordinate, "Durability", existingDurability + 2);
-                }
-                if(inSpawnArea)
-                {
-                    GenerateFloor(currentCoordinate);
-                }
-
-                
-            }
-        }
-    }
     public void GenerateFloor(Vector3Int cellPos)
     {
         FloorTilemap.SetTile(cellPos, floorTile);
-    }
-    void GenerationLayer_GeneratePits()
-    {
-        List<Vector2> sampleResults = FastPoissonDiskSampling.Sampling(bottomLeftCorner, topRightCorner, minPitDistanceFromEachOther);
-        if (sampleResults == null || sampleResults.Count == 0)
-            return;
-
-        foreach (Vector2 sampledPoint in sampleResults)
-        {
-            Vector3Int point = new Vector3Int(Mathf.RoundToInt(sampledPoint.x), Mathf.RoundToInt(sampledPoint.y), 0);
-            bool inSpawnArea =
-                (spawnAreaBottomLeftCorner.x - minPitDistanceFromSpawn < point.x && point.x < spawnAreaTopRightCorner.x + minPitDistanceFromSpawn &&
-                 spawnAreaBottomLeftCorner.y - minPitDistanceFromSpawn < point.y && point.y < spawnAreaTopRightCorner.y + minPitDistanceFromSpawn);
-            if (inSpawnArea)
-                continue;
-
-            //1 for true
-            GridInformation.SetPositionProperty(point, "IsPit", 1);
-            GridInformation.SetPositionProperty(point, "IsUncoveredPit", 0);
-            foreach (Vector3Int direction in GameManager.ins.directions)
-            {
-                GridInformation.SetPositionProperty(point + direction, "IsPit", 1);
-                GridInformation.SetPositionProperty(point, "IsUncoveredPit", 0);
-            }
-            PitTilemap.SetTile(point, pitTile);
-        }
-    }
-    public void UncoverPit(Vector3Int uncoverPoint)
-    {
-        Vector3Int center = Vector3Int.zero;
-        foreach (Vector3Int direction in GameManager.ins.directions)
-        {
-            if (CountPitNeighbours(uncoverPoint + direction) == 8)
-            {
-                center = uncoverPoint + direction;
-            }
-        }
-        foreach (Vector3Int direction in GameManager.ins.directions)
-        {
-            PitTilemap.SetTile(center + direction, pitTile);
-            StoneTilemap.SetTile(center + direction, null);
-            StoneColorTilemap.SetTile(center + direction, null);
-            OreTilemap.SetTile(center + direction, null);
-            HiddenTilemap.SetTile(center + direction, null);
-            //GridInformation.SetPositionProperty(center + direction, "IsUncoveredPit", 1);
-            GameManager.ins.GetCellDataAtPosition(center + direction).isUncoveredPit = true;
-        }
-        PitTilemap.SetTile(center, pitTile);
-        StoneTilemap.SetTile(center, null);
-        StoneColorTilemap.SetTile(center, null);
-        OreTilemap.SetTile(center, null);
-        HiddenTilemap.SetTile(center, null);
-        //GridInformation.SetPositionProperty(center, "IsUncoveredPit", 1);
-        GameManager.ins.GetCellDataAtPosition(center).isUncoveredPit = true;
-        GameManager.ins.UncoverPit(center);
-    }
-
-    private int CountPitNeighbours(Vector3Int point) 
-    {
-        int count = 0;
-        foreach(Vector3Int direction in GameManager.ins.directions) {
-            //if (GridInformation.GetPositionProperty(point + direction, "IsPit", 0) == 1)
-            if(GameManager.ins.GetCellDataAtPosition(point + direction).isPit)
-            {
-                count++;
-            }
-        }
-        return count;
     }
     public CellData UncoverFullPit(CellData uncoveredCell)
     {

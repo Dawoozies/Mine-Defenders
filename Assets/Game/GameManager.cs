@@ -555,6 +555,16 @@ public class GameManager : MonoBehaviour
         }
         return lootStringList;
     }
+    public Vector3 ScreenToWorld(Vector2 screenPos)
+    {
+        return mainCamera.ScreenToWorldPoint(screenPos);
+    }
+    public void DragMovePlayer(Vector2 screenPos)
+    {
+        Vector3 worldPos = ScreenToWorld(screenPos);
+        //Vector3Int cellPosition = WorldToCell(worldPos);
+        //agentController.Player_PathCalculate((CellData)cellTable[cellPosition]);
+    }
 }
 public class CellData
 {
@@ -569,11 +579,6 @@ public class CellData
     public bool isPitCenter;
     public CellLoot loot;
     public List<CellData> neighbours;
-    int _region;
-    public int region { 
-        get { return isPlayerSpawnArea ? 0 : (isTraversable() ? _region : -1); } 
-        set { _region = value; } 
-    }
     public bool isTraversable()
     {
         if (durability > 0)
@@ -652,13 +657,6 @@ public class CellData
         Debug.Log("[--------------------------------]");
     }
 }
-[Flags]
-public enum CellContents
-{
-    None = 0,
-    Ore = 1,
-    Stone = 2,
-}
 public class AgentController
 {
     public Player player;
@@ -668,7 +666,8 @@ public class AgentController
     List<Vector3Int> nextStepList = new List<Vector3Int>();
     public void Player_PathCalculate(CellData cellData)
     {
-        ((IAgent)player).args.ResetCompletedFullPathEvent();
+        IAgent playerAgent = player as IAgent;
+        playerAgent.args.ResetCompletedFullPathEvent();
         bool targetingStone = cellData.durability > 0;
         if (targetingStone)
         {

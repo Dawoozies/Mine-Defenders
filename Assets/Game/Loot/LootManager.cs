@@ -19,7 +19,7 @@ public class LootManager : MonoBehaviour
         loot.amount = Random.Range(0, 4) + 1;
         loot.type = LootType.Ore;
         loot.instantiatedObject = lootObject;
-        lootObject.GetComponentInChildren<SpriteRenderer>().color = ore.color;
+        //lootObject.GetComponentInChildren<SpriteRenderer>().color = ore.color;
         lootObject.GetComponentInChildren<SpriteAnimator>().PlayAnimation(loot.amount - 1);
         return loot;
     }

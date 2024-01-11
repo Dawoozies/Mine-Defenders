@@ -118,6 +118,7 @@ public class AgentArgs
         }
         return total;
     }
+
     public void MoveAlongPath(float timeDelta)
     {
         if (agent.inRangeOfTarget())
@@ -185,6 +186,14 @@ public class AgentArgs
             }
             transform.position = playerPath[playerPathIndex].Traverse(timeDelta * moveInterpolationSpeed);
         }
+    }
+    public Vector3 GetPlayerNextStep()
+    {
+        if (playerPath == null)
+            return new Vector3(0,0,-1);
+        if (playerPathIndex >= playerPath.Count)
+            return new Vector3(0,0,-1);
+        return playerPath[playerPathIndex].end;
     }
     public void RefreshMovesLeft()
     {

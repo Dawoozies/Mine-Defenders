@@ -544,7 +544,7 @@ MonoBehaviour:
   minPitDistanceFromSpawn: 5
   minPitDistanceFromEachOther: 12
   hiddenTile: {fileID: 11400000, guid: cfbe5202f4b997a47933668b8ac111e9, type: 2}
-  floorTile: {fileID: 11400000, guid: 4ec5ca44acb356640b5e6fd12719b687, type: 2}
+  floorTile: {fileID: -8016189612701125845, guid: 0d8b95850b26e4c46875bdd5b92ffbc9, type: 2}
   pitTile: {fileID: 11400000, guid: b573a7e59b0e5644eb2f00d2ac298f21, type: 2}
   ore: {fileID: 11400000, guid: c1a2085f9f5430d4eb57b42affc2d1f8, type: 2}
   stone: {fileID: 11400000, guid: 0565159ed081bb1428020bacd53249a1, type: 2}
@@ -554,6 +554,7 @@ MonoBehaviour:
   ores:
   - {fileID: 11400000, guid: 789f192205eb10242828be9116e63686, type: 2}
   - {fileID: 11400000, guid: 1e178397a77951a41b8ce36f00486fc0, type: 2}
+  enemyPortalLocation: {x: 0, y: 30}
 --- !u!1 &109560183
 GameObject:
   m_ObjectHideFlags: 0
@@ -5403,7 +5404,6 @@ GameObject:
   m_Component:
   - component: {fileID: 755437058}
   - component: {fileID: 755437059}
-  - component: {fileID: 755437060}
   m_Layer: 0
   m_Name: Game Manager
   m_TagString: Untagged
@@ -5463,29 +5463,7 @@ MonoBehaviour:
   raycaster: {fileID: 1402697308}
   eventSystem: {fileID: 226689019}
   defendersLoaded: []
-  regions: {fileID: 0}
   moveUpdateTime: 2
---- !u!114 &755437060
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 755437057}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9aed7919b2a43024ea92d5b0cf53bdca, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  showConnections: 0
-  showRegions: 1
-  connectionColors:
-  - {r: 1, g: 0, b: 0, a: 0.5019608}
-  - {r: 0, g: 0, b: 1, a: 0.5019608}
-  - {r: 1, g: 1, b: 0, a: 0.5019608}
-  - {r: 0, g: 1, b: 0, a: 0.5019608}
-  regionLimit: 8
-  regionColors: []
 --- !u!1 &774018938
 GameObject:
   m_ObjectHideFlags: 0

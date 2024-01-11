@@ -5,6 +5,7 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Recolor Data")]
 public class RecolorData : ScriptableObject
 {
+    public Sprite referenceSprite;
     public List<ColorPair> colorPairs;
 }
 [Serializable]

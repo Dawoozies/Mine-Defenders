@@ -65,7 +65,7 @@ public class Draggable : MonoBehaviour, IDrag
 
     public virtual bool CheckDragAllowed()
     {
-        Debug.Log("Check Drag Allowed base method called, this should be overwritten");
+        //Debug.Log("Check Drag Allowed base method called, this should be overwritten");
         return true;
     }
 }

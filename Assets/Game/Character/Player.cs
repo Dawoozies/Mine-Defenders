@@ -42,9 +42,14 @@ public class Player : MonoBehaviour, IAgent
     public Vector3 worldPos => agentCellCenterPos;
     public Vector3Int cellPos => agentCellPos;
     public int healthLeft => health;
-
+    Draggable drag;
     private void Awake()
     {
+        drag = GetComponent<Draggable>();
+        drag.onWhileDrag += (Vector2 screenPos) =>
+        {
+            GameManager.ins.DragMovePlayer(screenPos);
+        };
         //Set up agentData
         agentData = new AgentArgs(transform, AgentType.Player, this);
         agentData.movementPerTurn = movementPerTurn;
