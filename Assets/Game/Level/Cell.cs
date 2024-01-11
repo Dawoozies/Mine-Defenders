@@ -85,22 +85,22 @@ public enum CellAreaFlags
 {
     None = 0,
     PlayerSpawnArea = 1,
-    LevelBoundary = 2,
-    IsEnemySpawnArea = 4,
-    IsEnemySpawnCenter = 8,
+    LevelBoundary = 1 << 1,
+    IsEnemySpawnArea = 1 << 2,
+    IsEnemySpawnCenter = 1 << 3,
 }
 [Flags]
 public enum CellStructureFlags
 {
     None = 0,
     Stone = 1,
-    Wall = 2,
-    Portal = 4,
+    Wall = 1 << 1,
+    Portal = 1 << 2,
 }
 [Flags]
 public enum CellFloorFlags
 {
     None = 0,
     Stone = 1,
-    Grass = 2,
+    Grass = 1 << 1,
 }

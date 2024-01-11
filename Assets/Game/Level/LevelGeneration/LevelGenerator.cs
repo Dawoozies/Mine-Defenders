@@ -5,6 +5,7 @@ using UnityEngine.Tilemaps;
 
 public class LevelGenerator : MonoBehaviour
 {
+    public Dictionary<Vector3Int, CellData> level;
     public Tilemap OreTilemap;
     public Tilemap StoneTilemap;
     public Tilemap StoneColorTilemap;
@@ -33,10 +34,14 @@ public class LevelGenerator : MonoBehaviour
 
     GridInformation GridInformation;
     public Vector2Int enemyPortalLocation;
-    public Hashtable GenerateLevelHashtable()
+
+    public int mapSize;
+    public void GenerateLevel()
     {
         //Add all empty cellData
-        Hashtable cellTable = new Hashtable();
+        //Hashtable cellTable = new Hashtable();
+        level = new Dictionary<Vector3Int, CellData>();
+
         //all the way from outer boundary
         for (int x = bottomLeftCorner.x-1; x <= topRightCorner.x+1; x++)
         {
@@ -60,8 +65,7 @@ public class LevelGenerator : MonoBehaviour
         foreach (Vector3Int cell in levelBoundary)
         {
             CellData cellData = (CellData)cellTable[cell];
-            cellData.isPlayerSpawnArea = false;
-            cellData.isLevelBoundary = true;
+            cellData.cellAreaFlags |= CellAreaFlags.LevelBoundary;
             cellData.ore = null;
             cellData.durability = 0;
         }
@@ -73,8 +77,7 @@ public class LevelGenerator : MonoBehaviour
             {
                 Vector3Int cell = new Vector3Int(x,y,0);
                 CellData cellData = (CellData)cellTable[cell];
-                cellData.isPlayerSpawnArea = true;
-                cellData.isLevelBoundary = false;
+                cellData.cellAreaFlags |= CellAreaFlags.PlayerSpawnArea;
                 cellData.ore = null;
                 cellData.durability = 0;
             }

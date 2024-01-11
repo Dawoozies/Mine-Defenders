@@ -53,8 +53,8 @@ public class GameManager : MonoBehaviour
 
     #endregion
 
-    public Hashtable cellTable;
-    public Hashtable uncoveredPitCenters;
+    //public Hashtable cellTable;
+    //public Hashtable uncoveredPitCenters;
     void Awake()
     {
         ins = this;
@@ -85,7 +85,7 @@ public class GameManager : MonoBehaviour
             }
             #endregion
 
-            onTap?.Invoke((CellData)cellTable[cellPosition]);
+            onTap?.Invoke(level[cellPosition]);
         };
         input.Enable();
     }
@@ -96,8 +96,7 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         //levelGenerator.ManagedStart();
-        cellTable = levelGenerator.GenerateLevelHashtable();
-        uncoveredPitCenters = new Hashtable();
+        levelGenerator.GenerateLevel();
 
         //player = characterGenerator.ManagedStart();
         //playerLastCellPos = WorldToCell(player.position);
@@ -160,6 +159,7 @@ public class GameManager : MonoBehaviour
     public static event OnPlayerLootPickup onPlayerLootPickup;
     public delegate void OnCellBreak(CellData cellBrokenData);
     public static event OnCellBreak onCellBreak;
+    public Dictionary<Vector3Int, CellData> level => levelGenerator.level;
     public bool isInLevelBounds(Vector3Int position) {
         if (position.x < levelGenerator.bottomLeftCorner.x || position.x > levelGenerator.topRightCorner.x)
         {
