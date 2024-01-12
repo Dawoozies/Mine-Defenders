@@ -12,6 +12,7 @@ public interface IAgent
     public bool inRangeOfTarget();
     public int health { get; set; }
     public void AttackAgent(IAgent attackingAgent, int damage);
+
 }
 public enum AgentType
 {
@@ -47,7 +48,6 @@ public class AgentArgs
     //public int health;
     public LootType allowedToLoot;
     public Dictionary<string, int> lootDictionary;
-
     public IAgent target;
     public List<IAgent> targetedBy;
     public bool isDead;

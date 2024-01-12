@@ -2,10 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
-
 public class LevelGenerator : MonoBehaviour
 {
     public Dictionary<Vector3Int, CellData> level;
+    public Tilemap levelTilemap;
     public Tilemap OreTilemap;
     public Tilemap StoneTilemap;
     public Tilemap StoneColorTilemap;
@@ -14,12 +14,12 @@ public class LevelGenerator : MonoBehaviour
     public Tilemap FloorTilemap;
     List<Vector3Int> ignoreCells;
 
-    public Vector2Int bottomLeftCorner;
-    public Vector2Int topRightCorner;
-    public Vector2Int spawnAreaBottomLeftCorner;
-    public Vector2Int spawnAreaTopRightCorner;
-    public int minPitDistanceFromSpawn;
-    public int minPitDistanceFromEachOther;
+    //public Vector2Int bottomLeftCorner;
+    //public Vector2Int topRightCorner;
+    //public Vector2Int spawnAreaBottomLeftCorner;
+    //public Vector2Int spawnAreaTopRightCorner;
+    //public int minPitDistanceFromSpawn;
+    //public int minPitDistanceFromEachOther;
 
     public RuleTile hiddenTile;
     public RuleTile floorTile;
@@ -35,150 +35,209 @@ public class LevelGenerator : MonoBehaviour
     GridInformation GridInformation;
     public Vector2Int enemyPortalLocation;
 
-    public int mapSize;
+    public Vector2Int levelPoint1, levelPoint2;
+    public Vector2Int spawnPoint1, spawnPoint2;
+    public Vector2Int enemyFirstSpawnPoint;
+    public int enemySpawnHallWidth;
+
+    public Color hiddenTileColor;
     public void GenerateLevel()
     {
         //Add all empty cellData
         //Hashtable cellTable = new Hashtable();
         level = new Dictionary<Vector3Int, CellData>();
-
-        //all the way from outer boundary
-        for (int x = bottomLeftCorner.x-1; x <= topRightCorner.x+1; x++)
+        for (int i = levelPoint1.x; i <= levelPoint2.x; i++)
         {
-            for (int y = bottomLeftCorner.y-1; y <= topRightCorner.y+1; y++)
+            for (int j = levelPoint1.y; j <= levelPoint2.y; j++)
             {
-                Vector3Int cellPosition = new Vector3Int(x, y, 0);
-                Vector3 cellCenterWorldPosition = GameManager.ins.CellToWorld(cellPosition);
-                CellData cellData = new CellData();
-                cellData.cellPosition = cellPosition;
-                cellData.cellCenterWorldPosition = cellCenterWorldPosition;
-                cellTable.Add(cellPosition, cellData);
-            }
-        }
-        //Compute ignore list
-        ignoreCells = new List<Vector3Int>();
-        List<Vector3Int> levelBoundary = Boundaries(bottomLeftCorner - Vector2Int.one, topRightCorner + Vector2Int.one);
-        List<Vector3Int> spawnBoundary = Boundaries(spawnAreaBottomLeftCorner + Vector2Int.one, spawnAreaTopRightCorner - Vector2Int.one);
-        ignoreCells.AddRange(levelBoundary);
-        ignoreCells.AddRange(spawnBoundary);
-        //Setting level boundary
-        foreach (Vector3Int cell in levelBoundary)
-        {
-            CellData cellData = (CellData)cellTable[cell];
-            cellData.cellAreaFlags |= CellAreaFlags.LevelBoundary;
-            cellData.ore = null;
-            cellData.durability = 0;
-        }
-        //Setting spawn area
-        List<Vector3Int> spawnArea = new List<Vector3Int>();
-        for (int x = spawnAreaBottomLeftCorner.x + 1; x <= spawnAreaTopRightCorner.x - 1; x++)
-        {
-            for (int y = spawnAreaBottomLeftCorner.y + 1; y <= spawnAreaTopRightCorner.y - 1; y++)
-            {
-                Vector3Int cell = new Vector3Int(x,y,0);
-                CellData cellData = (CellData)cellTable[cell];
-                cellData.cellAreaFlags |= CellAreaFlags.PlayerSpawnArea;
-                cellData.ore = null;
-                cellData.durability = 0;
-            }
-        }
-        //Generate Stone and do Ore walking
-        for (int x = bottomLeftCorner.x; x <= topRightCorner.x ; x++)
-        {
-            for (int y = bottomLeftCorner.y; y <= topRightCorner.y; y++)
-            {
-                Vector3Int cell = new Vector3Int(x, y, 0);
-                bool inSpawnArea =
-                    (spawnAreaBottomLeftCorner.x < cell.x && cell.x < spawnAreaTopRightCorner.x &&
-                    spawnAreaBottomLeftCorner.y < cell.y && cell.y < spawnAreaTopRightCorner.y);
-                if (!inSpawnArea && x == 0 && y > 0 && y < enemyPortalLocation.y)
+                Vector3Int cellPosition = new Vector3Int(i, j, 0);
+                Vector3 cellWorldPosition = levelTilemap.GetCellCenterWorld(cellPosition);
+                CellData cellData = new CellData(cellPosition, cellWorldPosition);
+                cellData.isHidden = true;
+                if ((spawnPoint1.x <= i && i <= spawnPoint2.x) && (spawnPoint1.y <= j && j <= spawnPoint2.y))
                 {
-                    GenerateFloor(cell);
-                    ignoreCells.Add(cell);
-                    continue;
+                    cellData.cellAreaFlags |= CellAreaFlags.PlayerSpawnArea;
+                    cellData.isHidden = false;
                 }
-                bool ignoreCell = inSpawnArea || ignoreCells.Contains(cell);
-                if(!ignoreCell)
+                if (i == levelPoint1.x || i == levelPoint2.x || j == levelPoint1.y || j == levelPoint2.y)
+                    cellData.cellAreaFlags |= CellAreaFlags.LevelBoundary;
+                if (enemyFirstSpawnPoint.x - enemySpawnHallWidth < i && i < enemyFirstSpawnPoint.x + enemySpawnHallWidth)
                 {
-                    Ore highestRarityOreRolled = null;
-                    foreach (Ore ore in ores)
+                    if (spawnPoint2.y < j && j <= enemyFirstSpawnPoint.y + 1)
                     {
-                        if(ore.BaseRoll())
-                        {
-                            if(highestRarityOreRolled == null || ore.rarity > highestRarityOreRolled.rarity)
-                            {
-                                highestRarityOreRolled = ore;
-                                continue;
-                            }
-                        }
-                    }
-                    if(highestRarityOreRolled != null)
-                    {
-                        int stepsRoll = highestRarityOreRolled.stepMinMax.x + Random.Range(0, highestRarityOreRolled.stepMinMax.y + 1);
-                        CellWalker oreWalker = new CellWalker(cell, stepsRoll);
-                        List<Vector3Int> walkedTiles = oreWalker.CalculateWalk(ignoreCells);
-                        ignoreCells.AddRange(walkedTiles);
-                        foreach (Vector3Int walkedTile in walkedTiles)
-                        {
-                            CellData cellData = (CellData)cellTable[walkedTile];
-                            cellData.isPlayerSpawnArea = false;
-                            cellData.isLevelBoundary = false;
-                            cellData.ore = highestRarityOreRolled;
-                            cellData.durability = highestRarityOreRolled.durability;
-
-                            OreTilemap.SetTile(walkedTile, ore);
-                            OreTilemap.SetColor(walkedTile, highestRarityOreRolled.color);
-                        }
-                    }
-                    else
-                    {
-                        OreTilemap.SetTile(cell, ore);
-                        OreTilemap.SetColor(cell, emptyOre.color);
+                        cellData.cellAreaFlags |= CellAreaFlags.IsEnemySpawnArea;
+                        cellData.isHidden = false;
                     }
                 }
-                if (!inSpawnArea)
-                {
-                    StoneTilemap.SetTile(cell, stone);
-                    StoneColorTilemap.SetTile(cell, stoneColor);
-                    StoneColorTilemap.SetColor(cell, defaultStoneColor);
-                    HiddenTilemap.SetTile(cell, hiddenTile);
-
-                    CellData cellData = (CellData)cellTable[cell];
-                    cellData.isPlayerSpawnArea = false;
-                    cellData.isLevelBoundary = false;
-                    cellData.durability += 2;
-
-                }
-                if (inSpawnArea)
-                {
-                    GenerateFloor(cell);
-                }
+                //if (i == enemyFirstSpawnPoint.x && j == enemyFirstSpawnPoint.y)
+                //    cellData.cellAreaFlags |= CellAreaFlags.IsEnemySpawnCenter;
+                //if (cellPosition == Vector3Int.zero)
+                //    cellData.isHidden = false;
+                level.Add(cellPosition, cellData);
+                UpdateTilemap(cellData);
             }
         }
-        //Generate Pits
-        List<Vector2> sampleResults = 
-            FastPoissonDiskSampling.Sampling(bottomLeftCorner, topRightCorner, minPitDistanceFromEachOther);
-        if (sampleResults == null || sampleResults.Count == 0)
-            Debug.LogError("Fast poisson disk sampling failed!");
-        foreach (Vector2 sampledPoint in sampleResults)
+
+        //////all the way from outer boundary
+        //for (int x = levelPoint1.x - 1; x <= levelPoint2.x + 1; x++)
+        //{
+        //    for (int y = levelPoint1.y - 1; y <= levelPoint2.y + 1; y++)
+        //    {
+        //        Vector3Int cellPosition = new Vector3Int(x, y, 0);
+        //        Vector3 cellWorldPosition = levelTilemap.GetCellCenterWorld(cellPosition);
+        //        CellData cellData = new CellData(cellPosition, cellWorldPosition);
+        //    }
+        //}
+        ////Compute ignore list
+        //ignoreCells = new List<Vector3Int>();
+        //List<Vector3Int> levelBoundary = Boundaries(levelPoint1 - Vector2Int.one, levelPoint2 + Vector2Int.one);
+        //List<Vector3Int> spawnBoundary = Boundaries(spawnPoint1 + Vector2Int.one, spawnPoint2 - Vector2Int.one);
+        //ignoreCells.AddRange(levelBoundary);
+        //ignoreCells.AddRange(spawnBoundary);
+        ////Setting level boundary
+        //foreach (Vector3Int cell in levelBoundary)
+        //{
+        //    CellData cellData = (CellData)cellTable[cell];
+        //    cellData.cellAreaFlags |= CellAreaFlags.LevelBoundary;
+        //    cellData.ore = null;
+        //    cellData.durability = 0;
+        //}
+        ////Setting spawn area
+        //List<Vector3Int> spawnArea = new List<Vector3Int>();
+        //for (int x = spawnAreaBottomLeftCorner.x + 1; x <= spawnAreaTopRightCorner.x - 1; x++)
+        //{
+        //    for (int y = spawnAreaBottomLeftCorner.y + 1; y <= spawnAreaTopRightCorner.y - 1; y++)
+        //    {
+        //        Vector3Int cell = new Vector3Int(x, y, 0);
+        //        CellData cellData = (CellData)cellTable[cell];
+        //        cellData.cellAreaFlags |= CellAreaFlags.PlayerSpawnArea;
+        //        cellData.ore = null;
+        //        cellData.durability = 0;
+        //    }
+        //}
+        ////Generate Stone and do Ore walking
+        //for (int x = bottomLeftCorner.x; x <= topRightCorner.x; x++)
+        //{
+        //    for (int y = bottomLeftCorner.y; y <= topRightCorner.y; y++)
+        //    {
+        //        Vector3Int cell = new Vector3Int(x, y, 0);
+        //        bool inSpawnArea =
+        //            (spawnAreaBottomLeftCorner.x < cell.x && cell.x < spawnAreaTopRightCorner.x &&
+        //            spawnAreaBottomLeftCorner.y < cell.y && cell.y < spawnAreaTopRightCorner.y);
+        //        if (!inSpawnArea && x == 0 && y > 0 && y < enemyPortalLocation.y)
+        //        {
+        //            GenerateFloor(cell);
+        //            ignoreCells.Add(cell);
+        //            continue;
+        //        }
+        //        bool ignoreCell = inSpawnArea || ignoreCells.Contains(cell);
+        //        if (!ignoreCell)
+        //        {
+        //            Ore highestRarityOreRolled = null;
+        //            foreach (Ore ore in ores)
+        //            {
+        //                if (ore.BaseRoll())
+        //                {
+        //                    if (highestRarityOreRolled == null || ore.rarity > highestRarityOreRolled.rarity)
+        //                    {
+        //                        highestRarityOreRolled = ore;
+        //                        continue;
+        //                    }
+        //                }
+        //            }
+        //            if (highestRarityOreRolled != null)
+        //            {
+        //                int stepsRoll = highestRarityOreRolled.stepMinMax.x + Random.Range(0, highestRarityOreRolled.stepMinMax.y + 1);
+        //                CellWalker oreWalker = new CellWalker(cell, stepsRoll);
+        //                List<Vector3Int> walkedTiles = oreWalker.CalculateWalk(ignoreCells);
+        //                ignoreCells.AddRange(walkedTiles);
+        //                foreach (Vector3Int walkedTile in walkedTiles)
+        //                {
+        //                    CellData cellData = (CellData)cellTable[walkedTile];
+        //                    cellData.isPlayerSpawnArea = false;
+        //                    cellData.isLevelBoundary = false;
+        //                    cellData.ore = highestRarityOreRolled;
+        //                    cellData.durability = highestRarityOreRolled.durability;
+
+        //                    OreTilemap.SetTile(walkedTile, ore);
+        //                    OreTilemap.SetColor(walkedTile, highestRarityOreRolled.color);
+        //                }
+        //            }
+        //            else
+        //            {
+        //                OreTilemap.SetTile(cell, ore);
+        //                OreTilemap.SetColor(cell, emptyOre.color);
+        //            }
+        //        }
+        //        if (!inSpawnArea)
+        //        {
+        //            StoneTilemap.SetTile(cell, stone);
+        //            StoneColorTilemap.SetTile(cell, stoneColor);
+        //            StoneColorTilemap.SetColor(cell, defaultStoneColor);
+        //            HiddenTilemap.SetTile(cell, hiddenTile);
+
+        //            CellData cellData = (CellData)cellTable[cell];
+        //            cellData.isPlayerSpawnArea = false;
+        //            cellData.isLevelBoundary = false;
+        //            cellData.durability += 2;
+
+        //        }
+        //        if (inSpawnArea)
+        //        {
+        //            GenerateFloor(cell);
+        //        }
+        //    }
+        //}
+        ////Generate Pits
+        //List<Vector2> sampleResults =
+        //    FastPoissonDiskSampling.Sampling(bottomLeftCorner, topRightCorner, minPitDistanceFromEachOther);
+        //if (sampleResults == null || sampleResults.Count == 0)
+        //    Debug.LogError("Fast poisson disk sampling failed!");
+        //foreach (Vector2 sampledPoint in sampleResults)
+        //{
+        //    Vector3Int cell = new Vector3Int(Mathf.RoundToInt(sampledPoint.x), Mathf.RoundToInt(sampledPoint.y), 0);
+        //    bool inSpawnArea =
+        //        (spawnAreaBottomLeftCorner.x - minPitDistanceFromSpawn < cell.x && cell.x < spawnAreaTopRightCorner.x + minPitDistanceFromSpawn &&
+        //        spawnAreaBottomLeftCorner.y - minPitDistanceFromSpawn < cell.y && cell.y < spawnAreaTopRightCorner.y + minPitDistanceFromSpawn);
+        //    if (inSpawnArea || ignoreCells.Contains(cell))
+        //        continue;
+        //    List<CellData> neighbours = GameManager.ins.GetAllNeighboursAroundCell_InGivenHashtable(cellTable, cell, true);
+        //    foreach (CellData cellData in neighbours)
+        //    {
+        //        cellData.isPit = true;
+        //        cellData.isUncoveredPit = false;
+        //        if (cellData.cellPosition == cell)
+        //            cellData.isPitCenter = true;
+        //    }
+        //    PitTilemap.SetTile(cell, pitTile);
+        //}
+        //return cellTable;
+    }
+    public void UpdateTilemap(CellData cellData)
+    {
+        if (cellData.isHidden)
         {
-            Vector3Int cell = new Vector3Int(Mathf.RoundToInt(sampledPoint.x), Mathf.RoundToInt(sampledPoint.y), 0);
-            bool inSpawnArea = 
-                (spawnAreaBottomLeftCorner.x - minPitDistanceFromSpawn < cell.x && cell.x < spawnAreaTopRightCorner.x + minPitDistanceFromSpawn &&
-                spawnAreaBottomLeftCorner.y - minPitDistanceFromSpawn < cell.y && cell.y < spawnAreaTopRightCorner.y + minPitDistanceFromSpawn);
-            if (inSpawnArea || ignoreCells.Contains(cell))
-                continue;
-            List<CellData> neighbours = GameManager.ins.GetAllNeighboursAroundCell_InGivenHashtable(cellTable, cell, true);
-            foreach (CellData cellData in neighbours)
-            {
-                cellData.isPit = true;
-                cellData.isUncoveredPit = false;
-                if (cellData.cellPosition == cell)
-                    cellData.isPitCenter = true;
-            }
-            PitTilemap.SetTile(cell, pitTile);
+            //levelTilemap.SetTile(cellData.cellPosition, stone);
+            //levelTilemap.SetColor(cellData.cellPosition, hiddenTileColor);
+            levelTilemap.SetTile(cellData.cellPosition, hiddenTile);
+            return;
         }
-        return cellTable;
+        else
+        {
+            //if(cellData.cellAreaFlags == CellAreaFlags.None)
+            //{
+            //    levelTilemap.SetTile(cellData.cellPosition, stone);
+            //    return;
+            //}
+        }
+    }
+    public void SetNeighbours(CellData cellData)
+    {
+
+    }
+    public void RevealTileCheck(CellData cellData)
+    {
+
     }
     public void RemoveStoneTileAtCell(Vector3Int cellPos)
     {

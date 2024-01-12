@@ -97,7 +97,7 @@ public class GameManager : MonoBehaviour
     {
         //levelGenerator.ManagedStart();
         levelGenerator.GenerateLevel();
-
+        Debug.LogError("Level generated");
         //player = characterGenerator.ManagedStart();
         //playerLastCellPos = WorldToCell(player.position);
         //playerAgent = player.GetComponent<CharacterAgent>();
@@ -161,11 +161,11 @@ public class GameManager : MonoBehaviour
     public static event OnCellBreak onCellBreak;
     public Dictionary<Vector3Int, CellData> level => levelGenerator.level;
     public bool isInLevelBounds(Vector3Int position) {
-        if (position.x < levelGenerator.bottomLeftCorner.x || position.x > levelGenerator.topRightCorner.x)
+        if (position.x < levelGenerator.levelPoint1.x || position.x > levelGenerator.levelPoint2.x)
         {
             return false;
         }
-        if (position.y < levelGenerator.bottomLeftCorner.y || position.y > levelGenerator.topRightCorner.y)
+        if (position.y < levelGenerator.levelPoint1.y || position.y > levelGenerator.levelPoint2.y)
         {
             return false;
         }
@@ -189,29 +189,30 @@ public class GameManager : MonoBehaviour
             OnPlayerOccupiedNewCell = null;
         }
         //Do pit spawning enemies
-        if (uncoveredPitCenters != null && uncoveredPitCenters.Keys.Count > 0)
-        {
-            pitSpawnTimer += Time.deltaTime;
-            if (pitSpawnTimer > pitSpawnTime)
-            {
-                foreach (Vector3Int item in uncoveredPitCenters.Keys)
-                {
-                    //Debug.Log($"Spawn enemies at {item}");
-                    if (agentController.CheckAgentCanSpawnAtPosition(item))
-                    {
-                        Enemy newEnemy = characterGenerator.CreateEnemy(item);
-                        agentController.enemies.Add(newEnemy);
-                    }
-                }
-                pitSpawnTimer = 0;
-            }
-        }
+        //if (uncoveredPitCenters != null && uncoveredPitCenters.Keys.Count > 0)
+        //{
+        //    pitSpawnTimer += Time.deltaTime;
+        //    if (pitSpawnTimer > pitSpawnTime)
+        //    {
+        //        foreach (Vector3Int item in uncoveredPitCenters.Keys)
+        //        {
+        //            //Debug.Log($"Spawn enemies at {item}");
+        //            if (agentController.CheckAgentCanSpawnAtPosition(item))
+        //            {
+        //                Enemy newEnemy = characterGenerator.CreateEnemy(item);
+        //                agentController.enemies.Add(newEnemy);
+        //            }
+        //        }
+        //        pitSpawnTimer = 0;
+        //    }
+        //}
         return;
     }
     public float moveUpdateTime;
     float moveUpdateTimer;
     private void FixedUpdate()
     {
+        return;
         if (PlaceDefenderRequest != null)
         {
             foreach (Delegate item in PlaceDefenderRequest.GetInvocationList())
@@ -406,18 +407,9 @@ public class GameManager : MonoBehaviour
             }
         }
     }
-
     public CellData GetCellDataAtPosition(Vector3Int cellPosition)
     {
-        return (CellData)cellTable[cellPosition];
-    }
-    public bool CellTableHasKey(Vector3Int cellPosition)
-    {
-        return cellTable.ContainsKey(cellPosition);
-    }
-    public void SetCellDataAtPosition(Vector3Int cellPosition, CellData cellData)
-    {
-        cellTable.Add(cellPosition, cellData);
+        return levelGenerator.level[cellPosition];
     }
     public List<CellData> GetAllNeighboursAroundCell(Vector3Int cell, bool includeSelf)
     {
@@ -488,20 +480,20 @@ public class GameManager : MonoBehaviour
         if (cellData.isPit && !cellData.isUncoveredPit)
         {
             //Pit uncovered here
-            CellData pitCenter = levelGenerator.UncoverFullPit(cellData);
-            if (uncoveredPitCenters.ContainsKey(pitCenter.cellPosition))
-            {
-                uncoveredPitCenters[pitCenter.cellPosition] = pitCenter;
-            }
-            else
-            {
-                uncoveredPitCenters.Add(pitCenter.cellPosition, pitCenter);
-            }
-            return;
+            //CellData pitCenter = levelGenerator.UncoverFullPit(cellData);
+            //if (uncoveredPitCenters.ContainsKey(pitCenter.cellPosition))
+            //{
+            //    uncoveredPitCenters[pitCenter.cellPosition] = pitCenter;
+            //}
+            //else
+            //{
+            //    uncoveredPitCenters.Add(pitCenter.cellPosition, pitCenter);
+            //}
+            //return;
         }
         //Dont spawn ore if its a pit uncovering
         if (cellData.ore != null)
-            cellData.loot = lootManager.InstantiateLoot_Ore(cellData.cellCenterWorldPosition, cellData.ore);
+            cellData.loot = lootManager.InstantiateLoot_Ore(cellData.cellWorldPosition, cellData.ore);
 
         onCellBreak?.Invoke(cellData);
     }
@@ -673,7 +665,7 @@ public class AgentController
         {
             #region Set up pickaxe animation stuff
             player.tool.toolTargetCellPos = cellData.cellPosition;
-            player.tool.toolTargetCellCenterWorldPos = cellData.cellCenterWorldPosition;
+            player.tool.toolTargetCellCenterWorldPos = cellData.cellWorldPosition;
             #endregion
             List<Vector3Int> shortestPathToNeighbour =
                 cellData.GetPathToClosestCardinalNeighbour(player);

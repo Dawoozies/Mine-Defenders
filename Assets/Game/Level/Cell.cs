@@ -4,7 +4,7 @@ using UnityEngine;
 public class CellData
 {
     public Vector3Int cellPosition;
-    public Vector3 cellCenterWorldPosition;
+    public Vector3 cellWorldPosition;
     //public bool isPlayerSpawnArea;
     //public bool isLevelBoundary;
     public bool isHidden;
@@ -16,6 +16,11 @@ public class CellData
     public bool isPitCenter;
     public CellLoot loot;
     public List<CellData> neighbours;
+    public CellData(Vector3Int cellPosition, Vector3 cellWorldPosition)
+    {
+        this.cellPosition = cellPosition;
+        this.cellWorldPosition = cellWorldPosition;
+    }
     public bool isTraversable()
     {
         if (durability > 0)
