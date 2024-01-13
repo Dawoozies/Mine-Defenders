@@ -5,6 +5,9 @@ using UnityEngine.Tilemaps;
 public class LevelGenerator : MonoBehaviour
 {
     public Dictionary<Vector3Int, CellData> level;
+    public GameObject tilemapPrefab;
+    public int layers;
+    public List<TilemapLayer> tilemapLayers;
     public Tilemap levelTilemap;
     public Tilemap OreTilemap;
     public Tilemap StoneTilemap;
@@ -46,6 +49,8 @@ public class LevelGenerator : MonoBehaviour
         //Add all empty cellData
         //Hashtable cellTable = new Hashtable();
         level = new Dictionary<Vector3Int, CellData>();
+        tilemapLayers = new List<TilemapLayer>();
+
         for (int i = levelPoint1.x; i <= levelPoint2.x; i++)
         {
             for (int j = levelPoint1.y; j <= levelPoint2.y; j++)
@@ -352,5 +357,15 @@ public class CellWalker
         }
         //Debug.LogError("Walker finished walking because steps left = 0");
         return traversedCells;
+    }
+}
+public class TilemapLayer
+{
+    public Tilemap tilemap;
+    public TilemapRenderer renderer;
+    public TilemapLayer(GameObject tilemapObject)
+    {
+        tilemap = tilemapObject.GetComponent<Tilemap>();
+        renderer = tilemapObject.GetComponent<TilemapRenderer>();
     }
 }
